@@ -1,0 +1,40 @@
+# Data and training outputs
+data/
+runs/
+checkpoints/
+*.ckpt
+
+# Weights
+*.pt
+*.pth
+*.onnx
+*.engine
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+build/
+dist/
+.ipynb_checkpoints/
+
+# Tool caches
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Claude Code local state
+.claude/.gate-state.json
+.claude/settings.local.json
+
+# OS
+.DS_Store

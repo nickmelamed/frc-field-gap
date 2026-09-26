@@ -1,0 +1,22 @@
+# Edits to these paths need the owner's approval, even in auto mode.
+# One glob per line, relative to the repo root. Text after "  #" is the reason.
+.claude/settings.json  # agent permissions and hooks
+.claude/protected-paths  # this list
+scripts/agent/*  # the checks that gate Claude's work
+.pre-commit-config.yaml  # commit hooks
+.github/workflows/*  # CI
+*.lock  # locked dependencies
+
+# Project integrity. Changes need Nick's approval.
+data/field_test/*  # eval-only field test set (rule 2)
+src/frc_xdata/merge.py  # field-test leak check (rule 2)
+src/frc_xdata/splits.py  # split design
+src/frc_xdata/evaluate.py  # metrics and class coverage scoring
+configs/class_map.yaml  # class mapping affects every result (rule 7)
+configs/datasets.yaml  # pinned dataset versions
+tests/test_merge.py  # leak check test
+reports/data_manifests/*  # data drift detection
+reports/models.yaml  # platform training record
+.env  # secrets
+requirements.txt  # exported from uv.lock
+docs/SPEC.md  # the design spec
