@@ -1,4 +1,5 @@
 # Files the style checker skips (globs relative to the repo root).
-# CLAUDE.md, AGENTS.md, PROGRESS.md, CHANGELOG.md, and .claude/* are skipped by default.
+# CLAUDE.md, AGENTS.md, PROGRESS.md, CHANGELOG.md, handoff files (*handoff*.md,
+# *HANDOFF*.md), and .claude/* are skipped by default.
 # The design spec keeps its original formatting.
 docs/SPEC.md
