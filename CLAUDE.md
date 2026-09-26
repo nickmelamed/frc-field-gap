@@ -75,5 +75,7 @@ Dependencies change only through `uv` and the lockfile.
 - You may branch and commit locally. Ask before pushing, opening or merging
   PRs, tagging, or changing dependencies, hooks, or CI.
 - Nick runs platform training himself. Draft the steps, don't try to run them.
+- If you repeat a multi-step procedure, or I give you the same instructions
+  twice, propose a skill for it in .claude/skills/ and wait for approval.
 - When compacting, keep the modified files, the current plan and task, and
   any failing checks.

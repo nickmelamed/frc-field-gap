@@ -36,5 +36,8 @@ htmlcov/
 .claude/.gate-state.json
 .claude/settings.local.json
 
+# Session handoff notes
+HANDOFF.md
+
 # OS
 .DS_Store

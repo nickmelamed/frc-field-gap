@@ -22,7 +22,7 @@ SKIP_DIRS = {
 }
 DEFAULT_IGNORE = [
     "CLAUDE.md", "AGENTS.md", "PROGRESS.md", "CHANGELOG.md", ".claude/*",
-    "*handoff*.md",
+    "*handoff*.md", "*HANDOFF*.md",
 ]
 IGNORE_MARK = "style: ok"
 

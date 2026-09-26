@@ -27,7 +27,11 @@ Close out the current task (see PROGRESS.md).
    - Decisions that affect results are in docs/DECISIONS.md.
 5. Tick the task in PROGRESS.md and note anything that turned out different
    from the spec.
-6. Commit fixes as atomic Conventional Commits.
-7. Draft the PR description from `.github/pull_request_template.md` and show
+6. List any multi-step procedure repeated during the task, or instructions
+   Nick gave more than once. For each, draft a skill for
+   `.claude/skills/<name>/SKILL.md` and show it to Nick. Write it only after
+   he approves.
+7. Commit fixes as atomic Conventional Commits.
+8. Draft the PR description from `.github/pull_request_template.md` and show
    it to Nick with a short summary. Ask before pushing or opening the PR.
    PRs merge with rebase-and-merge once CI is green.
