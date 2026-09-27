@@ -49,3 +49,15 @@ uses [Semantic Versioning](https://semver.org/).
   results in `docs/EVALUATION.md` from `reports/runs/`.
 - `docs/RETRAINING.md` gives the platform training steps, and
   `reports/models.yaml` records each run.
+- baseline-a scored on the test splits of `marswars`, `robotzftp2`, and
+  `scorekeeper`, with the results in the README and `docs/EVALUATION.md`
+  and a write-up of how the model does on each dataset.
+
+### Changed
+
+- `frc-evaluate` scores only the classes that both the dataset and the
+  model's training data label, and lists the rest in `unscored_classes`
+  (D-019).
+- `frc-evaluate` caches and scores at most the 25 most confident predictions
+  per image (`max_predictions_per_image`), including when it rescores an
+  older cache (D-020).
