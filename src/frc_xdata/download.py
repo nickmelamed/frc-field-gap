@@ -451,7 +451,8 @@ def _write_json(path: Path, records: Iterable[BaseModel]) -> None:
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
-def _sdk_errors() -> tuple[type[Exception], ...]:
+def sdk_errors() -> tuple[type[Exception], ...]:
+    """Return the exceptions a Roboflow SDK call can raise for a network or API failure."""
     from roboflow.adapters.rfapi import RoboflowError
 
     return (RoboflowError, RuntimeError, requests.RequestException, OSError, zipfile.BadZipFile)
@@ -500,7 +501,7 @@ def main(argv: list[str] | None = None) -> int:
     api_key = roboflow_api_key()
     for handler in logging.getLogger().handlers:
         handler.addFilter(RedactFilter(api_key))
-    errors = _sdk_errors()
+    errors = sdk_errors()
     reports = project.paths.reports_dir
 
     try:

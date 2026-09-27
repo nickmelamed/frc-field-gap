@@ -23,3 +23,7 @@ class DirtyTreeError(FrcXdataError):
 
 class SplitLeakError(FrcXdataError):
     """A test image has a near duplicate in the train or valid split."""
+
+
+class UploadCheckError(FrcXdataError):
+    """Data sent to or received from Roboflow does not match the harmonized dataset."""

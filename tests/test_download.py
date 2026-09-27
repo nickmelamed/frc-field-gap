@@ -400,7 +400,7 @@ def test_real_download_of_first_pinned_dataset(tmp_path: Path) -> None:
         raw_dir=tmp_path / "raw",
         manifests_dir=tmp_path / "manifests",
         fetch=download._roboflow_fetch(api_key),
-        errors=download._sdk_errors(),
+        errors=download.sdk_errors(),
         secret=api_key,
     )
     assert failures == []
