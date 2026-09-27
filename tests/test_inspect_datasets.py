@@ -329,3 +329,16 @@ def test_main_without_grids_writes_no_images(
     run_cli(tmp_path, monkeypatch, "--no-grids")
     assert (tmp_path / "reports" / "dataset_stats.csv").is_file()
     assert not (tmp_path / "docs" / "assets").exists()
+
+
+def test_main_skips_a_split_with_no_images(
+    raw_dir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (raw_dir / "beta" / "test").mkdir()
+    (raw_dir / "beta" / "test" / "_annotations.coco.json").write_text(
+        json.dumps(coco([], [])), encoding="utf-8"
+    )
+    run_cli(tmp_path, monkeypatch, "--no-grids")
+    stats = read_csv(tmp_path / "reports" / "dataset_stats.csv")
+    assert ("beta", "test") not in [(r["dataset"], r["split"]) for r in stats]
+    assert ("beta", "train") in [(r["dataset"], r["split"]) for r in stats]
