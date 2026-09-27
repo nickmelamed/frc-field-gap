@@ -94,7 +94,8 @@ def workspace(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     coverage = {"alpha": {"labeled": ["fuel"]}}
     (reports / "class_coverage.json").write_text(json.dumps(coverage), encoding="utf-8")
     model = {**ENTRY.model_dump(), "notes": "written by hand"}
-    (reports / "models.yaml").write_text(yaml.safe_dump({"models": {"m": model}}), "utf-8")
+    models = yaml.safe_dump({"models": {"m": model}}) + "    trained: 2026-09-27\n"
+    (reports / "models.yaml").write_text(models, "utf-8")
     return tmp_path
 
 
@@ -129,6 +130,7 @@ def test_main_writes_predictions_metrics_and_meta(workspace: Path, fake: FakePre
     assert meta["dataset"]["universe"]["version"] == 3
     assert meta["dataset"]["manifest_sha256"]
     assert meta["model"]["notes"] == "written by hand"
+    assert meta["model"]["trained"] == "2026-09-27"
     assert meta["model"]["server"] == {"backend": "fake"}
     assert meta["packages"]["supervision"]
     assert SECRET not in json.dumps(meta)
@@ -307,3 +309,15 @@ def test_units_that_disagree_with_the_split_report_stop_the_run(
     assert not fake.calls
     # A slice cannot be checked against whole-split counts.
     assert evaluate.main([*ARGS, "--limit", "1"]) == 0
+
+
+def test_a_failed_run_leaves_no_partial_directory(
+    workspace: Path, fake: FakePredictor, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def broken(**kwargs: Any) -> dict[str, Any]:
+        raise ConfigError("meta failed")
+
+    monkeypatch.setattr(evaluate, "run_meta", broken)
+    with pytest.raises(ConfigError, match="meta failed"):
+        evaluate.main(ARGS)
+    assert not (workspace / "reports/runs/run1").exists()
