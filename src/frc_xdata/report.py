@@ -37,7 +37,6 @@ class PublishedRun:
 
     result: RunResult
     created: str
-    commit: str
     dirty: bool
 
 
@@ -58,7 +57,6 @@ def load_runs(runs_dir: Path) -> list[PublishedRun]:
             PublishedRun(
                 result=RunResult.model_validate_json(metrics.read_text(encoding="utf-8")),
                 created=info["created"],
-                commit=info["git"]["commit"],
                 dirty=info["git"]["dirty"],
             )
         )
@@ -133,7 +131,7 @@ def run_section(run: PublishedRun) -> str:
     lines = [
         f"### {r.model} on {r.dataset} {r.split}",
         "",
-        f"Run `{r.run_id}` at commit `{run.commit}`, scored on {m.images} images. Precision, "
+        f"Run `{r.run_id}`, scored on {m.images} images. Precision, "
         f"recall, and the confusion matrix count predictions with confidence of at least "
         f"{m.confidence}. Intervals come from {boot.resamples} resamples of the split's "
         f"{boot.units} recordings or groups, and hold a {boot.level} share of the resampled "

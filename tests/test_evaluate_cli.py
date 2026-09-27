@@ -67,6 +67,7 @@ def workspace(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     monkeypatch.setenv(API_KEY_VAR, SECRET)
     monkeypatch.setattr(evaluate, "git_is_dirty", lambda repo: False)
     monkeypatch.setattr(evaluate, "git_commit", lambda repo: "abc123")
+    monkeypatch.setattr(evaluate, "git_tree", lambda repo: "def456")
     ids = count(1)
     monkeypatch.setattr(evaluate, "_run_id", lambda *a: f"run{next(ids)}")
 
@@ -126,7 +127,7 @@ def test_main_writes_predictions_metrics_and_meta(workspace: Path, fake: FakePre
     assert metrics["bootstrap"]["resamples"] == 20
 
     meta = read("run1", "meta.json")
-    assert meta["git"] == {"commit": "abc123", "dirty": False}
+    assert meta["git"] == {"commit": "abc123", "tree": "def456", "dirty": False}
     assert meta["dataset"]["universe"]["version"] == 3
     assert meta["dataset"]["manifest_sha256"]
     assert meta["model"]["notes"] == "written by hand"

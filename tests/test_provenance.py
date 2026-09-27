@@ -7,6 +7,7 @@ import pytest
 from frc_xdata.provenance import (
     git_commit,
     git_is_dirty,
+    git_tree,
     package_versions,
     sha256_file,
     utc_timestamp,
@@ -41,6 +42,12 @@ def test_git_commit_returns_head_sha(repo: Path) -> None:
     sha = git_commit(repo)
     assert sha == run_git(repo, "rev-parse", "HEAD")
     assert len(sha) == 40
+
+
+def test_git_tree_survives_a_new_commit_with_the_same_content(repo: Path) -> None:
+    tree = git_tree(repo)
+    run_git(repo, "commit", "-q", "--amend", "-m", "reworded")
+    assert git_tree(repo) == tree == run_git(repo, "rev-parse", "HEAD^{tree}")
 
 
 def test_git_commit_outside_repo_raises(tmp_path: Path) -> None:

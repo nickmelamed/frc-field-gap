@@ -27,6 +27,16 @@ def git_commit(repo: Path) -> str:
     return _git(repo, "rev-parse", "HEAD")
 
 
+def git_tree(repo: Path) -> str:
+    """Return the SHA of the tree checked out in ``repo``.
+
+    A rebase merge gives a commit a new SHA but keeps its tree when the
+    content is unchanged, so the tree still finds the code behind a result
+    after the commit SHA no longer exists on the main branch.
+    """
+    return _git(repo, "rev-parse", "HEAD^{tree}")
+
+
 def git_is_dirty(repo: Path) -> bool:
     """Return True if ``repo`` has uncommitted changes or untracked files."""
     return bool(_git(repo, "status", "--porcelain"))
