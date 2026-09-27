@@ -1,0 +1,225 @@
+{
+  "run_id": "baseline-a__robotzftp2-test__20260927T221735Z",
+  "model": "baseline-a",
+  "dataset": "robotzftp2",
+  "split": "test",
+  "limit": null,
+  "predictions_from": "baseline-a__robotzftp2-test__20260927T214029Z",
+  "scored_classes": [
+    "fuel"
+  ],
+  "unscored_classes": [],
+  "per_image_limit": {
+    "per_image": 25,
+    "images_at_limit": 122,
+    "images_above_threshold": 0
+  },
+  "metrics": {
+    "images": 286,
+    "confidence": 0.5,
+    "iou": 0.5,
+    "map50": 0.994,
+    "map50_95": 0.864,
+    "small_map50_95": null,
+    "medium_map50_95": 0.795,
+    "large_map50_95": 0.897,
+    "classes": [
+      {
+        "name": "fuel",
+        "instances": 376,
+        "map50": 0.994,
+        "map50_95": 0.864,
+        "precision": 0.966,
+        "recall": 0.973,
+        "true_positives": 366,
+        "false_positives": 13,
+        "false_negatives": 10
+      }
+    ],
+    "confusion": {
+      "labels": [
+        "fuel",
+        "background"
+      ],
+      "matrix": [
+        [
+          366,
+          10
+        ],
+        [
+          13,
+          0
+        ]
+      ]
+    },
+    "pr_curve": {
+      "fuel": [
+        {
+          "threshold": 0.05,
+          "precision": 0.239,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.1,
+          "precision": 0.451,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.15,
+          "precision": 0.605,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.2,
+          "precision": 0.693,
+          "recall": 0.997
+        },
+        {
+          "threshold": 0.25,
+          "precision": 0.783,
+          "recall": 0.997
+        },
+        {
+          "threshold": 0.3,
+          "precision": 0.842,
+          "recall": 0.995
+        },
+        {
+          "threshold": 0.35,
+          "precision": 0.871,
+          "recall": 0.989
+        },
+        {
+          "threshold": 0.4,
+          "precision": 0.909,
+          "recall": 0.984
+        },
+        {
+          "threshold": 0.45,
+          "precision": 0.931,
+          "recall": 0.976
+        },
+        {
+          "threshold": 0.5,
+          "precision": 0.966,
+          "recall": 0.973
+        },
+        {
+          "threshold": 0.55,
+          "precision": 0.973,
+          "recall": 0.968
+        },
+        {
+          "threshold": 0.6,
+          "precision": 0.981,
+          "recall": 0.965
+        },
+        {
+          "threshold": 0.65,
+          "precision": 1.0,
+          "recall": 0.957
+        },
+        {
+          "threshold": 0.7,
+          "precision": 1.0,
+          "recall": 0.952
+        },
+        {
+          "threshold": 0.75,
+          "precision": 1.0,
+          "recall": 0.947
+        },
+        {
+          "threshold": 0.8,
+          "precision": 1.0,
+          "recall": 0.936
+        },
+        {
+          "threshold": 0.85,
+          "precision": 1.0,
+          "recall": 0.896
+        },
+        {
+          "threshold": 0.9,
+          "precision": 1.0,
+          "recall": 0.532
+        },
+        {
+          "threshold": 0.95,
+          "precision": 1.0,
+          "recall": 0.035
+        }
+      ]
+    }
+  },
+  "units": [
+    {
+      "unit": "IMG_5833_MOV",
+      "images": 79,
+      "boxes": {
+        "fuel": 129
+      }
+    },
+    {
+      "unit": "IMG_5835_MOV",
+      "images": 65,
+      "boxes": {
+        "fuel": 117
+      }
+    },
+    {
+      "unit": "IMG_5839_MOV",
+      "images": 44,
+      "boxes": {
+        "fuel": 36
+      }
+    },
+    {
+      "unit": "IMG_5836_MOV",
+      "images": 35,
+      "boxes": {
+        "fuel": 35
+      }
+    },
+    {
+      "unit": "IMG_5838_MOV",
+      "images": 29,
+      "boxes": {
+        "fuel": 25
+      }
+    },
+    {
+      "unit": "IMG_5837_MOV",
+      "images": 20,
+      "boxes": {
+        "fuel": 20
+      }
+    },
+    {
+      "unit": "IMG_5834_MOV",
+      "images": 14,
+      "boxes": {
+        "fuel": 14
+      }
+    }
+  ],
+  "bootstrap": {
+    "units": 7,
+    "resamples": 1000,
+    "level": 0.95,
+    "seed": 2026,
+    "classes": [
+      {
+        "name": "fuel",
+        "map50": {
+          "low": 0.985,
+          "high": 1.0
+        },
+        "recall": {
+          "low": 0.94,
+          "high": 1.0
+        }
+      }
+    ]
+  }
+}
