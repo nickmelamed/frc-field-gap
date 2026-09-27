@@ -1,4 +1,4 @@
-.PHONY: help setup setup-infer lint typecheck test check requirements agent-check download inspect harmonize upload verify-upload
+.PHONY: help setup setup-infer lint typecheck test check requirements agent-check download inspect harmonize upload verify-upload eval
 
 help:  ## List targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -44,3 +44,6 @@ upload:  ## Check harmonized KEY and upload it to Roboflow (ARGS=--dry-run to on
 
 verify-upload:  ## Download Roboflow VERSION of KEY and check it image by image
 	uv run frc-verify-upload $(KEY) --version $(VERSION) $(ARGS)
+
+eval:  ## Score MODEL on DATASET's SPLIT (default test) into reports/runs/ (ARGS=--limit 10)
+	uv run frc-evaluate $(MODEL) $(DATASET) --split $(or $(SPLIT),test) $(ARGS)

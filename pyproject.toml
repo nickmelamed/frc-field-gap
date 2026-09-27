@@ -24,6 +24,7 @@ frc-inspect = "frc_xdata.inspect_datasets:main"
 frc-harmonize = "frc_xdata.harmonize:main"
 frc-upload = "frc_xdata.upload:upload_main"
 frc-verify-upload = "frc_xdata.upload:verify_main"
+frc-evaluate = "frc_xdata.evaluate:main"
 
 [project.optional-dependencies]
 infer = ["inference>=1.7,<1.8"]
@@ -68,6 +69,11 @@ plugins = ["pydantic.mypy"]
 # roboflow ships without type hints or a py.typed marker.
 [[tool.mypy.overrides]]
 module = ["roboflow", "roboflow.*"]
+ignore_missing_imports = true
+
+# inference-sdk ships without a py.typed marker, and CI does not install it.
+[[tool.mypy.overrides]]
+module = ["inference_sdk", "inference_sdk.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

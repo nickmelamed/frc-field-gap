@@ -156,6 +156,57 @@ class PlatformConfig(_Frozen):
     upload_retries: Annotated[int, Field(ge=0)]
 
 
+Probability = Annotated[float, Field(gt=0, lt=1)]
+
+
+class ThresholdRange(_Frozen):
+    """Evenly spaced confidence thresholds, from ``start`` to ``stop`` inclusive."""
+
+    start: Probability
+    stop: Probability
+    step: Probability
+
+    @model_validator(mode="after")
+    def _ordered(self) -> "ThresholdRange":
+        if self.start > self.stop:
+            raise ValueError("start must not be above stop")
+        return self
+
+    @property
+    def values(self) -> list[float]:
+        """Return the thresholds, rounded so float steps do not drift."""
+        count = round((self.stop - self.start) / self.step) + 1
+        return [round(self.start + i * self.step, 6) for i in range(count)]
+
+
+class BootstrapConfig(_Frozen):
+    """How many resamples to draw, and the share of them an interval covers."""
+
+    resamples: PositiveInt
+    level: Probability
+
+
+class EvaluateConfig(_Frozen):
+    """Settings for scoring a model on a harmonized split."""
+
+    api_url: str
+    models_file: RelativePath
+    coverage_file: RelativePath
+    runs_dir: RelativePath
+    confidence: Probability
+    iou: Probability
+    confidence_floor: Probability
+    pr_thresholds: ThresholdRange
+    max_prediction_bytes: PositiveInt
+    bootstrap: BootstrapConfig
+
+    @model_validator(mode="after")
+    def _floor_below_thresholds(self) -> "EvaluateConfig":
+        if self.confidence_floor > min(self.confidence, self.pr_thresholds.start):
+            raise ValueError("confidence_floor must not be above any threshold it is scored at")
+        return self
+
+
 class ProjectConfig(_Frozen):
     """Settings shared by every stage, from ``configs/project.yaml``."""
 
@@ -164,6 +215,32 @@ class ProjectConfig(_Frozen):
     inspect: InspectConfig
     splits: SplitsConfig
     platform: PlatformConfig
+    evaluate: EvaluateConfig
+
+
+class ModelEntry(BaseModel):
+    """The fields of one ``reports/models.yaml`` entry that evaluation needs.
+
+    The file also records training settings by hand, which are kept in each
+    run's metadata as written.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="ignore")
+
+    dataset: DatasetKey
+    project: Slug
+    version: PositiveInt
+    model_id: Slug
+    architecture: str
+    input_size: str
+
+
+class ModelsFile(BaseModel):
+    """Every platform-trained model by run name, from ``reports/models.yaml``."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    models: dict[str, ModelEntry]
 
 
 class DatasetSpec(_Frozen):
