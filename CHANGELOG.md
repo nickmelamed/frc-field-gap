@@ -24,4 +24,4 @@ uses [Semantic Versioning](https://semver.org/).
 - Five candidate datasets pinned in `configs/datasets.yaml`, with
   attribution in the README.
 - `docs/DATASETS.md` describing each dataset's viewpoint, labels, and
-  problems, with a proposed dataset choice and class mapping.
+  problems, the chosen datasets (D-011), and a proposed class mapping.
