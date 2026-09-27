@@ -464,3 +464,25 @@ more. With one scored class these agree except for a box at exactly 0.5.
 A bootstrap takes a few minutes per split. Task 8's box-size slices should
 use sizes relative to the image, as `inspect.area_buckets` does, instead of
 COCO's buckets.
+
+## D-019: Score only the classes both the dataset and the model know (2026-09-27)
+
+Context. baseline-a was trained on `marswars`, which labels fuel only.
+`scorekeeper` labels robots too, so scoring it on every labeled class would
+publish a robot row with mAP50 and recall of 0. It would also halve the
+run's overall mAP, which averages over classes.
+
+Decision. Nick chose on 2026-09-27 that a run scores the classes the dataset
+labels that the model's training dataset also labels, both read from
+`labeled` in `reports/class_coverage.json`. The rest are stored as
+`unscored_classes` in `metrics.json`, and the report names them under the
+run's table.
+
+Why. A zero for a class the model was never shown measures the training
+data, not how well the model generalizes, and the project asks how a fuel
+detector does on other teams' fuel.
+
+Consequences. The baseline's cross-dataset results are about fuel only.
+`scorekeeper`'s robot boxes are first scored by a model trained on robots in
+Task 10. A model's training dataset needs an entry in the coverage report,
+so a merged dataset must write one.
