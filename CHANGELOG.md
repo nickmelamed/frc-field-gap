@@ -16,3 +16,10 @@ uses [Semantic Versioning](https://semver.org/).
 - Package skeleton `frc_xdata` with config loading, errors, logging, and
   provenance helpers.
 - README skeleton, pull request template, and `.env.example`.
+- `frc-download` (`make download`) downloads pinned Universe datasets as
+  COCO, verifies them against a SHA256 manifest, and records failures.
+  `--resolve` looks candidates up so versions can be pinned.
+- `frc-inspect` (`make inspect`) writes per-split stats, class counts, a
+  duplicate report, and face-checked sample grids.
+- Five candidate datasets pinned in `configs/datasets.yaml`, with
+  attribution in the README.
