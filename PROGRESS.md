@@ -145,3 +145,8 @@ Field test set: pending confirmation
   interface in `evaluate.py` (Task 12).
 
 ## Open questions for Nick
+
+- baseline-a was trained on fuel only, so on scorekeeper, which labels
+  robots too, it would get robot rows with recall 0. Should Task 7 score
+  each dataset on its labeled classes that the model was trained on, and
+  log that in DECISIONS, or publish the robot rows as they are?
