@@ -53,6 +53,7 @@ class Paths(_Frozen):
     field_test_dir: RelativePath
     contact_sheet_dir: RelativePath
     harmonized_dir: RelativePath
+    platform_dir: RelativePath
 
 
 class AreaBuckets(_Frozen):
@@ -148,6 +149,13 @@ class SplitsConfig(_Frozen):
     datasets: dict[DatasetKey, SplitMethod]
 
 
+class PlatformConfig(_Frozen):
+    """The Roboflow project that harmonized training data is uploaded to."""
+
+    project: Slug
+    upload_retries: Annotated[int, Field(ge=0)]
+
+
 class ProjectConfig(_Frozen):
     """Settings shared by every stage, from ``configs/project.yaml``."""
 
@@ -155,6 +163,7 @@ class ProjectConfig(_Frozen):
     paths: Paths
     inspect: InspectConfig
     splits: SplitsConfig
+    platform: PlatformConfig
 
 
 class DatasetSpec(_Frozen):

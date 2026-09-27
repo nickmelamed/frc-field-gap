@@ -14,6 +14,8 @@ paths:
   # under the gitignored data/ directory.
   contact_sheet_dir: data/contact_sheets
   harmonized_dir: data/harmonized
+  # Versions downloaded back from Roboflow to check an upload.
+  platform_dir: data/platform
 
 inspect:
   # COCO's small and medium limits (32 and 96 pixels square) scaled to a
@@ -97,3 +99,12 @@ splits:
       recording_pattern: '^(?P<recording>.+[_-]mp4|[A-Za-z0-9_-]{11})[_-]\d+\.(?:jpg|jpeg|png)$'
       # Train holds three augmented copies of each photo. Keep one (D-014).
       dedupe_copies: true
+
+# Roboflow project in the API key's workspace that frc-upload sends
+# harmonized training data to. Create it in the web app first, so its
+# license is chosen on purpose (docs/RETRAINING.md).
+platform:
+  project: frc-rebuilt-fuel-a
+  # Retries per image. The SDK prints a failed upload instead of raising,
+  # so frc-verify-upload is what catches a missing image.
+  upload_retries: 3

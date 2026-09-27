@@ -489,7 +489,8 @@ def find_splits(dataset_dir: Path) -> dict[str, Path]:
     }
 
 
-def _field_test_digests(field_test_dir: Path) -> list[tuple[ImageRef, Path]]:
+def field_test_images(field_test_dir: Path) -> list[tuple[ImageRef, Path]]:
+    """Return every field-test image under ``field_test_dir``, or none if it is missing."""
     if not field_test_dir.is_dir():
         return []
     return [
@@ -553,7 +554,7 @@ def run_inspection(
             paths.assets_dir.mkdir(parents=True, exist_ok=True)
             (paths.assets_dir / f"samples_{key}.png").write_bytes(png)
 
-    field = _field_test_digests(paths.field_test_dir)
+    field = field_test_images(paths.field_test_dir)
     files.extend(field)
     digests.extend((ref, sha256_file(path)) for ref, path in field)
 

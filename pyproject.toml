@@ -22,6 +22,8 @@ dependencies = [
 frc-download = "frc_xdata.download:main"
 frc-inspect = "frc_xdata.inspect_datasets:main"
 frc-harmonize = "frc_xdata.harmonize:main"
+frc-upload = "frc_xdata.upload:upload_main"
+frc-verify-upload = "frc_xdata.upload:verify_main"
 
 [project.optional-dependencies]
 infer = ["inference>=1.7,<1.8"]
