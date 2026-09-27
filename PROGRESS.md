@@ -67,16 +67,21 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
   - Differences from SPEC section 7. None of the Roboflow splits was worth
     keeping, so all three chosen datasets are re-split. `splits.py` is a
     library that `frc-harmonize` calls, so there is one command. A
-    test/train near duplicate raises the new `SplitLeakError`, since
-    `DataLeakError` means a field-test image. FIRST's official videos in
-    `marswars` go whole to train. `testingfrfr` and `robotzftp2_fuel` are
-    harmonized but keep their own splits. Flip- and rotation-aware hashing
-    waits for `merge.py`, because none of A, B, or C has such copies.
-  - For Task 5 and 6. Nick uploads `data/harmonized/marswars/` with its
+    test/train near duplicate, or one shared by two re-split datasets,
+    raises the new `SplitLeakError`, since `DataLeakError` means a
+    field-test image. FIRST's official videos in `marswars` go whole to
+    train. The planned `--only` flag was left out, because a partial run
+    would overwrite the reports with partial ones. `testingfrfr` and
+    `robotzftp2_fuel` are harmonized but keep their own splits, and must not
+    be trained on until `merge.py` removes their matches to every test
+    split. Flip- and rotation-aware hashing waits for `merge.py`. Within A,
+    B, and C, rotated `scorekeeper` copies are removed by D-014 instead.
+  - For Tasks 5 and 6. Nick uploads `data/harmonized/marswars/` with its
     splits as they are. Evaluation reads `labeled` in
     `reports/class_coverage.json` to skip robot on fuel-only datasets, and
     should report the recordings or groups behind each test split (`units`
-    in `reports/splits.json`).
+    in `reports/splits.json`) and fuel boxes per recording, since one
+    Basler run holds most of A-test's fuel boxes (D-013).
 - [ ] Task 5: Baseline training (start Sat night, Nick runs on platform)
 - [ ] Task 6: Eval harness + report generation (Sat Sept 26)
 - [ ] Task 7: Cross-dataset results (Sun Sept 27)
