@@ -101,7 +101,25 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     on the test split and are reference only. The upload check compares box
     counts, not classes, so it needs a class check before the two-class
     merged data in Task 10.
-- [ ] Task 6: Eval harness + report generation (Sat Sept 26)
+- [x] Task 6: Eval harness + report generation (Sat Sept 26)
+  - `frc-evaluate` (`make eval`) scores a model from `reports/models.yaml` on
+    a harmonized split and writes `reports/runs/<run_id>/` with cached
+    predictions, scores, and SPEC 3.5 metadata. `--from-cache` rescores a
+    run without calling the model. `frc-report` (`make report`) writes the
+    README table and the results in `docs/EVALUATION.md` (D-017, D-018).
+  - Differences from SPEC section 7. Only hosted models are supported,
+    through `inference-sdk`. Local weights wait for Task 12. The hosted
+    model is named by project and version, so the workspace is never looked
+    up. The PR curve is a table, since a plot needs matplotlib as a declared
+    dependency. The smoke run used the trained baseline on 10 A-test images,
+    not a generic pretrained model. `make setup-infer` installs the extra,
+    and CI still runs without it. The `runs/` ignore rule was anchored to
+    the repo root, since it also hid `reports/runs/`.
+  - For Task 7 and later. A full A-test run at the platform's threshold
+    matched the model page within a few boxes (D-018). Each run refuses a
+    dirty tree and a new run leaves untracked files, so commit each run
+    before the next or the next one needs `--allow-dirty`, which the report
+    leaves out. A full split takes a few minutes, mostly the bootstrap.
 - [ ] Task 7: Cross-dataset results (Sun Sept 27)
 - [ ] Task 8: Diagnosis (Sun to Mon Sept 27 to 28)
 - [ ] Task 9: Draft write-up + v0.1.0 (Tue to Wed Sept 29 to 30)
@@ -119,6 +137,11 @@ Field test set: pending confirmation
 - Add a Claude review of every PR in CI.
 - `requirements.txt` holds core deps only. The `infer` extra pulls CPU-only
   torch through `inference-models`, which would replace Colab's CUDA build.
-  Decide how the notebook installs `inference` when it lands (Task 5 or 6).
+  Hosted evaluation needs only `inference-sdk`, so the notebook could
+  install that alone (Task 9).
+- Declare matplotlib to draw the PR curve and confusion matrix as figures.
+  It is only a transitive dependency of supervision today.
+- Local weights through `inference.get_model` behind the `Predictor`
+  interface in `evaluate.py` (Task 12).
 
 ## Open questions for Nick
