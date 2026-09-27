@@ -25,6 +25,7 @@ frc-harmonize = "frc_xdata.harmonize:main"
 frc-upload = "frc_xdata.upload:upload_main"
 frc-verify-upload = "frc_xdata.upload:verify_main"
 frc-evaluate = "frc_xdata.evaluate:main"
+frc-report = "frc_xdata.report:main"
 
 [project.optional-dependencies]
 infer = ["inference>=1.7,<1.8"]
