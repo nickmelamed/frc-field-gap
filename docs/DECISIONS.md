@@ -101,7 +101,7 @@ Consequences. A large lock diff shows up in review instead of being blocked.
 
 Context. Task 2 downloads datasets with the `roboflow` SDK, draws sample
 grids with `supervision`, and finds near-duplicate images with perceptual
-hashes. Until now supervision only came in through the `infer` extra.
+hashes. supervision was only in the `infer` extra.
 
 Decision. Add `roboflow>=1.5,<1.6`, `supervision>=0.29,<0.30`, and
 `imagehash>=4.3,<5` to the core dependencies, along with `numpy` and
@@ -109,9 +109,8 @@ Decision. Add `roboflow>=1.5,<1.6`, `supervision>=0.29,<0.30`, and
 
 Why. Download and inspection run without `inference`, so these packages
 can't live in the extra. The supervision range matches what `inference`
-pins (D-001), so the extra still co-resolves. `imagehash` is the standard
-perceptual-hash implementation and only adds PyWavelets, since scipy is
-already in the lock. numpy stays below 2.4 because `roboflow` 1.5.1 requires
+pins (D-001), so the extra still co-resolves. `imagehash` only adds PyWavelets,
+since scipy is already in the lock. numpy stays below 2.4 because `roboflow` 1.5.1 requires
 it.
 
 Consequences. `uv.lock` resolves roboflow 1.5.1, supervision 0.29.1, and
@@ -160,7 +159,8 @@ hashes. The full per-file list stays in the gitignored
 
 Why. Each file stays under a kilobyte, and a re-download still shows in
 `git diff` which annotation file or split changed. `sha256sum -c` checks
-the annotation lines and skips the comments.
+the annotation lines. It warns that the comment lines are improperly
+formatted but still exits 0, so `--strict` cannot be used.
 
 Consequences. A changed image shows up as a changed directory hash, and
 finding the exact image needs the local manifest.
@@ -179,14 +179,17 @@ be made out are listed by file name under `inspect.grid.exclude` in
 `configs/project.yaml`, and distant crowds in overhead broadcast shots are
 kept.
 
+A box counts as invalid when it has no area or overhangs the image edge by
+more than 1 pixel.
+
 Why. Fractions keep the buckets comparable across datasets whose images
-range from 512 pixels square to 1920 by 1080. For the distance, pHash sets
-exactly half of its bits, so distances are always even. Contact sheets of
-pairs at distance 2 and 4 whose file names came from different videos
-showed the same scene each time, mostly frames of one fixed-camera
-broadcast seconds apart, which is the kind of match that leaks between
-train and test. Faces follow the rule that when unsure, the image is left
-out. Grid sampling shuffles once and skips excluded files, so each
+range from 512 pixels square to 1920 by 1080. pHash sets about half of its
+bits, so distances are almost always even. Contact sheets of pairs at
+distance 2 and 4 with file names from different videos showed the same
+scene every time. Most were frames of one fixed-camera broadcast seconds
+apart, which is the kind of match that leaks between train and test. The
+1 pixel tolerance allows for rounding in exported coordinates. When it is
+unclear whether a face can be made out, the image is excluded. Grid sampling shuffles once and skips excluded files, so each
 exclusion swaps in one new image to check instead of a new grid.
 
 Consequences. The near-duplicate counts in `reports/duplicates.json`
