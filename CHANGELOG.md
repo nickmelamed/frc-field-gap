@@ -33,3 +33,10 @@ uses [Semantic Versioning](https://semver.org/).
   chosen datasets so no test image has a near duplicate in train or valid,
   and writes COCO files to `data/harmonized/` with split, coverage, and
   label-count reports (D-012 to D-014).
+- `frc-upload` (`make upload`) checks a harmonized dataset against
+  `reports/splits.json` and the field test set, then uploads it to Roboflow
+  one split at a time with the split named. `frc-verify-upload`
+  (`make verify-upload`) downloads the generated version and checks every
+  image's split and box count (D-015).
+- `docs/RETRAINING.md`, the procedure for platform training, and
+  `reports/models.yaml` for recording each run.

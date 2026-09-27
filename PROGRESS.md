@@ -83,6 +83,14 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     in `reports/splits.json`) and fuel boxes per recording, since one
     Basler run holds most of A-test's fuel boxes (D-013).
 - [ ] Task 5: Baseline training (start Sat night, Nick runs on platform)
+  - Upload and check tooling is done: `frc-upload`, `frc-verify-upload`,
+    `docs/RETRAINING.md`, and an empty `baseline-a` entry in
+    `reports/models.yaml` (D-015). Waiting on Nick to create the project,
+    upload, generate a version, pass `make verify-upload`, and train.
+  - Differences from SPEC section 7. Harmonized COCO files gained empty
+    `info` and `licenses`, since the SDK uploader failed without them. The
+    module is `upload.py`, since `platform` would shadow the standard
+    library module.
 - [ ] Task 6: Eval harness + report generation (Sat Sept 26)
 - [ ] Task 7: Cross-dataset results (Sun Sept 27)
 - [ ] Task 8: Diagnosis (Sun to Mon Sept 27 to 28)

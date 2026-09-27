@@ -45,6 +45,10 @@ Stages that download data read a Roboflow API key from `ROBOFLOW_API_KEY`.
 Copy `.env.example` to `.env` and paste your key there. The file is
 gitignored.
 
+Models are trained on the Roboflow platform. `docs/RETRAINING.md` covers
+uploading a harmonized dataset, checking that its splits survived the
+upload, and recording the run.
+
 ## Datasets and attribution
 
 These Roboflow Universe datasets are downloaded and inspected by the
