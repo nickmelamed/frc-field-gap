@@ -87,9 +87,10 @@ def temporal_split(
 ) -> SplitResult:
     """Cut each recording in frame order and drop frames next to each cut.
 
-    A recording with fewer than ``cfg.min_recording_images`` images goes
-    whole to train. Otherwise an image is dropped when the first frame of
-    the next split is at most ``cfg.buffer_frames`` frames after it.
+    A recording with fewer than ``cfg.min_recording_images`` images, or whose
+    name matches the method's ``train_only_pattern``, goes whole to train.
+    Otherwise an image is dropped when the first frame of the next split is
+    at most ``cfg.buffer_frames`` frames after it.
 
     Raises:
         ConfigError: If a source name does not match the recording pattern,
@@ -108,7 +109,11 @@ def temporal_split(
     for recording, frames in sorted(by_recording.items()):
         frames.sort(key=lambda fr: (fr[0], fr[1].ref.file_name))
         n = len(frames)
-        a, b = (n, n) if n < cfg.min_recording_images else cut_points(n, cfg.fractions)
+        train_only = method.train_only_pattern is not None and re.match(
+            method.train_only_pattern, recording
+        )
+        whole = n < cfg.min_recording_images or train_only
+        a, b = (n, n) if whole else cut_points(n, cfg.fractions)
         for i, (frame, r) in enumerate(frames):
             unit[r.ref] = recording
             if i < a:

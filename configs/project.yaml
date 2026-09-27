@@ -83,6 +83,10 @@ splits:
     marswars:
       method: temporal
       recording_pattern: '^(?P<recording>.+?)[_-](?P<frame>\d+)\.(?:jpg|jpeg|png)$'
+      # FIRST's official videos are edited from many shots, so their last
+      # frames are a different scene, not later in one run. Keeping them out
+      # of test keeps A-test on robot-camera footage (D-013).
+      train_only_pattern: '^2026-FIRST-Robotics-Competition-'
     robotzftp2:
       method: temporal
       recording_pattern: '^(?P<recording>.+?)[_-](?P<frame>\d+)\.(?:jpg|jpeg|png)$'

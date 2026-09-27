@@ -1,4 +1,5 @@
 import random
+import re
 from collections import Counter
 from pathlib import Path
 
@@ -241,3 +242,26 @@ def test_committed_split_settings_load() -> None:
 def test_split_settings_need_three_images_to_cut_a_recording() -> None:
     with pytest.raises(ValidationError):
         cfg(min_images=2)
+
+
+def test_temporal_split_sends_train_only_recordings_to_train() -> None:
+    method = TEMPORAL.model_copy(update={"train_only_pattern": "^official"})
+    records = frames("official-video", range(30)) + frames("run", range(30))
+    result = temporal_split(records, method, cfg())
+    official = {s for ref, s in result.split.items() if ref.file_name.startswith("official")}
+    assert official == {"train"}
+    assert not any(ref.file_name.startswith("official") for ref in result.dropped)
+    assert "test" in result.split.values()
+
+
+def test_committed_train_only_pattern_covers_the_official_videos() -> None:
+    project = load_yaml(REPO_ROOT / "configs" / "project.yaml", ProjectConfig)
+    pattern = project.splits.datasets["marswars"].train_only_pattern
+    assert pattern is not None
+    for recording, official in [
+        ("2026-FIRST-Robotics-Competition-Additional-Field-Interactions_mp4", True),
+        ("2026-FIRST-Robotics-Competition-Field-Tour_-Hub_mp4", True),
+        ("Basler_daA1280-54uc__24770352__20260112_181311364", False),
+        ("IMG_8069_MOV", False),
+    ]:
+        assert bool(re.match(pattern, recording)) is official
