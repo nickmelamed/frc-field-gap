@@ -1,0 +1,50 @@
+{
+  "key": "marswars",
+  "project": "frc-rebuilt-fuel-a",
+  "version": 2,
+  "checked": "2026-09-27T20:21:02+00:00",
+  "git_commit": "b6e7aeec5176a1548b29a36d4d7158710288c5c6",
+  "dirty": false,
+  "roboflow": "1.5.1",
+  "ok": true,
+  "expected": {
+    "train": 942,
+    "valid": 140,
+    "test": 171
+  },
+  "exported": {
+    "train": 942,
+    "valid": 140,
+    "test": 171
+  },
+  "roboflow_splits": {
+    "valid": 140,
+    "test": 171,
+    "train": 942
+  },
+  "preprocessing": {
+    "auto-orient": true,
+    "resize": {
+      "format": "Stretch to",
+      "width": "384",
+      "height": "384"
+    }
+  },
+  "augmentation": {},
+  "missing": {
+    "count": 0,
+    "examples": []
+  },
+  "extra": {
+    "count": 0,
+    "examples": []
+  },
+  "moved": {
+    "count": 0,
+    "examples": []
+  },
+  "box_count_changed": {
+    "count": 0,
+    "examples": []
+  }
+}
