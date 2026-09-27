@@ -4,6 +4,42 @@ This page explains how models are scored and lists every published result.
 Everything between the `EVALUATION` markers below is written by
 `make report` from the runs under `reports/runs/`. Do not edit it by hand.
 
+## How the baseline does on other teams' data
+
+baseline-a was trained on fuel from `marswars` (Dataset A) and scored on
+the test splits of A, `robotzftp2` (B), and `scorekeeper` (C). The terms
+are explained under "Reading the numbers" below.
+
+On A, its own dataset, fuel mAP50 is 0.936 (interval 0.923 to 1.0), with
+precision 0.963 and recall 0.927 at a confidence of 0.5.
+
+On B, the model does not get worse. Fuel mAP50 is 0.994 (interval 0.985 to
+1.0), with precision 0.966 and recall 0.973. So on these test frames, B is
+not harder for this model than A. Task 8 looks at why.
+
+On C, fuel mAP50 drops to 0.836 (interval 0.773 to 0.895). That interval
+does not overlap A's, so the drop is larger than what the choice of test
+photos alone would explain. Every labeled fuel box is found (375 hits,
+recall 1.0), so the whole drop comes from false positives. The model also
+draws 1083 boxes that match no label, which puts precision at 0.257.
+Raising the threshold helps only partway. At 0.8, precision is 0.724 and
+recall 0.981.
+
+C's test split mixes two kinds of photos (see `docs/DATASETS.md`). One kind
+shows fuel indoors. The other shows robots in pits and match broadcasts
+from earlier games, one of which used balls, and none of those photos has a
+fuel label. A first look at the saved predictions puts most of the false
+positives on photos without fuel labels. If Task 8 confirms this, the model
+is mistaking other round objects for fuel. That is a real model error, since
+those photos correctly have no fuel labels.
+
+These results have limits. A-test holds later frames of the recordings the
+model trained on (D-013), so A's score is an optimistic reference point.
+A and B each rest on a handful of recordings, which the intervals account
+for. C is scored on fuel only, since baseline-a never learned robots
+(D-019). Each image keeps its 25 most confident predictions (D-020). The
+field test set has not been scored.
+
 ## Reading the numbers
 
 A detector draws boxes and gives each one a confidence between 0 and 1,
