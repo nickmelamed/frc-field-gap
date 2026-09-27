@@ -61,3 +61,6 @@ uses [Semantic Versioning](https://semver.org/).
 - `frc-evaluate` caches and scores at most the 25 most confident predictions
   per image (`max_predictions_per_image`), including when it rescores an
   older cache (D-020).
+- Each run records in `metrics.json` how many images reached that limit, and
+  how many reached it with every kept box above the threshold. The report
+  prints both under the run's table.

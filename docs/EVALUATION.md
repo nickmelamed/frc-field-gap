@@ -13,9 +13,9 @@ are explained under "Reading the numbers" below.
 On A, its own dataset, fuel mAP50 is 0.936 (interval 0.923 to 1.0), with
 precision 0.963 and recall 0.927 at a confidence of 0.5.
 
-On B, the model does not get worse. Fuel mAP50 is 0.994 (interval 0.985 to
-1.0), with precision 0.966 and recall 0.973. So on these test frames, B is
-not harder for this model than A. Task 8 looks at why.
+On B, the model does as well as on A. Fuel mAP50 is 0.994 (interval 0.985
+to 1.0), with precision 0.966 and recall 0.973. Why B is no harder than A is
+still open.
 
 On C, fuel mAP50 drops to 0.836 (interval 0.773 to 0.895). That interval
 does not overlap A's, so the drop is larger than what the choice of test
@@ -25,12 +25,19 @@ draws 1083 boxes that match no label, which puts precision at 0.257.
 Raising the threshold helps only partway. At 0.8, precision is 0.724 and
 recall 0.981.
 
+C's numbers are bounds. Most of C's images reached the limit of 25 kept
+predictions per image (D-020, and the note under C's table), and on a few
+of them every kept box is at or above 0.5. Since recall stays at 1.0 even at the
+lowest threshold, the limit dropped only false positives. The true mAP50 is
+therefore at most 0.836, and the true false positive count at 0.5 is at
+least 1083. The drop is at least as large as shown.
+
 C's test split mixes two kinds of photos (see `docs/DATASETS.md`). One kind
 shows fuel indoors. The other shows robots in pits and match broadcasts
 from earlier games, one of which used balls, and none of those photos has a
 fuel label. A first look at the saved predictions puts most of the false
-positives on photos without fuel labels. If Task 8 confirms this, the model
-is mistaking other round objects for fuel. That is a real model error, since
+positives on photos without fuel labels. If that holds up, the model is
+mistaking other round objects for fuel. That is a real model error, since
 those photos correctly have no fuel labels.
 
 These results have limits. A-test holds later frames of the recordings the
@@ -56,8 +63,8 @@ Each labeled box can be matched by one prediction at most.
 - mAP50 (mean average precision at IoU 0.5) sorts the predictions by
   confidence and measures how precise the model stays as it finds more of
   the labeled boxes. It is 1 when every labeled box is found before any
-  false positive. It uses up to 25 predictions per image, the most
-  confident ones, down to a confidence of 0.01.
+  false positive. It uses each image's 25 most confident predictions down
+  to a confidence of 0.01.
 - mAP50-95 averages the same score over stricter overlap requirements, from
   IoU 0.5 up to 0.95, so it also rewards boxes that sit tightly on the
   object.
@@ -96,10 +103,9 @@ make report
 Each run writes `reports/runs/<run_id>/` with three files.
 `predictions.json` holds the 25 most confident boxes per image down to the
 confidence floor in `configs/project.yaml` (D-020), rounded as described in
-D-018. The run is scored
-from those rounded values, so `--from-cache <run_id>` reproduces its scores
-exactly without calling the model again, and can rescore them at another
-threshold. A rescore must name the same model, dataset, and split as the run
+D-018. The run is scored from those rounded values, so
+`--from-cache <run_id>` reproduces its scores exactly without calling the
+model again, and can rescore them at another threshold. A rescore must name the same model, dataset, and split as the run
 it reads. `metrics.json` holds the scores, and `meta.json` records the
 commit and tree, config and data hashes, the model entry from
 `reports/models.yaml`, the backend the server reported, and package
