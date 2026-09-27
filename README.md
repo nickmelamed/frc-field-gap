@@ -49,6 +49,18 @@ Models are trained on the Roboflow platform. `docs/RETRAINING.md` covers
 uploading a harmonized dataset, checking that its splits survived the
 upload, and recording the run.
 
+To score a trained model on a harmonized split, install the optional
+`inference` extra, run the evaluation, and rebuild the results table:
+
+```bash
+make setup-infer
+make eval MODEL=baseline-a DATASET=marswars   # test split by default
+make report
+```
+
+`docs/EVALUATION.md` explains the metrics and where each run's
+predictions, scores, and metadata are kept.
+
 ## Datasets and attribution
 
 These Roboflow Universe datasets are downloaded and inspected by the

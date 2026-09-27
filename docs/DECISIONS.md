@@ -416,3 +416,43 @@ Consequences. Every evaluation needs the network and an API key, and hosted
 calls count toward the account's usage. CI stays offline and never installs
 torch. The server may change backends (TensorRT fp16 on the probe), so the
 backend and quantization it reports are recorded in each run's `meta.json`.
+
+## D-018: How frc-evaluate scores a run (2026-09-27)
+
+Context. Task 6 needs scores that can be compared across datasets and
+re-computed later, from test splits that come from a few recordings each
+(D-013).
+
+Decision. mAP50 and mAP50-95 use every prediction down to a confidence
+floor of 0.01. Precision, recall, and the confusion matrix count predictions
+at or above 0.5, a neutral default until Task 11 picks a threshold for the
+robot. Only the classes in `labeled` in `reports/class_coverage.json` are
+scored, and predictions of other classes are dropped before scoring.
+Precision is stored as null when a class has no predictions, and a box size
+with no labeled boxes as null instead of COCO's -1. Predictions are cached
+with confidence to 4 decimals and boxes to 0.1 pixel, and scores are stored
+to 3 decimals and printed unchanged by `make report`. Intervals come from
+1000 resamples of whole recordings (temporal datasets) or related-image
+groups (scorekeeper), rebuilt with the split's own rules and checked
+against the unit counts in `reports/splits.json`. The report publishes the
+newest clean whole-split run for each model, dataset, and split.
+
+Why. Mean average precision needs the low-confidence tail, and the floor
+keeps a full split's predictions small enough to commit. The platform's
+0.46 threshold was picked on the test split, so it is not reused. Frames
+from one recording are alike, so resampling images would give intervals
+that are too narrow. A full A-test run at the platform's threshold came
+within a few boxes of the counts on the model's page, which checks the
+harness against an independent evaluation. Its size scores differed
+widely, because COCO's size buckets are fixed pixel areas and the platform
+measures them on the 384x384 resized image while `frc-evaluate` uses the
+original. For the same reason size scores are not comparable between
+datasets of different resolutions.
+
+Consequences. Hits, false positives, and misses come from supervision's
+confusion matrix, which matches boxes regardless of class and needs IoU
+above 0.5, while precision and recall match within a class at IoU 0.5 or
+more. With one scored class these agree except for a box at exactly 0.5.
+A bootstrap takes a few minutes per split. Task 8's box-size slices should
+use sizes relative to the image, as `inspect.area_buckets` does, instead of
+COCO's buckets.
