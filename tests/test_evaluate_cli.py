@@ -1,6 +1,7 @@
 import json
 import shutil
 import sys
+import textwrap
 import types
 from itertools import count
 from pathlib import Path
@@ -95,7 +96,10 @@ def workspace(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     coverage = {"alpha": {"labeled": ["fuel"]}}
     (reports / "class_coverage.json").write_text(json.dumps(coverage), encoding="utf-8")
     model = {**ENTRY.model_dump(), "notes": "written by hand"}
+    other = {**ENTRY.model_dump(), "model_id": "proj-1-other"}
+    # A bare date, which YAML reads as a date object rather than a string.
     models = yaml.safe_dump({"models": {"m": model}}) + "    trained: 2026-09-27\n"
+    models += "  m2:\n" + textwrap.indent(yaml.safe_dump(other), "    ")
     (reports / "models.yaml").write_text(models, "utf-8")
     return tmp_path
 
@@ -339,3 +343,22 @@ def test_a_live_run_scores_what_the_cache_stores(
     live, cached = read("run1", "metrics.json"), read("run2", "metrics.json")
     assert live["metrics"] == cached["metrics"]
     assert live["metrics"]["classes"][0]["recall"] == 1.0
+
+
+def test_from_cache_refuses_another_models_predictions(
+    workspace: Path, fake: FakePredictor
+) -> None:
+    assert evaluate.main(ARGS) == 0
+    with pytest.raises(ConfigError, match="run1 scored m on alpha test, not m2"):
+        evaluate.main(["m2", *ARGS[1:], "--from-cache", "run1"])
+
+
+def test_rescoring_a_dirty_run_is_marked_as_coming_from_one(
+    workspace: Path, fake: FakePredictor, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(evaluate, "git_is_dirty", lambda repo: True)
+    assert evaluate.main([*ARGS, "--allow-dirty"]) == 0
+    monkeypatch.setattr(evaluate, "git_is_dirty", lambda repo: False)
+    assert evaluate.main([*ARGS, "--from-cache", "run1"]) == 0
+    meta = read("run2", "meta.json")
+    assert (meta["git"]["dirty"], meta["source_dirty"]) == (False, True)

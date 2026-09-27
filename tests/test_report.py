@@ -103,11 +103,17 @@ def result(
     )
 
 
-def write_run(runs_dir: Path, r: RunResult, created: str, dirty: bool = False) -> None:
+def write_run(
+    runs_dir: Path, r: RunResult, created: str, dirty: bool = False, source_dirty: bool = False
+) -> None:
     run_dir = runs_dir / r.run_id
     run_dir.mkdir(parents=True)
     (run_dir / "metrics.json").write_text(r.model_dump_json(indent=2), encoding="utf-8")
-    meta = {"created": created, "git": {"commit": "abc123", "dirty": dirty}}
+    meta = {
+        "created": created,
+        "git": {"commit": "abc123", "dirty": dirty},
+        "source_dirty": source_dirty,
+    }
     (run_dir / "meta.json").write_text(json.dumps(meta), encoding="utf-8")
 
 
@@ -116,6 +122,9 @@ def test_select_runs_keeps_the_newest_clean_whole_split_run(tmp_path: Path) -> N
     write_run(tmp_path, result("new"), "2026-09-27T11:00:00+00:00")
     write_run(tmp_path, result("dirty"), "2026-09-27T12:00:00+00:00", dirty=True)
     write_run(tmp_path, result("slice", limit=3), "2026-09-27T13:00:00+00:00")
+    write_run(
+        tmp_path, result("rescored", limit=None), "2026-09-27T14:00:00+00:00", source_dirty=True
+    )
     write_run(tmp_path, result("other", dataset="beta"), "2026-09-27T09:00:00+00:00")
     chosen = select_runs(load_runs(tmp_path))
     assert [r.result.run_id for r in chosen] == ["new", "other"]
