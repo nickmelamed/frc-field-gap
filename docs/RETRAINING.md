@@ -85,9 +85,11 @@ through a few steps. Use these settings.
   images, since background images were uploaded as null.
 - Train/test split. Leave it as uploaded. Do not rebalance.
 - Preprocessing. Keep auto-orient. Add a resize only if the training page
-  for your architecture asks for one, and then use the size it names. Add
-  nothing else. In particular, do not add "Filter Null", which would drop
-  the background images.
+  for your architecture asks for one, and then use the size it names with
+  "Stretch to". For RF-DETR Nano the page asks for 384x384 (D-016). If you
+  only find out on the training page, generate a second version with the
+  resize and train on that one. Add nothing else. In particular, do not add
+  "Filter Null", which would drop the background images.
 - Augmentation. None for the baseline.
 
 Generating takes a minute or two. The version number shown on its page is the
