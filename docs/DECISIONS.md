@@ -1,8 +1,6 @@
 # Decisions
 
 One entry per decision that someone might later question. Newest last.
-Write these yourself or edit Claude's drafts into your own words, since
-reviewers read this file to see how you think.
 
 ## Carried over from a previous attempt
 
