@@ -82,15 +82,25 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     should report the recordings or groups behind each test split (`units`
     in `reports/splits.json`) and fuel boxes per recording, since one
     Basler run holds most of A-test's fuel boxes (D-013).
-- [ ] Task 5: Baseline training (start Sat night, Nick runs on platform)
-  - Upload and check tooling is done: `frc-upload`, `frc-verify-upload`,
-    `docs/RETRAINING.md`, and an empty `baseline-a` entry in
-    `reports/models.yaml` (D-015). Waiting on Nick to create the project,
-    upload, generate a version, pass `make verify-upload`, and train.
+- [x] Task 5: Baseline training (start Sat night, Nick runs on platform)
+  - RF-DETR Nano trained on version 2 of `frc-rebuilt-fuel-a`, recorded in
+    `reports/models.yaml`. `frc-upload` sent each split by name, and
+    `frc-verify-upload` matched every image of the version to its split and
+    box count (`reports/platform_upload_marswars.json`, D-015, D-016).
   - Differences from SPEC section 7. Harmonized COCO files gained empty
     `info` and `licenses`, since the SDK uploader failed without them. The
     module is `upload.py`, since `platform` would shadow the standard
-    library module.
+    library module. Exported images are matched by name without the
+    `.rf.<hash>` suffix and `_jpg` tag, which Roboflow drops. The baseline
+    trained on version 2, which adds the 384x384 stretch the training page
+    asked for, so small fuel shrinks to a few pixels (D-016). The model ID
+    leaves out the workspace, which is made from an email address.
+  - For Tasks 6 and later. Evaluation calls the model by
+    `model_id` in `reports/models.yaml`, with the workspace taken from the
+    API key. The numbers on Roboflow's model page used a threshold picked
+    on the test split and are reference only. The upload check compares box
+    counts, not classes, so it needs a class check before the two-class
+    merged data in Task 10.
 - [ ] Task 6: Eval harness + report generation (Sat Sept 26)
 - [ ] Task 7: Cross-dataset results (Sun Sept 27)
 - [ ] Task 8: Diagnosis (Sun to Mon Sept 27 to 28)
