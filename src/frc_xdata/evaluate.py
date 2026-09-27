@@ -781,8 +781,13 @@ def run_meta(
     server: Mapping[str, str],
     argv: Sequence[str],
     dirty: bool,
+    source_dirty: bool,
 ) -> dict[str, Any]:
-    """Return what SPEC section 3.5 asks every eval record to keep."""
+    """Return what SPEC section 3.5 asks every eval record to keep.
+
+    ``source_dirty`` is True when the predictions were rescored from a run
+    made from a dirty tree, which taints this run as much as its own tree.
+    """
     datasets = load_yaml(datasets_config, DatasetsConfig).datasets
     manifest = _manifest(project, dataset)
     raw_models = yaml.safe_load(project.evaluate.models_file.read_text(encoding="utf-8"))
@@ -805,6 +810,7 @@ def run_meta(
         },
         "model": {"name": model, **raw_models["models"][model], "server": dict(server)},
         "predictions_from": predictions_from,
+        "source_dirty": source_dirty,
         "evaluate": project.evaluate.model_dump(mode="json"),
         "hardware": {
             "platform": platform.platform(),
@@ -898,6 +904,7 @@ def run_evaluation(
 
     server: dict[str, str] = {}
     cache_text = None
+    source_dirty = False
     if from_cache is None:
         predictor = make_predictor(entries[model])
         cache_text = predictions_text(
@@ -911,10 +918,7 @@ def run_evaluation(
         server = predictor.server
         source = "this run"
     else:
-        cache = cfg.runs_dir / from_cache / PREDICTIONS_NAME
-        if not cache.is_file():
-            raise ConfigError(f"{cache} does not exist")
-        predictions = load_predictions(cache)
+        predictions, source_dirty = _cached_run(cfg.runs_dir / from_cache, model, dataset, split)
         source = from_cache
     detections = align(predictions, names, ds.classes)
 
@@ -964,6 +968,7 @@ def run_evaluation(
         server=server,
         argv=argv,
         dirty=dirty,
+        source_dirty=source_dirty,
     )
     # Every file is rendered first, so a failure leaves no partial run behind.
     files = {METRICS_NAME: _json_text(result.model_dump(mode="json")), META_NAME: _json_text(meta)}
@@ -976,6 +981,29 @@ def run_evaluation(
         "wrote %s (%s)", run_dir, ", ".join(f"{n} {len(t)} bytes" for n, t in files.items())
     )
     return run_dir
+
+
+def _cached_run(
+    run_dir: Path, model: str, dataset: str, split: str
+) -> tuple[dict[str, list[Prediction]], bool]:
+    """Return an earlier run's predictions, and whether that run came from a dirty tree.
+
+    Raises:
+        ConfigError: If the run is missing or scored another model, dataset,
+            or split, since its predictions would be published under the
+            wrong name.
+    """
+    cache = run_dir / PREDICTIONS_NAME
+    if not cache.is_file():
+        raise ConfigError(f"{cache} does not exist")
+    earlier = RunResult.model_validate_json((run_dir / METRICS_NAME).read_text(encoding="utf-8"))
+    if (earlier.model, earlier.dataset, earlier.split) != (model, dataset, split):
+        raise ConfigError(
+            f"{run_dir.name} scored {earlier.model} on {earlier.dataset} {earlier.split}, "
+            f"not {model} on {dataset} {split}"
+        )
+    meta = json.loads((run_dir / META_NAME).read_text(encoding="utf-8"))
+    return load_predictions(cache), bool(meta["git"]["dirty"] or meta.get("source_dirty", False))
 
 
 def _check_units(

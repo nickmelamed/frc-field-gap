@@ -57,7 +57,7 @@ def load_runs(runs_dir: Path) -> list[PublishedRun]:
             PublishedRun(
                 result=RunResult.model_validate_json(metrics.read_text(encoding="utf-8")),
                 created=info["created"],
-                dirty=info["git"]["dirty"],
+                dirty=info["git"]["dirty"] or info.get("source_dirty", False),
             )
         )
     return runs
