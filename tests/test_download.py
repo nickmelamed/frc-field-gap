@@ -1,5 +1,6 @@
 import hashlib
 import json
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +24,7 @@ from frc_xdata.download import (
 )
 
 SECRET = "sEcReT-kEy"
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 PINNED = DatasetSpec(workspace="team", project="rebuilt", version=2, license="CC BY 4.0")
 UNPINNED = DatasetSpec(workspace="team", license="CC BY 4.0")
@@ -307,12 +309,8 @@ def test_resolve_all_records_api_errors_redacted() -> None:
 
 
 def write_configs(tmp_path: Path) -> list[str]:
-    (tmp_path / "project.yaml").write_text(
-        "seed: 1\npaths:\n"
-        "  raw_dir: raw\n  reports_dir: reports\n  manifests_dir: reports/data_manifests\n"
-        "  assets_dir: assets\n  field_test_dir: field_test\n",
-        encoding="utf-8",
-    )
+    # The committed paths are relative, so they land under tmp_path, the cwd.
+    shutil.copy(REPO_ROOT / "configs" / "project.yaml", tmp_path / "project.yaml")
     (tmp_path / "datasets.yaml").write_text(
         "datasets:\n"
         "  a:\n    workspace: team\n    project: rebuilt\n    version: 2\n"

@@ -20,6 +20,7 @@ dependencies = [
 
 [project.scripts]
 frc-download = "frc_xdata.download:main"
+frc-inspect = "frc_xdata.inspect_datasets:main"
 
 [project.optional-dependencies]
 infer = ["inference>=1.7,<1.8"]

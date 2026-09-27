@@ -10,3 +10,26 @@ paths:
   manifests_dir: reports/data_manifests
   assets_dir: docs/assets
   field_test_dir: data/field_test
+
+inspect:
+  # COCO's small and medium limits (32 and 96 pixels square) scaled to a
+  # 640 pixel square input, so buckets mean the same thing at any resolution.
+  area_buckets:
+    small_max: 0.0025
+    medium_max: 0.0225
+  # Boxes may overhang the image edge by this much before they count as
+  # invalid, to allow for rounding in exported coordinates.
+  box_tolerance_px: 1
+  # Largest Hamming distance between 64-bit perceptual hashes that still
+  # counts as a near duplicate. See D-010.
+  near_duplicate_max_distance: 4
+  # Example pairs kept per kind in reports/duplicates.json.
+  max_examples: 20
+  grid:
+    rows: 4
+    cols: 4
+    tile_px: 320
+    # Below the 500 KB large-file hook.
+    max_bytes: 450000
+    # Images left out of the published sample grids, by dataset key.
+    exclude: {}

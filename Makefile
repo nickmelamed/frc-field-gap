@@ -1,4 +1,4 @@
-.PHONY: help setup lint typecheck test check requirements agent-check download
+.PHONY: help setup lint typecheck test check requirements agent-check download inspect
 
 help:  ## List targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -28,3 +28,6 @@ agent-check: check  ## Fast checks the Claude Code Stop hook runs
 
 download:  ## Download pinned datasets to data/raw/ (ARGS=--resolve to look them up)
 	uv run frc-download $(ARGS)
+
+inspect:  ## Write dataset stats, duplicate report, and sample grids from data/raw/
+	uv run frc-inspect $(ARGS)
