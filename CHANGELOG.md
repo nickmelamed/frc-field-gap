@@ -28,3 +28,8 @@ uses [Semantic Versioning](https://semver.org/).
   attribution in the README.
 - `docs/DATASETS.md` describing each dataset's viewpoint, labels, and
   problems, the chosen datasets (D-011), and a proposed class mapping.
+- `frc-harmonize` (`make harmonize`) maps every source label to fuel,
+  robot, or DROP through `configs/class_map.yaml`, re-splits the three
+  chosen datasets so no test image has a near duplicate in train or valid,
+  and writes COCO files to `data/harmonized/` with split, coverage, and
+  label-count reports (D-012 to D-014).
