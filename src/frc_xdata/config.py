@@ -2,17 +2,93 @@
 
 import os
 from pathlib import Path
-from typing import TypeVar
+from typing import Annotated, Literal, TypeVar
 
 import yaml
 from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel, ValidationError
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    ConfigDict,
+    PositiveInt,
+    StringConstraints,
+    ValidationError,
+)
 
 from frc_xdata.errors import ConfigError
 
 API_KEY_VAR = "ROBOFLOW_API_KEY"
+UNIVERSE_URL = "https://universe.roboflow.com"
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
+
+# Keys name directories under data/raw/ and report files, so keep them to
+# characters that are safe everywhere.
+DatasetKey = Annotated[str, StringConstraints(pattern=r"^[a-z0-9_]+$")]
+Slug = Annotated[str, StringConstraints(pattern=r"^[a-z0-9][a-z0-9-]*$")]
+
+
+def _relative(path: Path) -> Path:
+    if path.is_absolute():
+        raise ValueError(f"{path} must be relative to the repo root")
+    return path
+
+
+RelativePath = Annotated[Path, AfterValidator(_relative)]
+
+
+class _Frozen(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+
+class Paths(_Frozen):
+    """Directories the pipeline reads and writes, relative to the repo root."""
+
+    raw_dir: RelativePath
+    reports_dir: RelativePath
+    manifests_dir: RelativePath
+    assets_dir: RelativePath
+    field_test_dir: RelativePath
+
+
+class ProjectConfig(_Frozen):
+    """Settings shared by every stage, from ``configs/project.yaml``."""
+
+    seed: int
+    paths: Paths
+
+
+class DatasetSpec(_Frozen):
+    """One Roboflow Universe dataset and the exact version the pipeline uses.
+
+    ``project`` and ``version`` may be left empty while a candidate is still
+    being looked up. Such a dataset can be resolved but not downloaded.
+    """
+
+    workspace: Slug
+    project: Slug | None = None
+    version: PositiveInt | None = None
+    format: Literal["coco"] = "coco"
+    license: str
+    note: str = ""
+
+    @property
+    def pinned(self) -> bool:
+        """Return True if both the project and the version are set."""
+        return self.project is not None and self.version is not None
+
+    @property
+    def url(self) -> str:
+        """Return the Universe page for the project, or the workspace if unset."""
+        if self.project is None:
+            return f"{UNIVERSE_URL}/{self.workspace}"
+        return f"{UNIVERSE_URL}/{self.workspace}/{self.project}"
+
+
+class DatasetsConfig(_Frozen):
+    """Every candidate dataset by key, from ``configs/datasets.yaml``."""
+
+    datasets: dict[DatasetKey, DatasetSpec]
 
 
 def load_yaml(path: Path, model: type[ModelT]) -> ModelT:
