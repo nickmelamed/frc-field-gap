@@ -10,9 +10,11 @@ from pydantic import (
     AfterValidator,
     BaseModel,
     ConfigDict,
+    Field,
     PositiveInt,
     StringConstraints,
     ValidationError,
+    model_validator,
 )
 
 from frc_xdata.errors import ConfigError
@@ -51,11 +53,45 @@ class Paths(_Frozen):
     field_test_dir: RelativePath
 
 
+class AreaBuckets(_Frozen):
+    """Upper edges of the small and medium box sizes, as a fraction of image area."""
+
+    small_max: Annotated[float, Field(gt=0, lt=1)]
+    medium_max: Annotated[float, Field(gt=0, lt=1)]
+
+    @model_validator(mode="after")
+    def _ordered(self) -> "AreaBuckets":
+        if self.small_max >= self.medium_max:
+            raise ValueError("small_max must be below medium_max")
+        return self
+
+
+class GridConfig(_Frozen):
+    """Layout of the per-dataset sample grid."""
+
+    rows: PositiveInt
+    cols: PositiveInt
+    tile_px: PositiveInt
+    max_bytes: PositiveInt
+    exclude: dict[DatasetKey, list[str]] = {}
+
+
+class InspectConfig(_Frozen):
+    """Settings for dataset inspection."""
+
+    area_buckets: AreaBuckets
+    box_tolerance_px: Annotated[float, Field(ge=0)]
+    near_duplicate_max_distance: Annotated[int, Field(ge=0, le=64)]
+    max_examples: PositiveInt
+    grid: GridConfig
+
+
 class ProjectConfig(_Frozen):
     """Settings shared by every stage, from ``configs/project.yaml``."""
 
     seed: int
     paths: Paths
+    inspect: InspectConfig
 
 
 class DatasetSpec(_Frozen):
