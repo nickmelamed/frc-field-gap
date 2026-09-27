@@ -53,11 +53,11 @@ pinned in `configs/datasets.yaml`.
 
 | Dataset | Workspace | URL | License | Version |
 |---|---|---|---|---|
-| 2026 Rebuilt | marswars-robotics-program | https://universe.roboflow.com/marswars-robotics-program/2026-rebuilt | CC BY 4.0 | 5 |
-| frc 2026 | testing-frfr | https://universe.roboflow.com/testing-frfr/frc-2026-mldc0 | CC BY 4.0 | 1 |
-| FRC Scorekeeper 2026 | blind-assistant-model | https://universe.roboflow.com/blind-assistant-model/frc-scorekeeper-2026 | CC BY 4.0 | 1 |
-| Rebuilt Dataset | robot-zftp2 | https://universe.roboflow.com/robot-zftp2/rebuilt-dataset-hcmwl | CC BY 4.0 | 1 |
-| FRC 2026 Fuel | robot-zftp2 | https://universe.roboflow.com/robot-zftp2/frc-2026-fuel-ndrbj | CC BY 4.0 | 1 |
+| 2026 Rebuilt | marswars-robotics-program | https://universe.roboflow.com/marswars-robotics-program/2026-rebuilt | `CC BY 4.0` | 5 |
+| frc 2026 | testing-frfr | https://universe.roboflow.com/testing-frfr/frc-2026-mldc0 | `CC BY 4.0` | 1 |
+| FRC Scorekeeper 2026 | blind-assistant-model | https://universe.roboflow.com/blind-assistant-model/frc-scorekeeper-2026 | `CC BY 4.0` | 1 |
+| Rebuilt Dataset | robot-zftp2 | https://universe.roboflow.com/robot-zftp2/rebuilt-dataset-hcmwl | `CC BY 4.0` | 1 |
+| FRC 2026 Fuel | robot-zftp2 | https://universe.roboflow.com/robot-zftp2/frc-2026-fuel-ndrbj | `CC BY 4.0` | 1 |
 
 ## License
 
