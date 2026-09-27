@@ -357,3 +357,29 @@ Consequences. Each platform run leaves
 augmentation as the API reports them, and `reports/models.yaml` holds the
 settings from the training page. The architecture and input size are
 recorded there once the run is set up.
+
+## D-016: Train the baseline on a 384x384 stretched version (2026-09-27)
+
+Context. D-015 left the resize to whatever the architecture asks for. On
+version 1, which had no resize, Roboflow's training page warned that
+384x384 is recommended for RF-DETR Nano. The `marswars` frames are wider
+than they are tall and larger than 384 pixels on each side.
+
+Decision. The baseline is RF-DETR Nano trained on version 2, which adds
+"Resize, Stretch to 384x384" and is otherwise identical to version 1.
+Stretch was chosen over Fit, which pads every image with black borders.
+Version 1 stays in the project unused. Settings and the platform's own
+test-split numbers are in `reports/models.yaml`.
+
+Why. The model runs at 384x384 either way, so putting the resize in the
+version records exactly the pixels it trained on and lowered the credit
+estimate. Stretch matches how the model is fed at inference time when the
+version's preprocessing is reused.
+
+Consequences. Stretching changes the aspect ratio, so round fuel becomes
+slightly oval, and shrinking full frames to 384 pixels leaves distant fuel
+only a few pixels across. The baseline is likely weakest on small boxes,
+which Task 8's box-size slices should measure. The numbers on Roboflow's
+model page use a confidence threshold that the platform picked on the
+test split, so they are recorded for reference only and are not quoted as
+results.
