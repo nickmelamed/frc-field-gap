@@ -2,18 +2,148 @@
 #    uv export --locked --format requirements-txt --no-dev --no-emit-project --no-hashes -o requirements.txt
 annotated-types==0.8.0
     # via pydantic
+certifi==2026.7.22
+    # via
+    #   requests
+    #   roboflow
+charset-normalizer==3.5.1
+    # via requests
+click==8.1.8
+    # via
+    #   roboflow
+    #   typer
+colorama==0.4.6 ; sys_platform == 'win32'
+    # via
+    #   click
+    #   tqdm
+contourpy==1.3.3 ; python_full_version < '3.12'
+    # via matplotlib
+contourpy==1.4.0 ; python_full_version >= '3.12'
+    # via matplotlib
+cycler==0.12.1
+    # via
+    #   matplotlib
+    #   roboflow
+defusedxml==0.7.1
+    # via supervision
+filetype==1.2.0
+    # via roboflow
+fonttools==4.66.0
+    # via matplotlib
+idna==3.20
+    # via
+    #   requests
+    #   roboflow
+imagehash==4.3.2
+    # via frc-xdata
+kiwisolver==1.5.1
+    # via
+    #   matplotlib
+    #   roboflow
+markdown-it-py==4.2.0
+    # via rich
+matplotlib==3.11.2
+    # via
+    #   roboflow
+    #   supervision
+mdurl==0.1.2
+    # via markdown-it-py
+numpy==2.3.5
+    # via
+    #   contourpy
+    #   frc-xdata
+    #   imagehash
+    #   matplotlib
+    #   opencv-python
+    #   opencv-python-headless
+    #   pywavelets
+    #   roboflow
+    #   scipy
+    #   supervision
+opencv-python==4.11.0.86
+    # via supervision
+opencv-python-headless==5.0.0.93
+    # via roboflow
+packaging==24.2
+    # via matplotlib
+pillow==12.3.0
+    # via
+    #   frc-xdata
+    #   imagehash
+    #   matplotlib
+    #   roboflow
+    #   supervision
+pillow-avif-plugin==1.6.0
+    # via roboflow
 pydantic==2.11.10
     # via frc-xdata
 pydantic-core==2.33.2
     # via pydantic
+pydeprecate==0.9.0
+    # via supervision
+pygments==2.21.0
+    # via rich
+pyparsing==3.3.3
+    # via matplotlib
+python-dateutil==2.9.0.post0
+    # via
+    #   matplotlib
+    #   roboflow
 python-dotenv==1.2.3
-    # via frc-xdata
+    # via
+    #   frc-xdata
+    #   roboflow
+pywavelets==1.9.0 ; python_full_version < '3.12'
+    # via imagehash
+pywavelets==1.10.0 ; python_full_version >= '3.12'
+    # via imagehash
 pyyaml==6.0.3
+    # via
+    #   frc-xdata
+    #   roboflow
+    #   supervision
+requests==2.34.2
+    # via
+    #   requests-toolbelt
+    #   roboflow
+    #   supervision
+requests-toolbelt==1.0.0
+    # via roboflow
+rich==14.3.4
+    # via typer
+roboflow==1.5.1
     # via frc-xdata
+scipy==1.17.1 ; python_full_version < '3.12'
+    # via
+    #   imagehash
+    #   supervision
+scipy==1.18.1 ; python_full_version >= '3.12'
+    # via
+    #   imagehash
+    #   supervision
+shellingham==1.5.4
+    # via typer
+six==1.17.0
+    # via
+    #   python-dateutil
+    #   roboflow
+supervision==0.29.1
+    # via frc-xdata
+tqdm==4.70.1
+    # via
+    #   roboflow
+    #   supervision
+typer==0.16.0
+    # via roboflow
 typing-extensions==4.15.0
     # via
     #   pydantic
     #   pydantic-core
+    #   typer
     #   typing-inspection
 typing-inspection==0.4.4
     # via pydantic
+urllib3==2.8.0
+    # via
+    #   requests
+    #   roboflow

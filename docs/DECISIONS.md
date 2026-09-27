@@ -96,3 +96,24 @@ Why. The lock is generated text that has to be committed (SPEC section 3.1).
 It is not what the limit protects against.
 
 Consequences. A large lock diff shows up in review instead of being blocked.
+
+## D-007: Make supervision, roboflow, and imagehash core dependencies (2026-09-26)
+
+Context. Task 2 downloads datasets with the `roboflow` SDK, draws sample
+grids with `supervision`, and finds near-duplicate images with perceptual
+hashes. Until now supervision only came in through the `infer` extra.
+
+Decision. Add `roboflow>=1.5,<1.6`, `supervision>=0.29,<0.30`, and
+`imagehash>=4.3,<5` to the core dependencies, along with `numpy` and
+`pillow`, which the code imports directly.
+
+Why. Download and inspection run without `inference`, so these packages
+can't live in the extra. The supervision range matches what `inference`
+pins (D-001), so the extra still co-resolves. `imagehash` is the standard
+perceptual-hash implementation and only adds PyWavelets, since scipy is
+already in the lock. numpy stays below 2.4 because `roboflow` 1.5.1 requires
+it.
+
+Consequences. `uv.lock` resolves roboflow 1.5.1, supervision 0.29.1, and
+imagehash 4.3.2. `requirements.txt` grows, since Colab needs the same
+packages to download data.
