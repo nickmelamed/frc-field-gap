@@ -40,6 +40,41 @@ def test_load_yaml_schema_mismatch_raises(tmp_path: Path) -> None:
         load_yaml(write(tmp_path, "seed: one\nname: x\n"), Sample)
 
 
+def test_load_yaml_unreadable_path_raises(tmp_path: Path) -> None:
+    with pytest.raises(ConfigError, match="cannot read config file"):
+        load_yaml(tmp_path, Sample)
+
+
+def test_load_yaml_empty_file_raises(tmp_path: Path) -> None:
+    # safe_load returns None for an empty file, which must not slip through
+    # as a default config.
+    with pytest.raises(ConfigError, match="does not match Sample"):
+        load_yaml(write(tmp_path, ""), Sample)
+
+
+def test_load_yaml_top_level_list_raises(tmp_path: Path) -> None:
+    with pytest.raises(ConfigError, match="does not match Sample"):
+        load_yaml(write(tmp_path, "- 1\n- 2\n"), Sample)
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["seed: [1, 2\n", "seed: one\nname: x\n", ""],
+    ids=["bad-yaml", "schema", "empty"],
+)
+def test_load_yaml_error_names_the_file(tmp_path: Path, text: str) -> None:
+    path = write(tmp_path, text)
+    with pytest.raises(ConfigError) as excinfo:
+        load_yaml(path, Sample)
+    assert str(path) in str(excinfo.value)
+
+
+def test_load_yaml_keeps_the_original_error_as_cause(tmp_path: Path) -> None:
+    with pytest.raises(ConfigError) as excinfo:
+        load_yaml(tmp_path / "absent.yaml", Sample)
+    assert isinstance(excinfo.value.__cause__, FileNotFoundError)
+
+
 def test_load_yaml_rejects_unknown_keys(tmp_path: Path) -> None:
     with pytest.raises(ConfigError):
         load_yaml(write(tmp_path, "seed: 1\nname: x\nextra: 2\n"), Sample)

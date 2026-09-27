@@ -19,13 +19,15 @@ def load_yaml(path: Path, model: type[ModelT]) -> ModelT:
     """Read a YAML file and validate it against a pydantic model.
 
     Raises:
-        ConfigError: If the file is missing, is not valid YAML, or does not
-            match the model. The message names the file.
+        ConfigError: If the file is missing or unreadable, is not valid YAML,
+            or does not match the model. The message names the file.
     """
     try:
         text = path.read_text(encoding="utf-8")
     except FileNotFoundError as e:
         raise ConfigError(f"config file not found: {path}") from e
+    except OSError as e:
+        raise ConfigError(f"cannot read config file {path}: {e}") from e
     try:
         data = yaml.safe_load(text)
     except yaml.YAMLError as e:
