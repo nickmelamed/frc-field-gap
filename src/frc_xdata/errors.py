@@ -19,3 +19,7 @@ class DataLeakError(FrcXdataError):
 
 class DirtyTreeError(FrcXdataError):
     """Results would be written from a working tree with uncommitted changes."""
+
+
+class SplitLeakError(FrcXdataError):
+    """A test image has a near duplicate in the train or valid split."""

@@ -137,7 +137,8 @@ class SplitsConfig(_Frozen):
 
     fractions: SplitFractions
     buffer_frames: Annotated[int, Field(ge=0)]
-    min_recording_images: PositiveInt
+    # Cutting needs at least one image each for train, valid, and test.
+    min_recording_images: Annotated[int, Field(ge=3)]
     datasets: dict[DatasetKey, SplitMethod]
 
 
