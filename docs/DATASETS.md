@@ -22,10 +22,11 @@ from a handheld phone at standing height, which differs from A in viewpoint,
 venue, lighting, and resolution. It has no augmented copies. It labels fuel
 only.
 
-Dataset C is `scorekeeper`, cut down to one image per source photo. It is one
-of only two datasets that label robots, and its fuel sits in tight tabletop
-clusters, a label style neither A nor B has. It needs the most cleanup of the
-three, and its robots come from earlier FRC seasons (see below).
+Dataset C is `scorekeeper`, cut down to one image per source photo (see
+Splits). It is one of only two datasets that label robots, and its fuel sits
+in tight tabletop clusters, a label style neither A nor B has. It needs the
+most cleanup of the three, and its robots come from earlier FRC seasons (see
+below).
 
 `testingfrfr` and `robotzftp2_fuel` are left out of evaluation. `testingfrfr`
 overlaps heavily with B and C, so scoring on it would measure memory instead
@@ -39,19 +40,23 @@ never sees a robot, so robot results start with the merged model, and only on
 robots from past games. The alternative is to make `scorekeeper` Dataset A,
 which adds robots to the baseline but builds it on augmented, leaky data whose
 robots are not REBUILT robots. We recommend `marswars`, because the fuel
-detector on the robot camera is the use case and the dataset with the cleanest
-test split should anchor the comparison.
+detector on the robot camera is the use case and the dataset that shares no
+images with the others should anchor the comparison. Its own test split still
+leaks from train until it is regrouped by recording.
 
 ## Terms
 
 An augmented copy is an image Roboflow generated from a source photo by
-flipping, rotating, or changing its exposure. A version with augmentation
-holds up to three copies of each training photo, so its image count overstates
-how much distinct data it has. A near duplicate is a pair of images whose
-perceptual hashes differ in at most 4 bits (D-010). In practice these are the
-same photo or adjacent frames from one video. A leak is a near duplicate that
-ends up on both sides of a train and test split, which makes test scores look
-better than they would on new footage.
+flipping, rotating, blurring, or changing its exposure. The two augmented
+versions here hold three copies of each training photo, so their image counts
+overstate how much distinct data they have. A source name is the file name
+before Roboflow's `.rf.` suffix. Copies of one photo share it, but so can
+different photos uploaded under the same name, so the number of source names
+is a lower bound on the number of photos. A near duplicate is a pair of images
+whose perceptual hashes differ in at most 4 bits (D-010). In practice these
+are the same photo or adjacent frames from one video. A leak is a near
+duplicate that ends up on both sides of a train and test split, which makes
+test scores look better than they would on new footage.
 
 ## marswars
 
@@ -67,7 +72,9 @@ school shop and hallway with fluorescent light and glare on polished floors, a
 wooden practice-field border, and people's legs at the edge of the frame. A
 smaller group of frames comes from FIRST's official 2026 game videos, which
 show the real field under arena lighting with over a hundred balls on the
-carpet (up to 179 boxes in one image).
+carpet (up to 179 boxes in one image). A few dozen more are portrait phone
+frames of a ball on a shop floor, so A is mostly but not only robot-camera
+footage.
 
 Fuel is labeled `game_piece`, with tight boxes around each ball, including
 balls touching each other in clusters and balls partly cut off by the image
@@ -85,7 +92,10 @@ The export name suggests the version was labeled with help from Roboflow's
 Instant model, so some boxes may be model output that was reviewed rather than
 drawn by hand. We saw no wrong boxes in the sample. The kitbot in the
 official-video frames is not labeled, which does not matter because `marswars`
-is never scored on robots.
+is never scored on robots. Fuel held in the kitbot's hopper and fuel in the
+hub's funnel are boxed when visible. The fuel packed into the hub's lower
+storage is mostly left unlabeled, with only a few balls at its edge boxed, so
+that part of the field is labeled inconsistently.
 
 Adjacent frames of the same run fall in different splits (289 near-duplicate
 pairs between test and train, 428 between train and valid), so splits have to
@@ -105,8 +115,9 @@ blur in some frames. The camera is at standing height and looks down at a
 steep angle.
 
 Fuel is labeled `fuel` with tight boxes, including balls cut off by the image
-edge and balls partly behind the drying rack. The zero-label images (54 train,
-22 valid) we checked show no fuel.
+edge and balls partly behind the drying rack. There are no robots, so fuel
+inside a robot never comes up. The zero-label images (54 train, 22 valid) we
+checked show no fuel.
 
 There is no test split, so the pipeline has to make one. Frames of one video
 sit in both splits (815 near-duplicate pairs between train and valid), so the
@@ -117,9 +128,10 @@ near-duplicate pairs with its train split alone).
 
 `blind-assistant-model/frc-scorekeeper-2026`, version 1, named "trial1".
 Stretched to 512 by 512, with three augmented copies of each training image
-(random rotation and exposure). The train split holds 4449 images made from
-1336 source photos. Valid holds 450 images from 429 sources and test 183 from
-176.
+(random rotation, exposure, and Gaussian blur). The train split holds 4449
+images under 1336 source names. Most names have three copies, but some have a
+multiple of three, so several different photos share a name. Valid holds 450
+images under 429 source names and test 183 under 176.
 
 ![scorekeeper samples](assets/samples_scorekeeper.png)
 
@@ -127,7 +139,9 @@ Two kinds of images are mixed together. Fuel appears in phone photos of balls
 laid out on a floor or table indoors, often in groups of about fifteen. Robots
 appear in pit photos and in match broadcasts, many from a 2024 FIM District
 match at Milford, 2022 Rapid React matches on Einstein, and 2023 Charged Up
-events. None of the file names point to a REBUILT robot.
+events. None of the file names point to a REBUILT robot. No image shows fuel
+inside a robot, since the robots come from games without fuel and the fuel
+photos show no robots.
 
 Fuel is labeled `FUEL` and robots `robot`. Boxes are tight on the source
 photos. On rotated copies, the boxes are the axis-aligned hull of the rotated
@@ -139,7 +153,7 @@ Zero-label images are mostly score screens, crowd shots, and a 2016 field. At
 least one is a 2023 broadcast frame with robots in view and no labels, which
 is a missed label.
 
-The same source photo appears in more than one split (87 source names, see
+The same source name appears in more than one split (87 names, see
 `source_name_overlap`), and near duplicates between test and train number 1642
 pairs. Test scores on this version as exported would be inflated. It overlaps
 heavily with `testingfrfr` (15288 near-duplicate pairs between the two train
@@ -149,9 +163,10 @@ splits). Some frames show spectators' faces, which the sample grid excludes
 ## testingfrfr
 
 `testing-frfr/frc-2026-mldc0`, version 1. Stretched to 640 by 640, with three
-augmented copies of each training image (flips, 90 degree rotations, and
-shear). The train split holds 12015 images made from 3632 source photos. Valid
-holds 698 images from 689 sources and test 252 from 235.
+augmented copies of each training image (flips, 90 degree rotations, shear,
+exposure changes, and salt-and-pepper noise). The train split holds 12015
+images under 3632 source names, some with dozens of copies. Valid holds 698
+images under 689 source names and test 252 under 235.
 
 ![testingfrfr samples](assets/samples_testingfrfr.png)
 
@@ -161,15 +176,18 @@ broadcasts of the 2019, 2020, 2022, 2023, and 2024 seasons, including the same
 Milford match as `scorekeeper`. The 90 degree rotations and flips put
 broadcast frames on their side or upside down.
 
-Fuel is labeled `fuel` and robots `robot`. Fuel boxes are tight. Robot boxes
-cover whole robots, including small ones in broadcast insets.
+Fuel is labeled `fuel` and robots `robot`. Fuel boxes are tight, and in the
+home footage balls partly behind furniture are labeled as in `robotzftp2`.
+Robot boxes cover whole robots, including small ones in broadcast insets. As
+in `scorekeeper`, no image shows fuel inside a robot.
 
-It shares near duplicates with three other datasets: 15288 pairs between its
-train split and `scorekeeper` train, 2049 between its train split and
-`scorekeeper` test, 3374 with `robotzftp2` train, and 845 with
-`robotzftp2_fuel` train. Inside it, 4 exact duplicates cross test and train
-and 4 cross train and valid, and near duplicates between test and train number
-3420. Another 121 source names appear in more than one split.
+It shares near duplicates with `scorekeeper`, `robotzftp2`, and
+`robotzftp2_fuel`. There are 15288 pairs between its train split and
+`scorekeeper` train, 2049 between its train split and `scorekeeper` test, 3374
+with `robotzftp2` train, and 845 with `robotzftp2_fuel` train. Inside it, 4
+exact duplicates cross test and train and 4 cross train and valid, and near
+duplicates between test and train number 3420. Another 121 source names appear
+in more than one split.
 
 ## robotzftp2_fuel
 
@@ -232,9 +250,11 @@ on both.
 Because adjacent frames cross splits in every dataset, splits have to group
 images by source video or photo and not by image. For the augmented versions,
 every augmented copy has to follow its source photo into the same split, and
-test and valid should hold one copy per source. The source name before `.rf.`
-in each file name identifies the photo, and the part before the frame number
-identifies the video.
+test and valid should hold one copy per photo. The source name alone cannot
+identify the photo, because different photos share names. Copies of one photo
+are near duplicates of each other, or differ only by a flip or rotation, so
+grouping has to combine the source name with image similarity. The part of the
+name before the frame number identifies the video where there is one.
 
 ## Limits
 
