@@ -29,7 +29,23 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     through uv instead of mirrors-mypy. `uv.lock` is excluded from the 500 KB
     large-file hook (D-006). Python is capped below 3.14 by `inference`
     (D-005). `configs/project.yaml` waits for its first consumer in Task 2.
-- [ ] Task 2: Download + inspect (Sat Sept 26)
+- [x] Task 2: Download + inspect (Sat Sept 26)
+  - Five datasets downloaded and inspected (D-008). `lava` failed because
+    it has no published version, and the reason is in
+    `reports/download_failures.json`.
+  - Differences from SPEC sections 5 and 7. `marswars` also has a
+    `red_active` class. `robot-zftp2` holds several projects, so
+    `rebuilt-dataset-hcmwl` is `robotzftp2` and `frc-2026-fuel-ndrbj` is an
+    extra key, `robotzftp2_fuel`. The committed hash files hold one hash per
+    image directory instead of one per image (D-009). Grids are laid out
+    with PIL, since supervision's `create_tiles` is deprecated, and boxes
+    and labels still use supervision annotators. Test fixtures are built
+    in `tests/conftest.py` at test time instead of committed images.
+  - For Task 3. `testingfrfr` and `scorekeeper` versions hold augmented
+    copies, and the same source photo appears in more than one split.
+    `testingfrfr` shares many images with `scorekeeper`, `robotzftp2`, and
+    `robotzftp2_fuel`. See `reports/dataset_stats.csv` (images against
+    source_images) and `reports/duplicates.json`.
 - [ ] Task 3: Document datasets, review checkpoint (Sat Sept 26)
 - [ ] Task 4: Harmonize + splits (Sat Sept 26)
 - [ ] Task 5: Baseline training (start Sat night, Nick runs on platform)
