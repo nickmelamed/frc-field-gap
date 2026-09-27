@@ -6,7 +6,7 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
 
 ## Tasks
 
-- [ ] Task 1: Foundation (Sat Sept 26)
+- [x] Task 1: Foundation (Sat Sept 26)
   - [x] Extend `make agent-check` to the full version once ruff, mypy, and
         pytest are installed:
 
@@ -29,7 +29,6 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     through uv instead of mirrors-mypy. `uv.lock` is excluded from the 500 KB
     large-file hook (D-006). Python is capped below 3.14 by `inference`
     (D-005). `configs/project.yaml` waits for its first consumer in Task 2.
-  - Tick Task 1 once CI is green on the PR.
 - [ ] Task 2: Download + inspect (Sat Sept 26)
 - [ ] Task 3: Document datasets, review checkpoint (Sat Sept 26)
 - [ ] Task 4: Harmonize + splits (Sat Sept 26)
