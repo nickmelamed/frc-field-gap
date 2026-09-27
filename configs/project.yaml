@@ -31,5 +31,28 @@ inspect:
     tile_px: 320
     # Below the 500 KB large-file hook.
     max_bytes: 450000
-    # Images left out of the published sample grids, by dataset key.
-    exclude: {}
+    # Images left out of the published sample grids because a person's face
+    # can be made out. Distant crowds in overhead broadcast shots are kept.
+    exclude:
+      marswars:
+        - Basler_daA1280-54uc__24770352__20260112_180305685_0210_png.rf.b40a0a55f146f485842e11df2ce40771.jpg
+      testingfrfr:
+        - Palmetto_Regional_2020_Practice11-mp4_01793_png.rf.a2d2d0395e6d40c266dbf6edb764e0c1.jpg
+        - PXL_20220219_190751379_jpg.rf.f05b868a0791a1a302fd0666385eb010.jpg
+        - Match-9-R3-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0013_jpg.rf.0d701bcc80297b53e6d546ab416db0ac.jpg
+        - Palmetto_Regional_2020_Practice02-mp4_01137_png.rf.34a0cb2cef083af50c7c30b1e71b41c6.jpg
+        - Great_Northern_Regional_2020_Practice23-mp4_00657_png.rf.974ca13c3aac2958118b64e696f9b700.jpg
+        - Chinese_Team_cyber-mp4_01808_png.rf.e16e1200cad8e30a3f1f85568ab4de4e.jpg
+        - AjnQ-GF-LxI_24_jpg.rf.383801156bd18d31dd786e06ebc106ac.jpg
+      scorekeeper:
+        - frc_train_486_jpg.rf.6fea1a9968929ab2e2108349a4621082.jpg
+        - z6S7XrF5CI0_3_jpg.rf.85300f901b2993feebb5fddfe1875caf.jpg
+        - youtube-47_jpg.rf.8146c5006d3ba11719ee2c95df2c4b6d.jpg
+        - youtube-129_jpg.rf.e44f2aae349ff2bd94fb58615ffb4a94.jpg
+        - FRC_3_mp4-4_jpg.rf.6d996c77f6f9102953c59b9d026cf8fb.jpg
+        - youtube-19_jpg.rf.a56715b9c2890fe929978c5a6d1cb548.jpg
+        - ncash2023_gopro3-mp4_00805_png.rf.7f96d0520faf1b0c2b32db16fc191ea1.jpg
+        - youtube-15_jpg.rf.a81798214470ddbd444c348ab9b29c1b.jpg
+        - FRC_3_mp4-26_jpg.rf.31bfbd8f50e2dd92f354977e2f850ae9.jpg
+        - youtube-32_jpg.rf.ee5c85e6951fac99a8642552d2a9fee6.jpg
+        - youtube-56_jpg.rf.a0dcf146f9de78d932ca82ff18152db7.jpg

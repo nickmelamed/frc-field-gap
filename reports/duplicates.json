@@ -1,0 +1,721 @@
+{
+  "near_duplicate_max_distance": 4,
+  "field_test_images": 0,
+  "exact": {
+    "groups": 33,
+    "counts": {
+      "cross_split": [
+        {
+          "a": "scorekeeper/train",
+          "b": "scorekeeper/valid",
+          "pairs": 1
+        },
+        {
+          "a": "testingfrfr/test",
+          "b": "testingfrfr/train",
+          "pairs": 4
+        },
+        {
+          "a": "testingfrfr/train",
+          "b": "testingfrfr/valid",
+          "pairs": 4
+        }
+      ],
+      "within_split": [
+        {
+          "a": "scorekeeper/train",
+          "b": "scorekeeper/train",
+          "pairs": 2
+        },
+        {
+          "a": "scorekeeper/valid",
+          "b": "scorekeeper/valid",
+          "pairs": 2
+        },
+        {
+          "a": "testingfrfr/train",
+          "b": "testingfrfr/train",
+          "pairs": 20
+        }
+      ]
+    },
+    "examples": {
+      "cross_split": [
+        [
+          "scorekeeper/train/youtube-10_jpg.rf.35a6d4050f8e29a14088403649f05934.jpg",
+          "scorekeeper/valid/youtube-10_jpg.rf.223fdb74b142563003d7d9d49a79bc27.jpg"
+        ],
+        [
+          "testingfrfr/test/frc_train_105_jpg.rf.74b4607b34e22c31abc7ecade7b84110.jpg",
+          "testingfrfr/train/frc_train_105_jpg.rf.292cf446ebe268315962e3c90baecf8f.jpg"
+        ],
+        [
+          "testingfrfr/test/frc_train_227_jpg.rf.cc6f7f9dfdfb1f83de4408b77e7cca7f.jpg",
+          "testingfrfr/train/frc_train_227_jpg.rf.a0f1afc16053a2eec2ca56e84b040e42.jpg"
+        ],
+        [
+          "testingfrfr/test/youtube-121_jpg.rf.c00a811fd502751a4cc9c2be546c5376.jpg",
+          "testingfrfr/train/youtube-121_jpg.rf.d3a2054d63a7a9a9287c09fd35795515.jpg"
+        ],
+        [
+          "testingfrfr/test/youtube-7_jpg.rf.882104386a7b0cc6672eba7ff7af7633.jpg",
+          "testingfrfr/train/youtube-7_jpg.rf.6ee17fb9d90a60032fc1a436080297de.jpg"
+        ],
+        [
+          "testingfrfr/train/frc_train_212_jpg.rf.eeecfd0ac73991f925df50d95b0c79ae.jpg",
+          "testingfrfr/valid/frc_train_212_jpg.rf.ea94c738bf6c94c0f3ec8d4645693596.jpg"
+        ],
+        [
+          "testingfrfr/train/frc_train_529_jpg.rf.4a611d8c091b46088799f7a2065cb3b0.jpg",
+          "testingfrfr/valid/frc_train_529_jpg.rf.ed56515342a0a9dc445db755f71790ce.jpg"
+        ],
+        [
+          "testingfrfr/train/youtube-133_jpg.rf.c733420b10140c93d966c6ae8da6e55c.jpg",
+          "testingfrfr/valid/youtube-133_jpg.rf.d18b0e9807f1a3a75dcebffa1295adaf.jpg"
+        ],
+        [
+          "testingfrfr/train/youtube-85_jpg.rf.2371eaddc7f94a514d8c2722833486ec.jpg",
+          "testingfrfr/valid/youtube-85_jpg.rf.0d2432175e64848487ddc2388d32b049.jpg"
+        ]
+      ],
+      "within_split": [
+        [
+          "scorekeeper/train/youtube-16_jpg.rf.03c351a731f5daa26d6a94c42c502e5a.jpg",
+          "scorekeeper/train/youtube-16_jpg.rf.727bdb5da1deef78c6328ee5f5913ac4.jpg"
+        ],
+        [
+          "scorekeeper/train/youtube-26_jpg.rf.01ff123f0464845fb88f19fde86c9cbc.jpg",
+          "scorekeeper/train/youtube-26_jpg.rf.0533481172eac688a2ca0355c63d654d.jpg"
+        ],
+        [
+          "scorekeeper/valid/youtube-20_jpg.rf.5d7f133db60f5412a2fbfbecb4540618.jpg",
+          "scorekeeper/valid/youtube-20_jpg.rf.98f65418bceff05a6fc6a5e54f6a6450.jpg"
+        ],
+        [
+          "scorekeeper/valid/youtube-40_jpg.rf.1e54370a90dce6f0855a03695a72c0df.jpg",
+          "scorekeeper/valid/youtube-40_jpg.rf.7b74d7c4990d810b60c7d957e8bfee2c.jpg"
+        ],
+        [
+          "testingfrfr/train/frc_train_133_png_jpg.rf.7477b06a3881138a1647c16177ed65d1.jpg",
+          "testingfrfr/train/frc_train_133_png_jpg.rf.e69770d665f52253455d2ab360042a8f.jpg"
+        ],
+        [
+          "testingfrfr/train/frc_train_213_png_jpg.rf.0b30b456f58d5ed827b694e2f2f30453.jpg",
+          "testingfrfr/train/frc_train_213_png_jpg.rf.ebb3cdc7f8859fbe2db19281b88e3530.jpg"
+        ],
+        [
+          "testingfrfr/train/frc_train_216_jpg.rf.094ec713e5dc42318f70e9fc1a194c7f.jpg",
+          "testingfrfr/train/frc_train_216_jpg.rf.9aeaa807cb19f2cbf17435905b78e84a.jpg"
+        ],
+        [
+          "testingfrfr/train/frc_train_294_jpg.rf.710e0a9ee89d7dfa55a78da3d3f884ba.jpg",
+          "testingfrfr/train/frc_train_294_jpg.rf.7d60c0e89ea1e2328bbd2c57846e0fdf.jpg"
+        ],
+        [
+          "testingfrfr/train/frc_train_337_jpg.rf.1b2463605bebe9889c45deab2bc2d2ee.jpg",
+          "testingfrfr/train/frc_train_337_jpg.rf.78df11548cbeb5fe378be650f4a97b8d.jpg"
+        ],
+        [
+          "testingfrfr/train/frc_train_396_jpg.rf.486ecab4ad64b59100342ee07cc426a0.jpg",
+          "testingfrfr/train/frc_train_396_jpg.rf.d88a8409e67bc5dac19f6ada32083761.jpg"
+        ],
+        [
+          "testingfrfr/train/frc_train_468_jpg.rf.0fbc43cb494bf1f88a7e7d95c46f9e49.jpg",
+          "testingfrfr/train/frc_train_468_jpg.rf.d766ccba1c3f4f306ec50042ab7ce411.jpg"
+        ],
+        [
+          "testingfrfr/train/frc_train_470_jpg.rf.157f9aa6c78c56c333ead51cb2abfff5.jpg",
+          "testingfrfr/train/frc_train_470_jpg.rf.656d4fc5b9ea8a02bfcbe07f3cd14da3.jpg"
+        ],
+        [
+          "testingfrfr/train/frc_train_534_png_jpg.rf.4a53bf26cab6ba4ff1664246c7c38c70.jpg",
+          "testingfrfr/train/frc_train_534_png_jpg.rf.67bf01884f8963572eaeb6d903ddc019.jpg"
+        ],
+        [
+          "testingfrfr/train/frc_train_632_jpg.rf.0ed3e696edd6ebcd0e46868bc9fabbb9.jpg",
+          "testingfrfr/train/frc_train_632_jpg.rf.80c7c07c2c83cc7c252085cffb2afae4.jpg"
+        ],
+        [
+          "testingfrfr/train/frc_train_69_jpg.rf.3b7d08cf061a39c790739bcc36a9d026.jpg",
+          "testingfrfr/train/frc_train_69_jpg.rf.f7ff0736dc1ed2a6cd2844e330ffa726.jpg"
+        ],
+        [
+          "testingfrfr/train/youtube-10_jpg.rf.7dd276c01434cdd7f77c5c4009526231.jpg",
+          "testingfrfr/train/youtube-10_jpg.rf.88b329ec794917f4a7ae308848da2a47.jpg"
+        ],
+        [
+          "testingfrfr/train/youtube-115_jpg.rf.38899bd28fd4b4d347b2cdebf3a9e088.jpg",
+          "testingfrfr/train/youtube-115_jpg.rf.ca20d2502beb66f857d111e1f9c59356.jpg"
+        ],
+        [
+          "testingfrfr/train/youtube-28_jpg.rf.b4f3307fac6fded26c50b6362e047b16.jpg",
+          "testingfrfr/train/youtube-28_jpg.rf.f466238501eaf57d9068a45b7fda4b6a.jpg"
+        ],
+        [
+          "testingfrfr/train/youtube-2_jpg.rf.44c8964f0477d8ca6f00b1b0a6d48bb9.jpg",
+          "testingfrfr/train/youtube-2_jpg.rf.6ca3b511e41fe379f46eddc772fa262e.jpg"
+        ],
+        [
+          "testingfrfr/train/youtube-32_jpg.rf.5b3f919b80fa8a857358e914cc8938f8.jpg",
+          "testingfrfr/train/youtube-32_jpg.rf.c27aadc1b7ebb99fb2420269f5fe28de.jpg"
+        ]
+      ]
+    }
+  },
+  "near": {
+    "pairs": 87193,
+    "counts": {
+      "cross_dataset": [
+        {
+          "a": "robotzftp2/train",
+          "b": "testingfrfr/train",
+          "pairs": 3374
+        },
+        {
+          "a": "robotzftp2/train",
+          "b": "testingfrfr/valid",
+          "pairs": 474
+        },
+        {
+          "a": "robotzftp2/valid",
+          "b": "testingfrfr/train",
+          "pairs": 1219
+        },
+        {
+          "a": "robotzftp2/valid",
+          "b": "testingfrfr/valid",
+          "pairs": 582
+        },
+        {
+          "a": "robotzftp2_fuel/test",
+          "b": "testingfrfr/test",
+          "pairs": 61
+        },
+        {
+          "a": "robotzftp2_fuel/test",
+          "b": "testingfrfr/train",
+          "pairs": 75
+        },
+        {
+          "a": "robotzftp2_fuel/test",
+          "b": "testingfrfr/valid",
+          "pairs": 9
+        },
+        {
+          "a": "robotzftp2_fuel/train",
+          "b": "testingfrfr/test",
+          "pairs": 59
+        },
+        {
+          "a": "robotzftp2_fuel/train",
+          "b": "testingfrfr/train",
+          "pairs": 845
+        },
+        {
+          "a": "robotzftp2_fuel/train",
+          "b": "testingfrfr/valid",
+          "pairs": 68
+        },
+        {
+          "a": "robotzftp2_fuel/valid",
+          "b": "testingfrfr/test",
+          "pairs": 19
+        },
+        {
+          "a": "robotzftp2_fuel/valid",
+          "b": "testingfrfr/train",
+          "pairs": 159
+        },
+        {
+          "a": "robotzftp2_fuel/valid",
+          "b": "testingfrfr/valid",
+          "pairs": 83
+        },
+        {
+          "a": "scorekeeper/test",
+          "b": "testingfrfr/test",
+          "pairs": 275
+        },
+        {
+          "a": "scorekeeper/test",
+          "b": "testingfrfr/train",
+          "pairs": 2049
+        },
+        {
+          "a": "scorekeeper/test",
+          "b": "testingfrfr/valid",
+          "pairs": 281
+        },
+        {
+          "a": "scorekeeper/train",
+          "b": "testingfrfr/test",
+          "pairs": 1502
+        },
+        {
+          "a": "scorekeeper/train",
+          "b": "testingfrfr/train",
+          "pairs": 15288
+        },
+        {
+          "a": "scorekeeper/train",
+          "b": "testingfrfr/valid",
+          "pairs": 1973
+        },
+        {
+          "a": "scorekeeper/valid",
+          "b": "testingfrfr/test",
+          "pairs": 436
+        },
+        {
+          "a": "scorekeeper/valid",
+          "b": "testingfrfr/train",
+          "pairs": 4362
+        },
+        {
+          "a": "scorekeeper/valid",
+          "b": "testingfrfr/valid",
+          "pairs": 681
+        }
+      ],
+      "cross_split": [
+        {
+          "a": "marswars/test",
+          "b": "marswars/train",
+          "pairs": 289
+        },
+        {
+          "a": "marswars/test",
+          "b": "marswars/valid",
+          "pairs": 54
+        },
+        {
+          "a": "marswars/train",
+          "b": "marswars/valid",
+          "pairs": 428
+        },
+        {
+          "a": "robotzftp2/train",
+          "b": "robotzftp2/valid",
+          "pairs": 815
+        },
+        {
+          "a": "robotzftp2_fuel/test",
+          "b": "robotzftp2_fuel/train",
+          "pairs": 61
+        },
+        {
+          "a": "robotzftp2_fuel/test",
+          "b": "robotzftp2_fuel/valid",
+          "pairs": 21
+        },
+        {
+          "a": "robotzftp2_fuel/train",
+          "b": "robotzftp2_fuel/valid",
+          "pairs": 103
+        },
+        {
+          "a": "scorekeeper/test",
+          "b": "scorekeeper/train",
+          "pairs": 1642
+        },
+        {
+          "a": "scorekeeper/test",
+          "b": "scorekeeper/valid",
+          "pairs": 475
+        },
+        {
+          "a": "scorekeeper/train",
+          "b": "scorekeeper/valid",
+          "pairs": 4236
+        },
+        {
+          "a": "testingfrfr/test",
+          "b": "testingfrfr/train",
+          "pairs": 3420
+        },
+        {
+          "a": "testingfrfr/test",
+          "b": "testingfrfr/valid",
+          "pairs": 444
+        },
+        {
+          "a": "testingfrfr/train",
+          "b": "testingfrfr/valid",
+          "pairs": 5223
+        }
+      ],
+      "within_split": [
+        {
+          "a": "marswars/test",
+          "b": "marswars/test",
+          "pairs": 20
+        },
+        {
+          "a": "marswars/train",
+          "b": "marswars/train",
+          "pairs": 1077
+        },
+        {
+          "a": "marswars/valid",
+          "b": "marswars/valid",
+          "pairs": 44
+        },
+        {
+          "a": "robotzftp2/train",
+          "b": "robotzftp2/train",
+          "pairs": 888
+        },
+        {
+          "a": "robotzftp2/valid",
+          "b": "robotzftp2/valid",
+          "pairs": 194
+        },
+        {
+          "a": "robotzftp2_fuel/test",
+          "b": "robotzftp2_fuel/test",
+          "pairs": 8
+        },
+        {
+          "a": "robotzftp2_fuel/train",
+          "b": "robotzftp2_fuel/train",
+          "pairs": 238
+        },
+        {
+          "a": "robotzftp2_fuel/valid",
+          "b": "robotzftp2_fuel/valid",
+          "pairs": 20
+        },
+        {
+          "a": "scorekeeper/test",
+          "b": "scorekeeper/test",
+          "pairs": 97
+        },
+        {
+          "a": "scorekeeper/train",
+          "b": "scorekeeper/train",
+          "pairs": 12327
+        },
+        {
+          "a": "scorekeeper/valid",
+          "b": "scorekeeper/valid",
+          "pairs": 567
+        },
+        {
+          "a": "testingfrfr/test",
+          "b": "testingfrfr/test",
+          "pairs": 166
+        },
+        {
+          "a": "testingfrfr/train",
+          "b": "testingfrfr/train",
+          "pairs": 20118
+        },
+        {
+          "a": "testingfrfr/valid",
+          "b": "testingfrfr/valid",
+          "pairs": 344
+        }
+      ]
+    },
+    "examples": {
+      "cross_split": [
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180633579_0063_png.rf.ba88753d3f83a0e4c8e07301b801d230.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180633579_0065_png.rf.3b22e6e7e34500dd56754f2d41744f4c.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180633579_0063_png.rf.ba88753d3f83a0e4c8e07301b801d230.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180633579_0059_png.rf.97c39e92aa79aabbaa8ea62a086f3042.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180633579_0063_png.rf.ba88753d3f83a0e4c8e07301b801d230.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180633579_0061_png.rf.8665e636e156d87276e00fe0ca3da752.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180633579_0063_png.rf.ba88753d3f83a0e4c8e07301b801d230.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180633579_0069_png.rf.82efd65dd40f07cf10a67f4fc1e1bf1a.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180633579_0063_png.rf.ba88753d3f83a0e4c8e07301b801d230.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180633579_0067_png.rf.be49ce5e117a286e2e20f678e4a2f758.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0030_png.rf.0b16a7c757bd644f40bae3709f3850b9.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180602871_0042_png.rf.5d5fb85271a605f2353684d5b525d70e.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0030_png.rf.0b16a7c757bd644f40bae3709f3850b9.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180602871_0034_png.rf.17215f6fee8d3cf9fc70f84545dc5ea6.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0030_png.rf.0b16a7c757bd644f40bae3709f3850b9.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180602871_0036_png.rf.7b9a5e78a0f0e47d2ca5fe83749400e6.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0030_png.rf.0b16a7c757bd644f40bae3709f3850b9.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180602871_0028_png.rf.6133b2d81ac848cea99f77135bb47773.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0030_png.rf.0b16a7c757bd644f40bae3709f3850b9.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180602871_0040_png.rf.8408dd3fd976cc373f9a400714a6e238.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0030_png.rf.0b16a7c757bd644f40bae3709f3850b9.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180602871_0032_png.rf.810d8484d50a7c3e7b70f20ba753ce43.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180305685_0067_png.rf.fd83785923c95f93b27ba1fb129506be.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180305685_0105_png.rf.e51b62af260809e26aa51ea6b1f09ccd.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180305685_0067_png.rf.fd83785923c95f93b27ba1fb129506be.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180305685_0103_png.rf.498b3edc16d1658b555f5416bee32b4e.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180305685_0067_png.rf.fd83785923c95f93b27ba1fb129506be.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180305685_0075_png.rf.f14a45898fbff748a3f0220f1da7f12c.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180305685_0067_png.rf.fd83785923c95f93b27ba1fb129506be.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180305685_0061_png.rf.711aa7c3ba01eb6335d5e9f8df87951d.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180305685_0067_png.rf.fd83785923c95f93b27ba1fb129506be.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180305685_0095_png.rf.5f272b6fa0d5f074c46ae58012f96e74.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180305685_0067_png.rf.fd83785923c95f93b27ba1fb129506be.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180305685_0059_png.rf.aed020e4c66e8dadbec0e3eaebf53acb.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180305685_0067_png.rf.fd83785923c95f93b27ba1fb129506be.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180305685_0085_png.rf.f3a67cd7c241e174d61fb4e57e353b7b.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180305685_0067_png.rf.fd83785923c95f93b27ba1fb129506be.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180305685_0065_png.rf.64d8476afc477d207c9dc59a0fc2cbbe.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180305685_0067_png.rf.fd83785923c95f93b27ba1fb129506be.jpg",
+          "marswars/train/Basler_daA1280-54uc__24770352__20260112_180305685_0057_png.rf.2c628b1634fe3f1062181a9dc793cf36.jpg"
+        ]
+      ],
+      "within_split": [
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0026_png.rf.9a70d697c25dd11a20624ce6bb8184d3.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0030_png.rf.0b16a7c757bd644f40bae3709f3850b9.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0030_png.rf.0b16a7c757bd644f40bae3709f3850b9.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0038_png.rf.a7c17ea1b5aba20c78126c0bf5e2bb6b.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180305685_0067_png.rf.fd83785923c95f93b27ba1fb129506be.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180305685_0083_png.rf.3a15f31e25fa2fa162912038c0cb2f24.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180305685_0067_png.rf.fd83785923c95f93b27ba1fb129506be.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180305685_0073_png.rf.3227b4adc817656fda9efb9f1d574359.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_181311364_0444_png.rf.bff97186c31110ad36dab5c1d8f0e0e5.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_181311364_0454_png.rf.c39dc98f53e284e92b7015dd0ff3ee70.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_181311364_0451_png.rf.b1f23db47cce0d4642e2aefd0c8c8679.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_181311364_0454_png.rf.c39dc98f53e284e92b7015dd0ff3ee70.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_181311364_0445_png.rf.f5ffe0f89d4f61fbb35ea0eb01150255.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_181311364_0454_png.rf.c39dc98f53e284e92b7015dd0ff3ee70.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_181311364_0444_png.rf.bff97186c31110ad36dab5c1d8f0e0e5.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_181311364_0451_png.rf.b1f23db47cce0d4642e2aefd0c8c8679.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_181311364_0444_png.rf.bff97186c31110ad36dab5c1d8f0e0e5.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_181311364_0445_png.rf.f5ffe0f89d4f61fbb35ea0eb01150255.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0018_png.rf.bc22f4f4e20dbf404be0d8f69a7d752a.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0020_png.rf.f09b6324e4d0bedfc6071aed2a101b3c.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0018_png.rf.bc22f4f4e20dbf404be0d8f69a7d752a.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0026_png.rf.9a70d697c25dd11a20624ce6bb8184d3.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0020_png.rf.f09b6324e4d0bedfc6071aed2a101b3c.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0026_png.rf.9a70d697c25dd11a20624ce6bb8184d3.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180305685_0168_png.rf.97d7dd356099df9871c06ed3a5cc076b.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180305685_0170_png.rf.e5bc8b909b4785a049242571c78dc555.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_181311364_0445_png.rf.f5ffe0f89d4f61fbb35ea0eb01150255.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_181311364_0451_png.rf.b1f23db47cce0d4642e2aefd0c8c8679.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0071_png.rf.3aee90c53871dc000fe000eefb51e258.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0085_png.rf.aac127e4619cf7950abedfaf2d62242c.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180633579_0101_png.rf.6f37f7c8da7066d7d372949044847606.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180633579_0103_png.rf.a6c88719dfd4985777cc691e463e64c5.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0127_png.rf.45feb2d277547c9f7d47bce321fb6f52.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0129_png.rf.8f7af863c3d0510d6b9680a61539b599.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180305685_0073_png.rf.3227b4adc817656fda9efb9f1d574359.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180305685_0083_png.rf.3a15f31e25fa2fa162912038c0cb2f24.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0052_png.rf.360ea80fbaac47daede1473eb1c49580.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180602871_0054_png.rf.8cd4476ddf8eaa93c20285ecb671383b.jpg"
+        ],
+        [
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180745507_0229_png.rf.f3f6fd48fcdc18f3e33ea8d24c3ab055.jpg",
+          "marswars/test/Basler_daA1280-54uc__24770352__20260112_180745507_0231_png.rf.9365f1afc7fb85f7a3445fcaa0870fb7.jpg"
+        ]
+      ],
+      "cross_dataset": [
+        [
+          "scorekeeper/test/frc_train_534_png.rf.dea0e1bb2623d526244b4f47345ed7d8.jpg",
+          "testingfrfr/test/frc_train_534_png.rf.b31654573f12aecb422bcdb7476e144a.jpg"
+        ],
+        [
+          "robotzftp2_fuel/test/1_MOV-0096_jpg.rf.ec5e772515829a0c7569e03e52fa640a.jpg",
+          "testingfrfr/test/1_MOV-0096_jpg.rf.a01d1ad28985b6eec1960a88be419c2e.jpg"
+        ],
+        [
+          "robotzftp2_fuel/valid/1_MOV-0098_jpg.rf.3906909072dd1efa7d51be1bee03b81c.jpg",
+          "testingfrfr/test/1_MOV-0096_jpg.rf.a01d1ad28985b6eec1960a88be419c2e.jpg"
+        ],
+        [
+          "robotzftp2_fuel/test/2_MOV-0423_jpg.rf.18f99f595cb99ad25fe56320e2567e97.jpg",
+          "testingfrfr/test/2_MOV-0423_jpg.rf.65a610f0856756bfa2b3bc6bd0649a54.jpg"
+        ],
+        [
+          "scorekeeper/test/b56UKoQq8fg_4_jpg.rf.c2481d91535b9cd46d7c848ae0234468.jpg",
+          "testingfrfr/test/b56UKoQq8fg_12_jpg.rf.11ed91be63183b93527202e2df8cc7e6.jpg"
+        ],
+        [
+          "scorekeeper/test/b56UKoQq8fg_12_jpg.rf.2105931c119a8da059051882e69b7882.jpg",
+          "testingfrfr/test/b56UKoQq8fg_12_jpg.rf.11ed91be63183b93527202e2df8cc7e6.jpg"
+        ],
+        [
+          "scorekeeper/train/FRC_124_jpg.rf.5ec12ecd988c1b583fcaffadf6ec12b2.jpg",
+          "testingfrfr/test/b56UKoQq8fg_12_jpg.rf.11ed91be63183b93527202e2df8cc7e6.jpg"
+        ],
+        [
+          "scorekeeper/train/FRC_128_jpg.rf.3513e6769b4eb8e0c4e63e46c120b529.jpg",
+          "testingfrfr/test/b56UKoQq8fg_12_jpg.rf.11ed91be63183b93527202e2df8cc7e6.jpg"
+        ],
+        [
+          "scorekeeper/train/FRC_62_jpg.rf.47901c9e1dc2e234e360cfb39d15ef4b.jpg",
+          "testingfrfr/test/b56UKoQq8fg_12_jpg.rf.11ed91be63183b93527202e2df8cc7e6.jpg"
+        ],
+        [
+          "scorekeeper/train/FRC_123_jpg.rf.f7bb71bda0aa6927abe6bc01a10f74c7.jpg",
+          "testingfrfr/test/b56UKoQq8fg_12_jpg.rf.11ed91be63183b93527202e2df8cc7e6.jpg"
+        ],
+        [
+          "scorekeeper/train/FRC_126_jpg.rf.e73a47e1b1e145549900a7da91322b13.jpg",
+          "testingfrfr/test/b56UKoQq8fg_12_jpg.rf.11ed91be63183b93527202e2df8cc7e6.jpg"
+        ],
+        [
+          "scorekeeper/train/b56UKoQq8fg_21_jpg.rf.a604b152f6e8e815faaee6cd62428f51.jpg",
+          "testingfrfr/test/b56UKoQq8fg_12_jpg.rf.11ed91be63183b93527202e2df8cc7e6.jpg"
+        ],
+        [
+          "scorekeeper/train/b56UKoQq8fg_20_jpg.rf.ccb8320946caea77ac0c71416b434852.jpg",
+          "testingfrfr/test/b56UKoQq8fg_12_jpg.rf.11ed91be63183b93527202e2df8cc7e6.jpg"
+        ],
+        [
+          "scorekeeper/train/FRC_65_jpg.rf.ba047fae3ca8c26f831363b094c145e7.jpg",
+          "testingfrfr/test/b56UKoQq8fg_12_jpg.rf.11ed91be63183b93527202e2df8cc7e6.jpg"
+        ],
+        [
+          "scorekeeper/train/FRC_22_jpg.rf.76aa80f4e0f9eaba7624ea84b0a15e85.jpg",
+          "testingfrfr/test/b56UKoQq8fg_12_jpg.rf.11ed91be63183b93527202e2df8cc7e6.jpg"
+        ],
+        [
+          "scorekeeper/train/FRC_20_jpg.rf.1912249264abaad594c5aac6d24fbfde.jpg",
+          "testingfrfr/test/b56UKoQq8fg_12_jpg.rf.11ed91be63183b93527202e2df8cc7e6.jpg"
+        ],
+        [
+          "scorekeeper/train/FRC_23_jpg.rf.d1d885afa8733b0db83675774c40aae0.jpg",
+          "testingfrfr/test/b56UKoQq8fg_12_jpg.rf.11ed91be63183b93527202e2df8cc7e6.jpg"
+        ],
+        [
+          "scorekeeper/train/FRC_73_jpg.rf.183d5e313b38d74f4e332013ce591366.jpg",
+          "testingfrfr/test/b56UKoQq8fg_12_jpg.rf.11ed91be63183b93527202e2df8cc7e6.jpg"
+        ],
+        [
+          "scorekeeper/train/b56UKoQq8fg_5_jpg.rf.fc11926a74db62d0edbaeb709de932e4.jpg",
+          "testingfrfr/test/b56UKoQq8fg_12_jpg.rf.11ed91be63183b93527202e2df8cc7e6.jpg"
+        ],
+        [
+          "scorekeeper/train/FRC_100_jpg.rf.275486f6278822da6d965bb7377c48f9.jpg",
+          "testingfrfr/test/b56UKoQq8fg_12_jpg.rf.11ed91be63183b93527202e2df8cc7e6.jpg"
+        ]
+      ]
+    }
+  },
+  "source_name_overlap": {
+    "scorekeeper": {
+      "names": 87,
+      "examples": [
+        "FRC_3_mp4-1.jpg",
+        "FRC_3_mp4-11.jpg",
+        "FRC_3_mp4-13.jpg",
+        "FRC_3_mp4-14.jpg",
+        "FRC_3_mp4-22.jpg",
+        "FRC_3_mp4-27.jpg",
+        "FRC_3_mp4-33.jpg",
+        "FRC_3_mp4-5.jpg",
+        "FRC_3_mp4-7.jpg",
+        "FRC_3_mp4-8.jpg",
+        "frc_train_212.jpg",
+        "frc_train_216.jpg",
+        "frc_train_294.jpg",
+        "frc_train_337.jpg",
+        "frc_train_468.jpg",
+        "frc_train_470.jpg",
+        "frc_train_529.jpg",
+        "frc_train_632.jpg",
+        "frc_train_69.jpg",
+        "youtube-0.jpg"
+      ]
+    },
+    "testingfrfr": {
+      "names": 121,
+      "examples": [
+        "138_large_bmp.jpg",
+        "155_FRC-2018_png.jpg",
+        "1723057584739389.jpg",
+        "1850947636652502.jpg",
+        "2766374456362873.jpg",
+        "295_img_9599.jpg",
+        "3114443580852293.jpg",
+        "324B9C4C-9717-483C-8313-ED6B1BCE5E34.jpg",
+        "33_6331a7bbea486ca3553833f010f5c21bca39b159_jpeg.jpg",
+        "3521640472382218.jpg",
+        "3588694790515480.jpg",
+        "3905106701566707.jpg",
+        "5422167629985174.jpg",
+        "6122470106355308.jpg",
+        "6183744296395679.jpg",
+        "7304805542477645.jpg",
+        "8014314568240071.jpg",
+        "8059736661121834.jpg",
+        "839874193986022.jpg",
+        "8504187057806476.jpg"
+      ]
+    }
+  }
+}
