@@ -24,6 +24,12 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
               language: system
               types_or: [python, markdown]
 
+  - Differences from SPEC section 3.1 and 7. No console scripts yet, since
+    they land with their modules (D-002). mypy runs as a local pre-commit hook
+    through uv instead of mirrors-mypy. `uv.lock` is excluded from the 500 KB
+    large-file hook (D-006). Python is capped below 3.14 by `inference`
+    (D-005). `configs/project.yaml` waits for its first consumer in Task 2.
+  - Tick Task 1 once CI is green on the PR.
 - [ ] Task 2: Download + inspect (Sat Sept 26)
 - [ ] Task 3: Document datasets, review checkpoint (Sat Sept 26)
 - [ ] Task 4: Harmonize + splits (Sat Sept 26)
