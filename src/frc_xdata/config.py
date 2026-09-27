@@ -1,6 +1,7 @@
 """Load and validate configuration from YAML files and the environment."""
 
 import os
+import re
 from pathlib import Path
 from typing import Annotated, Literal, TypeVar
 
@@ -51,6 +52,7 @@ class Paths(_Frozen):
     assets_dir: RelativePath
     field_test_dir: RelativePath
     contact_sheet_dir: RelativePath
+    harmonized_dir: RelativePath
 
 
 class AreaBuckets(_Frozen):
@@ -92,12 +94,60 @@ class InspectConfig(_Frozen):
     contact_sheet: TileLayout
 
 
+class SplitFractions(_Frozen):
+    """Share of images that goes to each split."""
+
+    train: Annotated[float, Field(gt=0, lt=1)]
+    valid: Annotated[float, Field(gt=0, lt=1)]
+    test: Annotated[float, Field(gt=0, lt=1)]
+
+    @model_validator(mode="after")
+    def _sum_to_one(self) -> "SplitFractions":
+        if abs(self.train + self.valid + self.test - 1) > 1e-9:
+            raise ValueError("train, valid, and test must sum to 1")
+        return self
+
+
+class SplitMethod(_Frozen):
+    """How one dataset is re-split.
+
+    ``temporal`` cuts each recording in frame order, so the pattern needs a
+    ``frame`` group. ``grouped`` assigns whole groups of related images, and a
+    name the pattern does not match is its own recording.
+    """
+
+    method: Literal["temporal", "grouped"]
+    recording_pattern: str
+    dedupe_copies: bool = False
+
+    @model_validator(mode="after")
+    def _pattern_groups(self) -> "SplitMethod":
+        try:
+            groups = re.compile(self.recording_pattern).groupindex
+        except re.error as e:
+            raise ValueError(f"recording_pattern does not compile: {e}") from e
+        needed = {"recording", "frame"} if self.method == "temporal" else {"recording"}
+        if missing := needed - set(groups):
+            raise ValueError(f"recording_pattern needs named groups {sorted(missing)}")
+        return self
+
+
+class SplitsConfig(_Frozen):
+    """Settings for re-splitting datasets whose own splits leak."""
+
+    fractions: SplitFractions
+    buffer_frames: Annotated[int, Field(ge=0)]
+    min_recording_images: PositiveInt
+    datasets: dict[DatasetKey, SplitMethod]
+
+
 class ProjectConfig(_Frozen):
     """Settings shared by every stage, from ``configs/project.yaml``."""
 
     seed: int
     paths: Paths
     inspect: InspectConfig
+    splits: SplitsConfig
 
 
 class DatasetSpec(_Frozen):
@@ -131,6 +181,31 @@ class DatasetsConfig(_Frozen):
     """Every candidate dataset by key, from ``configs/datasets.yaml``."""
 
     datasets: dict[DatasetKey, DatasetSpec]
+
+
+DROP = "DROP"
+
+
+class ClassMapConfig(_Frozen):
+    """Target classes and each dataset's source label mapping.
+
+    Category ids in harmonized files follow the order of ``classes``,
+    starting from 1.
+    """
+
+    classes: Annotated[list[str], Field(min_length=1)]
+    datasets: dict[DatasetKey, dict[str, str]]
+
+    @model_validator(mode="after")
+    def _targets_known(self) -> "ClassMapConfig":
+        if len(set(self.classes)) != len(self.classes) or DROP in self.classes:
+            raise ValueError(f"classes must be unique and must not include {DROP}")
+        allowed = {*self.classes, DROP}
+        for key, mapping in self.datasets.items():
+            for label, target in mapping.items():
+                if target not in allowed:
+                    raise ValueError(f"{key}: {label!r} maps to unknown class {target!r}")
+        return self
 
 
 def load_yaml(path: Path, model: type[ModelT]) -> ModelT:

@@ -1,0 +1,29 @@
+# Every source label maps to one of the target classes or to DROP. A label
+# that is missing here stops harmonize, so a new label is never dropped
+# silently. Category ids in the harmonized files follow the order of
+# `classes`, starting from 1. See D-012 and docs/DATASETS.md.
+
+classes: [fuel, robot]
+
+datasets:
+  marswars:
+    game_piece: fuel
+    # Whether the hub is lit blue, lit red, or dark. Field state, not an
+    # object to detect.
+    blue_active: DROP
+    red_active: DROP
+    inactive: DROP
+
+  robotzftp2:
+    fuel: fuel
+
+  scorekeeper:
+    FUEL: fuel
+    robot: robot
+
+  testingfrfr:
+    fuel: fuel
+    robot: robot
+
+  robotzftp2_fuel:
+    Fuels: fuel

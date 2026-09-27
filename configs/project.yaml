@@ -13,6 +13,7 @@ paths:
   # Contact sheets can show faces and are never published, so they stay
   # under the gitignored data/ directory.
   contact_sheet_dir: data/contact_sheets
+  harmonized_dir: data/harmonized
 
 inspect:
   # COCO's small and medium limits (32 and 96 pixels square) scaled to a
@@ -65,3 +66,30 @@ inspect:
         - FRC_3_mp4-26_jpg.rf.31bfbd8f50e2dd92f354977e2f850ae9.jpg
         - youtube-32_jpg.rf.ee5c85e6951fac99a8642552d2a9fee6.jpg
         - youtube-56_jpg.rf.a0dcf146f9de78d932ca82ff18152db7.jpg
+
+# Datasets whose own splits leak are re-split by harmonize. Near duplicates
+# use inspect.near_duplicate_max_distance. See D-013.
+splits:
+  fractions:
+    train: 0.70
+    valid: 0.15
+    test: 0.15
+  # Frames this close to a split boundary are dropped from the earlier split.
+  # Frames 5 apart are rarely near duplicates (D-013).
+  buffer_frames: 5
+  # Shorter recordings go whole to train, since they are too short to cut.
+  min_recording_images: 20
+  datasets:
+    marswars:
+      method: temporal
+      recording_pattern: '^(?P<recording>.+?)[_-](?P<frame>\d+)\.(?:jpg|jpeg|png)$'
+    robotzftp2:
+      method: temporal
+      recording_pattern: '^(?P<recording>.+?)[_-](?P<frame>\d+)\.(?:jpg|jpeg|png)$'
+    scorekeeper:
+      method: grouped
+      # Only video frames and 11-character YouTube ids name a recording.
+      # Stems like `frame` and `youtube` are shared by unrelated images.
+      recording_pattern: '^(?P<recording>.+[_-]mp4|[A-Za-z0-9_-]{11})[_-]\d+\.(?:jpg|jpeg|png)$'
+      # Train holds three augmented copies of each photo. Keep one (D-014).
+      dedupe_copies: true
