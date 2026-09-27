@@ -382,3 +382,18 @@ def test_a_local_file_error_is_not_reported_as_an_inference_failure(
     monkeypatch.setattr(evaluate, "HostedPredictor", lambda *a: Unreadable())
     with pytest.raises(PermissionError):
         evaluate.main(ARGS)
+
+
+def test_classes_the_model_never_learned_are_not_scored(
+    workspace: Path, fake: FakePredictor
+) -> None:
+    coverage = {"alpha": {"labeled": ["fuel", "robot"]}, "beta": {"labeled": ["fuel"]}}
+    (workspace / "reports/class_coverage.json").write_text(json.dumps(coverage), "utf-8")
+    models = {"models": {"m": {**ENTRY.model_dump(), "dataset": "beta"}}}
+    (workspace / "reports/models.yaml").write_text(yaml.safe_dump(models), "utf-8")
+    assert evaluate.main(ARGS) == 0
+    metrics = read("run1", "metrics.json")
+    assert metrics["scored_classes"] == ["fuel"]
+    assert metrics["unscored_classes"] == ["robot"]
+    assert [c["name"] for c in metrics["metrics"]["classes"]] == ["fuel"]
+    assert [c["name"] for c in metrics["bootstrap"]["classes"]] == ["fuel"]

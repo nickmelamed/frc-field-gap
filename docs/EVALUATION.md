@@ -39,8 +39,10 @@ related photos) are resampled with replacement. A wide interval means the
 score depends heavily on which recordings happen to be in the test split.
 
 A dataset is scored only on the classes it labels, as recorded in
-`reports/class_coverage.json`. A robot prediction on a fuel-only dataset is
-neither a hit nor a false positive.
+`reports/class_coverage.json`, and only on those the model's training data
+labels too (D-019). A robot prediction on a fuel-only dataset is neither a
+hit nor a false positive. A fuel-only model is not scored on robot boxes,
+and the run's section says which classes were left out.
 
 ## Making a run
 

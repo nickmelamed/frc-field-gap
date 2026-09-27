@@ -259,3 +259,11 @@ def test_main_rewrites_both_documents_from_the_configured_runs(
     assert main(["--project-config", "configs/project.yaml"]) == 0
     assert "| m | alpha | test |" in Path("README.md").read_text(encoding="utf-8")
     assert "### m on alpha test" in Path("docs/EVALUATION.md").read_text(encoding="utf-8")
+
+
+def test_run_section_names_classes_the_model_was_not_trained_on() -> None:
+    assert "not scored" not in run_section(clean(result("r1")))
+    r = result("r1").model_copy(update={"unscored_classes": ["robot"]})
+    assert "The robot boxes in alpha are not scored, since m was not trained on robot." in (
+        run_section(clean(r))
+    )

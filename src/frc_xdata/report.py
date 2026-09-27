@@ -138,6 +138,17 @@ def _class_table(classes: Sequence[ClassMetrics], run: PublishedRun) -> list[str
     return lines
 
 
+def _unscored_note(r: RunResult) -> list[str]:
+    if not r.unscored_classes:
+        return []
+    names = " and ".join(r.unscored_classes)
+    return [
+        "",
+        f"The {names} boxes in {r.dataset} are not scored, since {r.model} was not "
+        f"trained on {names}.",
+    ]
+
+
 def run_section(run: PublishedRun) -> str:
     """Return the EVALUATION.md section for one run."""
     r, m = run.result, run.result.metrics
@@ -153,6 +164,7 @@ def run_section(run: PublishedRun) -> str:
         f"scores.{NOT_A_RESULT}",
         "",
         *_class_table(m.classes, run),
+        *_unscored_note(r),
         "",
         "mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels "
         "and large when it is over 96x96, measured on the original image.",

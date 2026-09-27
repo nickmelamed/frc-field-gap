@@ -8,9 +8,10 @@ earlier run's predictions again without calling the model.
 Metrics come from supervision. Mean average precision uses every cached
 prediction, while precision, recall, and the confusion matrix count only
 predictions at or above a confidence threshold. A dataset is scored only on
-the classes it labels (``labeled`` in ``reports/class_coverage.json``), so a
-robot prediction on a fuel-only dataset is neither a hit nor a false
-positive.
+the classes it labels (``labeled`` in ``reports/class_coverage.json``) that
+the model's training dataset labels too. A robot prediction on a fuel-only
+dataset is neither a hit nor a false positive, and a fuel-only model is not
+scored on robot boxes it was never taught to find.
 """
 
 import argparse
@@ -146,6 +147,18 @@ def scored_classes(coverage_path: Path, key: str) -> list[str]:
         raise ConfigError(f"{key} is not in {coverage_path}. Run make harmonize first")
     labeled: list[str] = coverage[key]["labeled"]
     return labeled
+
+
+def shared_classes(labeled: Sequence[str], trained: Sequence[str]) -> list[str]:
+    """Return the classes in ``labeled`` that the model was trained on, in dataset order.
+
+    Raises:
+        ConfigError: If the two share no class, since the run would score nothing.
+    """
+    shared = [name for name in labeled if name in trained]
+    if not shared:
+        raise ConfigError(f"the dataset labels {list(labeled)} but the model knows {list(trained)}")
+    return shared
 
 
 def _select(detections: sv.Detections, mask: npt.NDArray[np.bool_]) -> sv.Detections:
@@ -739,6 +752,8 @@ class RunResult(_Record):
     limit: int | None
     predictions_from: str
     scored_classes: list[str]
+    # Labeled in the dataset but missing from the model's training data.
+    unscored_classes: list[str] = []
     metrics: EvalMetrics
     units: list[UnitCount]
     bootstrap: BootstrapResult
@@ -903,7 +918,8 @@ def run_evaluation(
     if not names:
         raise ConfigError(f"{split_dir} has no images")
     targets = [ds.annotations[str(split_dir / name)] for name in names]
-    scored = scored_classes(cfg.coverage_file, dataset)
+    labeled = scored_classes(cfg.coverage_file, dataset)
+    scored = shared_classes(labeled, scored_classes(cfg.coverage_file, entries[model].dataset))
     run_id = _run_id(model, dataset, split, limit)
     run_dir = cfg.runs_dir / run_id
     if run_dir.exists():
@@ -943,7 +959,8 @@ def run_evaluation(
         split=split,
         limit=limit,
         predictions_from=source,
-        scored_classes=list(scored),
+        scored_classes=scored,
+        unscored_classes=[name for name in labeled if name not in scored],
         metrics=compute_metrics(
             detections,
             targets,

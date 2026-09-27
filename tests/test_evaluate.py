@@ -15,6 +15,7 @@ from frc_xdata.evaluate import (
     image_units,
     load_predictions,
     save_predictions,
+    shared_classes,
     to_detections,
     unit_counts,
 )
@@ -205,3 +206,13 @@ def test_bootstrap_skips_resamples_without_a_labeled_box() -> None:
     # A resample of only r2 has no fuel to find, which says nothing about recall.
     assert fuel_interval.recall == fuel_interval.map50 == Interval(low=1.0, high=1.0)
     assert (robot_interval.map50, robot_interval.recall) == (None, None)
+
+
+def test_shared_classes_keep_the_dataset_order() -> None:
+    assert shared_classes(["robot", "fuel"], ["fuel", "robot"]) == ["robot", "fuel"]
+    assert shared_classes(["fuel", "robot"], ["fuel"]) == ["fuel"]
+
+
+def test_shared_classes_refuse_a_model_that_knows_none_of_them() -> None:
+    with pytest.raises(ConfigError, match="knows"):
+        shared_classes(["robot"], ["fuel"])
