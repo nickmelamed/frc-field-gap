@@ -325,3 +325,35 @@ few groups of one or two are most likely copies that lost an edge box to
 rotation, and they keep an extra copy. The untouched original is usually
 not among the copies, so the kept image is still slightly rotated, with
 slightly loose boxes, and its exposure or blur is changed.
+
+## D-015: Upload each split by name and check the version before training (2026-09-27)
+
+Context. Task 5 trains the baseline on the Roboflow platform from
+`data/harmonized/marswars/`, and D-013's leak guarantees hold only if
+Roboflow keeps every image in its split. In `roboflow` 1.5.1 a directory
+upload guesses each image's split from its path and defaults to train, the
+zip upload leaves the split to the server, and a failed image upload is
+printed rather than raised. The SDK's folder parser also read `info` and
+`licenses` from every COCO file, which harmonized files did not have.
+
+Decision. `frc-upload` uploads train, valid, and test in separate calls with
+`split` set, only to a project that already exists, after checking split
+sizes against `reports/splits.json` and the images against the field test
+set. `frc-verify-upload` downloads the generated version and matches every
+image to its harmonized file by upload name. Training starts only after it
+passes. Harmonized COCO files now carry empty `info` and `licenses`. The
+version keeps auto-orient, adds a resize only if the architecture requires
+one, and has no augmentation and no null filter.
+
+Why. Parsed one folder at a time, the SDK put every harmonized image in
+train. Checking counts in the web app would miss an image that moved from
+test to train while another moved back. Matching by name works after
+Roboflow re-encodes the images, and the box count check catches an image
+whose annotations failed to upload. Filtering nulls would drop the
+background images that D-012 keeps.
+
+Consequences. Each platform run leaves
+`reports/platform_upload_<key>.json` with the version's preprocessing and
+augmentation as the API reports them, and `reports/models.yaml` holds the
+settings from the training page. The architecture and input size are
+recorded there once the run is set up.
