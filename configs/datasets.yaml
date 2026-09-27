@@ -4,30 +4,43 @@
 # candidates up with `make download ARGS=--resolve`, which writes
 # reports/dataset_resolution.json, and pin the version here by hand.
 # Every change to a pinned version needs a line in docs/DECISIONS.md.
+# Versions below were pinned on 2026-09-26, see D-008.
 
 datasets:
   marswars:
     workspace: marswars-robotics-program
     project: 2026-rebuilt
+    version: 5
     license: CC BY 4.0
 
   lava:
     workspace: lava
     project: frc-2026-aagvs
     license: CC BY 4.0
+    note: No published version, so there is nothing to export.
 
   testingfrfr:
     workspace: testing-frfr
     project: frc-2026-mldc0
+    version: 1
     license: CC BY 4.0
 
   scorekeeper:
     workspace: blind-assistant-model
     project: frc-scorekeeper-2026
+    version: 1
     license: CC BY 4.0
 
-  # The workspace has several projects. The lookup lists them all so one can
-  # be picked.
   robotzftp2:
     workspace: robot-zftp2
+    project: rebuilt-dataset-hcmwl
+    version: 1
     license: CC BY 4.0
+    note: The largest REBUILT project with a version in this workspace.
+
+  robotzftp2_fuel:
+    workspace: robot-zftp2
+    project: frc-2026-fuel-ndrbj
+    version: 1
+    license: CC BY 4.0
+    note: The other REBUILT project with a version in this workspace.
