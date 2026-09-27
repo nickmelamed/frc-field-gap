@@ -508,8 +508,10 @@ most 100 per image. The cache stays in git, so `--from-cache` works from a
 fresh clone. Raising the floor instead would cut the low-confidence tail on
 every image, including sparse ones.
 
-Consequences. Dropping the faintest boxes removes low-ranked false
-positives, so mAP can come out slightly higher than with no limit. Recall
+Consequences. The dropped boxes include low-ranked false positives and some
+low-confidence hits, so mAP can move slightly either way compared with no
+limit. On A-test it came out slightly lower (compare the two A-test runs'
+`metrics.json`). Recall
 at the 0.5 threshold is unchanged unless an image has more than 25
 predictions above 0.5. The first A-test and B-test runs, made without the
 limit, stay under `reports/runs/`, since the rescores read their caches, and
