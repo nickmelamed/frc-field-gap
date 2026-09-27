@@ -10,7 +10,7 @@ from conftest import coco, image_entry
 
 from frc_xdata import harmonize
 from frc_xdata.config import ClassMapConfig, load_yaml
-from frc_xdata.errors import UnmappedLabelError
+from frc_xdata.errors import SplitLeakError, UnmappedLabelError
 from frc_xdata.harmonize import class_coverage, map_labels, to_coco
 from frc_xdata.inspect_datasets import Box, ImageRecord, ImageRef, parse_coco
 
@@ -269,3 +269,13 @@ def test_main_resplits_configured_datasets_and_reports_it(
     assert report["cross_dataset_near_duplicates"] == 0
     coverage = json.loads((tmp_path / "reports" / "class_coverage.json").read_text())
     assert list(coverage["alpha"]["splits"]) == ["train", "valid"]
+
+
+def test_main_stops_when_two_resplit_datasets_share_an_image(
+    raw_dir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # beta/f.png is a byte copy of alpha/b.png.
+    splits = {**GROUPED, "beta": {**GROUPED["alpha"], "dedupe_copies": False}}
+    with pytest.raises(SplitLeakError, match="1 near-duplicate pairs across"):
+        run_cli(tmp_path, monkeypatch, CLASS_MAP, splits)
+    assert not (tmp_path / "reports" / "splits.json").exists()

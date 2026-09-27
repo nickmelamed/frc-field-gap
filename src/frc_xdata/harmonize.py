@@ -33,7 +33,7 @@ from frc_xdata.config import (
     load_yaml,
 )
 from frc_xdata.download import DATASETS_CONFIG, PROJECT_CONFIG, read_manifest
-from frc_xdata.errors import UnmappedLabelError
+from frc_xdata.errors import SplitLeakError, UnmappedLabelError
 from frc_xdata.inspect_datasets import (
     ANNOTATIONS_NAME,
     ImageRecord,
@@ -275,8 +275,11 @@ def run_harmonize(keys: Sequence[str], project: ProjectConfig, class_map: ClassM
     downloading and is skipped with a warning.
 
     Raises:
+        UnmappedLabelError: If a source label is missing from the class map.
         SplitLeakError: If a re-split test image has a near duplicate in its
-            train or valid split.
+            own train or valid split, or if two re-split datasets share a
+            near duplicate. Either would let a test image be seen in
+            training.
     """
     paths = project.paths
     max_distance = project.inspect.near_duplicate_max_distance
@@ -304,10 +307,13 @@ def run_harmonize(keys: Sequence[str], project: ProjectConfig, class_map: ClassM
             hashes = hash_images(mapped, source_dirs)
             seed = f"{project.seed}:{key}"
             result = split_dataset(mapped, hashes, method, project.splits, max_distance, seed)
-            check_no_leak(result.split, hashes, max_distance)
             for r in mapped:
                 if r.ref in result.split:
                     by_split[result.split[r.ref]].append(r)
+            # Checked on the layout about to be written, not on the split
+            # result, so a mistake between the two is caught as well.
+            layout = {r.ref: s for s, split_records in by_split.items() for r in split_records}
+            check_no_leak(layout, hashes, max_distance)
             kept_hashes.update({ref: hashes[ref] for ref in result.split})
             summaries[key] = split_summary(mapped, result, method)
             logger.info(
@@ -323,7 +329,7 @@ def run_harmonize(keys: Sequence[str], project: ProjectConfig, class_map: ClassM
 
     cross = cross_dataset_pairs(kept_hashes, max_distance)
     if cross:
-        logger.warning("%d near-duplicate pairs across re-split datasets", cross)
+        raise SplitLeakError(f"{cross} near-duplicate pairs across re-split datasets")
     report = {
         "fractions": project.splits.fractions.model_dump(),
         "buffer_frames": project.splits.buffer_frames,
