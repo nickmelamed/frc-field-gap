@@ -4,7 +4,9 @@ The five REBUILT datasets the pipeline downloads from Roboflow Universe, how
 each one is labeled, and what is wrong with each. Counts come from
 `reports/dataset_stats.csv`, `reports/class_counts.csv`,
 `reports/duplicates.json`, and `reports/dataset_resolution.json`, which `make
-inspect` and `make download ARGS=--resolve` regenerate. Versions are pinned in
+inspect` and `make download ARGS=--resolve` regenerate. The harmonized splits
+are described by `reports/splits.json`, `reports/class_coverage.json`, and
+`reports/harmonize_counts.csv`, which `make harmonize` regenerates. Versions are pinned in
 `configs/datasets.yaml` and attributed in the README.
 
 ## Choice
@@ -40,8 +42,8 @@ robots from past games. The alternative was to make `scorekeeper` Dataset A,
 which adds robots to the baseline but builds it on augmented, leaky data whose
 robots are not REBUILT robots. We chose `marswars` because the robot-camera
 fuel detector is the use case, and a dataset that shares no images with the
-others makes a clean anchor. Its own test split still leaks from train until
-it is regrouped by recording.
+others makes a clean anchor. Its own test split leaked from train, so it was
+re-split by recording (see Splits).
 
 ## Terms
 
@@ -224,9 +226,9 @@ are lower bounds and a plain pHash filter would miss copies. Matching has to
 compare against flipped and rotated hashes as well. The field test set, once
 it exists, goes through the same check (SPEC section 8).
 
-## Proposed class mapping
+## Class mapping
 
-`configs/class_map.yaml` will implement this mapping.
+`configs/class_map.yaml` implements this mapping (D-012).
 
 | Dataset | Source label | Maps to |
 |---|---|---|
@@ -239,8 +241,16 @@ it exists, goes through the same check (SPEC section 8).
 | testingfrfr | `robot` | robot |
 | robotzftp2_fuel | `Fuels` | fuel |
 
-Roboflow adds an empty placeholder category at id 0 to every COCO file, and
-the pipeline ignores it.
+Roboflow adds a placeholder category at id 0 to every COCO file. No
+annotation uses it, and the harmonized files leave it out, so every dataset
+holds only fuel (id 1) and robot (id 2) and class ids match across datasets.
+A DROP removes the box and keeps the image.
+
+`reports/harmonize_counts.csv` logs every source label per split with the
+class it became and its box count. Apart from the `marswars` state boxes,
+which are removed, every box keeps its place under the new name.
+`reports/class_coverage.json` lists the classes each dataset labels after
+mapping, with counts per split.
 
 Evaluation is per class, and a dataset is only scored on the classes it
 labels. `marswars` and `robotzftp2` are scored on fuel only, and `scorekeeper`
@@ -248,14 +258,34 @@ on both.
 
 ## Splits
 
-Because adjacent frames cross splits in every dataset, splits have to group
-images by source video or photo and not by image. For the augmented versions,
-every augmented copy has to follow its source photo into the same split, and
-test and valid should hold one copy per photo. The source name alone cannot
-identify the photo, because different photos share names. Copies of one photo
-are near duplicates of each other, or differ only by a flip or rotation, so
-grouping has to combine the source name with image similarity. The part of the
-name before the frame number identifies the video where there is one.
+Because adjacent frames cross splits in every dataset, `make harmonize`
+re-splits A, B, and C instead of using their Roboflow splits (D-013).
+`testingfrfr` and `robotzftp2_fuel` keep their own splits, since they are not
+evaluated.
+
+`marswars` and `robotzftp2` are cut by frame order within each recording.
+The start of a recording goes to train, the next part to valid, and the end
+to test, so valid sits between train and test in time. Frames just before
+each cut are dropped as a buffer. Recordings too short to cut go whole to
+train. So do FIRST's official videos in `marswars`, which are edited from
+many shots, so the end of the video is a different scene rather than later in
+one run. `scorekeeper` first keeps one copy of each augmented photo (D-014),
+then joins images that share a video, a source name, or a near-duplicate
+hash, and assigns whole groups. A last pass drops any train or valid image
+that is a near duplicate of a test image, and the run fails if one remains.
+
+| Dataset | Method | Train images | Valid images | Test images | Test comes from |
+|---|---|---|---|---|---|
+| marswars | frame order | 942 | 140 | 171 | 6 recordings |
+| robotzftp2 | frame order | 1293 | 249 | 286 | 7 recordings |
+| scorekeeper | grouped | 1466 | 314 | 314 | 109 groups |
+
+The buffer dropped 55 `marswars` and 70 `robotzftp2` images. The last pass
+dropped 2 `marswars` train images that looked like test frames, since the
+robot returns to the same spots. Removing copies dropped 2988 `scorekeeper`
+train images. `from_source_split` in `reports/splits.json` shows where each
+Roboflow split's images went. The re-split datasets share no near
+duplicates with each other.
 
 ## Limits
 
@@ -268,3 +298,10 @@ count here is a lower bound. Only `marswars` shows fuel inside a robot, since
 the other datasets either have no robots or show robots from games without
 fuel. Source-video and season notes come from file names, and some file names
 (such as `youtube-40.jpg`) do not say which event they are from.
+
+The A and B test splits hold later frames of the same recordings as train,
+so they measure how the detector does later in runs it has seen, with the
+same lighting, balls, and background, not on a new run. Each rests on few
+independent scenes. A-test has no official-field frames. The near-duplicate
+check that guards the splits uses a pixel hash, which cannot tell whether two
+frames of the same run teach a model the same thing.
