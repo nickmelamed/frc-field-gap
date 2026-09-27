@@ -3,18 +3,29 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+import supervision as sv
 
+from frc_xdata.config import SplitMethod
 from frc_xdata.errors import ConfigError, PredictionCacheTooLargeError, UnmappedLabelError
 from frc_xdata.evaluate import (
     Prediction,
     align,
+    bootstrap,
+    image_units,
     load_predictions,
     save_predictions,
     to_detections,
+    unit_counts,
 )
+from frc_xdata.inspect_datasets import Box, ImageRecord, ImageRef
 
 CLASSES = ["fuel", "robot"]
 LIMIT = 10_000
+TEMPORAL = SplitMethod(
+    method="temporal", recording_pattern=r"^(?P<recording>.+?)[_-](?P<frame>\d+)\.jpg$"
+)
+GROUPED = SplitMethod(method="grouped", recording_pattern=r"^(?P<recording>.+[_-]mp4)[_-]\d+\.jpg$")
+FAR_APART = [0, 2**64 - 1]
 
 
 def pred(conf: float, cls: str = "fuel", box: tuple[float, ...] = (1.0, 2.0, 11.0, 12.0)):
@@ -73,3 +84,104 @@ def test_align_follows_dataset_order_and_rejects_missing_images() -> None:
     np.testing.assert_allclose(aligned[1].xyxy, [[1.0, 2.0, 11.0, 12.0]])
     with pytest.raises(ConfigError, match=r"c\.jpg"):
         align(predictions, ["a.jpg", "c.jpg"], CLASSES)
+
+
+def record(source: str, labels: tuple[str, ...] = ()) -> ImageRecord:
+    boxes = tuple(Box(label, 0, 0, 5, 5) for label in labels)
+    return ImageRecord(ImageRef("alpha", "test", f"{source}.rf.jpg"), source, 64, 64, boxes)
+
+
+def test_temporal_units_are_recordings() -> None:
+    records = [record("run1_0001.jpg"), record("run1_0002.jpg"), record("run2-0007.jpg")]
+    assert image_units(records, TEMPORAL, None, 4) == ["run1", "run1", "run2"]
+
+
+def test_temporal_unit_needs_a_recording_name() -> None:
+    with pytest.raises(ConfigError, match=r"photo\.jpg"):
+        image_units([record("photo.jpg")], TEMPORAL, None, 4)
+
+
+def test_grouped_units_join_recordings_and_near_duplicates() -> None:
+    records = [
+        record("match_mp4-1.jpg"),
+        record("match_mp4-9.jpg"),
+        record("a.jpg"),
+        record("b.jpg"),
+        record("c.jpg"),
+    ]
+    # a and b are one bit apart, c is far from both.
+    hashes = [FAR_APART[0], FAR_APART[1], 12345, 12344, 0xFFFF << 48]
+    units = image_units(records, GROUPED, hashes, 4)
+    assert units[0] == units[1] == "match_mp4-1.jpg.rf.jpg"
+    assert units[2] == units[3] == "a.jpg.rf.jpg"
+    assert units[4] == "c.jpg.rf.jpg"
+
+
+def test_grouped_units_need_hashes() -> None:
+    with pytest.raises(ConfigError, match="hashes"):
+        image_units([record("a.jpg")], GROUPED, None, 4)
+
+
+def test_datasets_without_a_split_method_have_one_unit_per_image() -> None:
+    records = [record("a.jpg"), record("b.jpg")]
+    assert image_units(records, None, None, 4) == ["a.jpg.rf.jpg", "b.jpg.rf.jpg"]
+
+
+def test_unit_counts_sum_to_the_split_and_skip_unscored_classes() -> None:
+    records = [
+        record("run1_1.jpg", ("fuel", "fuel")),
+        record("run1_2.jpg", ("fuel", "robot")),
+        record("run2_1.jpg", ()),
+    ]
+    counts = unit_counts(records, ["run1", "run1", "run2"], ["fuel"])
+    assert [(c.unit, c.images, c.boxes) for c in counts] == [
+        ("run1", 2, {"fuel": 3}),
+        ("run2", 1, {"fuel": 0}),
+    ]
+    assert sum(c.images for c in counts) == len(records)
+
+
+def fuel(*boxes: list[int], conf: float | None = None) -> sv.Detections:
+    xyxy = np.array(boxes, dtype=float)
+    confidence = None if conf is None else np.full(len(boxes), conf)
+    return sv.Detections(xyxy=xyxy, class_id=np.zeros(len(boxes), dtype=int), confidence=confidence)
+
+
+def run_bootstrap(units: list[str], seed: int = 7):
+    hit, miss = [0, 0, 10, 10], [20, 20, 30, 30]
+    targets = [fuel(hit), fuel(miss), fuel(hit), fuel(miss)]
+    predictions = [
+        fuel(hit, conf=0.9),
+        sv.Detections.empty(),
+        fuel(hit, conf=0.9),
+        fuel([50, 50, 60, 60], conf=0.9),
+    ]
+    return bootstrap(
+        predictions,
+        targets,
+        units,
+        CLASSES,
+        ["fuel"],
+        confidence=0.5,
+        resamples=50,
+        level=0.9,
+        seed=seed,
+    )
+
+
+def test_bootstrap_is_repeatable_for_a_seed() -> None:
+    units = ["r1", "r1", "r2", "r3"]
+    assert run_bootstrap(units) == run_bootstrap(units)
+
+
+def test_bootstrap_interval_brackets_the_point_value() -> None:
+    result = run_bootstrap(["r1", "r2", "r3", "r4"])
+    (interval,) = result.classes
+    assert result.units == 4
+    assert interval.recall.low <= 0.5 <= interval.recall.high
+    assert interval.recall.low < interval.recall.high
+
+
+def test_bootstrap_over_one_unit_collapses_to_the_point_value() -> None:
+    (interval,) = run_bootstrap(["r1"] * 4).classes
+    assert interval.recall.low == interval.recall.high == 0.5

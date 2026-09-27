@@ -24,7 +24,10 @@ from supervision.metrics import (
     Recall,
 )
 
+from frc_xdata.config import SplitMethod
 from frc_xdata.errors import ConfigError, PredictionCacheTooLargeError, UnmappedLabelError
+from frc_xdata.inspect_datasets import ImageRecord
+from frc_xdata.splits import leak_groups, recording_key
 
 # Metrics are stored rounded, and the report prints them unchanged, so every
 # number in the docs appears verbatim under reports/.
@@ -375,3 +378,168 @@ def align(
     if missing:
         raise ConfigError(f"{len(missing)} images have no cached predictions, such as {missing[0]}")
     return [to_detections(predictions[name], classes) for name in image_names]
+
+
+class UnitCount(_Record):
+    """How many images and labeled boxes one recording or group adds to a split."""
+
+    unit: str
+    images: int
+    boxes: dict[str, int]
+
+
+class Interval(_Record):
+    """A bootstrap percentile interval."""
+
+    low: float
+    high: float
+
+
+class ClassInterval(_Record):
+    """Bootstrap intervals for one class."""
+
+    name: str
+    map50: Interval
+    recall: Interval
+
+
+class BootstrapResult(_Record):
+    """Intervals from resampling whole recordings or groups with replacement."""
+
+    units: int
+    resamples: int
+    level: float
+    seed: int
+    classes: list[ClassInterval]
+
+
+def image_units(
+    records: Sequence[ImageRecord],
+    method: SplitMethod | None,
+    hashes: Sequence[int] | None,
+    max_distance: int,
+) -> list[str]:
+    """Return the recording or group of each image, the same way the split made them.
+
+    A temporal dataset's unit is the recording in the source name. A grouped
+    dataset's unit is its related-image group, rebuilt from the images alone.
+    Whole groups went to one split, so rebuilding them from one split gives
+    the same groups. A dataset that was not re-split has one unit per image.
+
+    Args:
+        records: The images of one split.
+        method: How the dataset was re-split, or None if it keeps its own splits.
+        hashes: Perceptual hash of each image, in the order of ``records``.
+            Needed only for the grouped method.
+        max_distance: Largest hash distance that joins two images.
+
+    Raises:
+        ConfigError: If a temporal source name names no recording, or hashes
+            are missing for a grouped dataset.
+    """
+    if method is None:
+        return [r.ref.file_name for r in records]
+    if method.method == "temporal":
+        units = []
+        for r in records:
+            recording = recording_key(r.source_name, method.recording_pattern)
+            if recording is None:
+                raise ConfigError(
+                    f"{r.ref}: {r.source_name!r} does not match the recording pattern"
+                )
+            units.append(recording)
+        return units
+    if hashes is None:
+        raise ConfigError("grouped datasets need image hashes to rebuild their groups")
+    labels = [""] * len(records)
+    for group in leak_groups(records, hashes, method.recording_pattern, max_distance):
+        label = min(records[i].ref.file_name for i in group)
+        for i in group:
+            labels[i] = label
+    return labels
+
+
+def unit_counts(
+    records: Sequence[ImageRecord], units: Sequence[str], scored: Sequence[str]
+) -> list[UnitCount]:
+    """Count images and scored boxes per unit, most boxes first."""
+    images: dict[str, int] = {}
+    boxes: dict[str, dict[str, int]] = {}
+    for r, unit in zip(records, units, strict=True):
+        images[unit] = images.get(unit, 0) + 1
+        counts = boxes.setdefault(unit, dict.fromkeys(scored, 0))
+        for b in r.boxes:
+            if b.label in counts:
+                counts[b.label] += 1
+    return sorted(
+        (UnitCount(unit=u, images=images[u], boxes=boxes[u]) for u in images),
+        key=lambda c: (-sum(c.boxes.values()), c.unit),
+    )
+
+
+def bootstrap(
+    predictions: list[sv.Detections],
+    targets: list[sv.Detections],
+    units: Sequence[str],
+    classes: Sequence[str],
+    scored: Sequence[str],
+    confidence: float,
+    resamples: int,
+    level: float,
+    seed: int,
+) -> BootstrapResult:
+    """Return percentile intervals for mAP50 and recall, resampling whole units.
+
+    Frames from one recording are alike, so resampling single images would
+    treat them as independent and give intervals that are too narrow.
+
+    Args:
+        predictions: Per-image predictions, with confidences.
+        targets: Per-image labels, in the same order.
+        units: The recording or group of each image, in the same order.
+        classes: Every class name in the dataset, indexed by class id.
+        scored: The class names this dataset labels.
+        confidence: Threshold for recall.
+        resamples: How many resamples to draw.
+        level: Share of resampled values inside the interval, such as 0.95.
+        seed: Seed for the random generator, so intervals are repeatable.
+    """
+    class_ids = sorted(classes.index(name) for name in scored)
+    preds = [restrict(p, class_ids) for p in predictions]
+    labels = [restrict(t, class_ids) for t in targets]
+    members: dict[str, list[int]] = {}
+    for i, unit in enumerate(units):
+        members.setdefault(unit, []).append(i)
+    groups = [members[u] for u in sorted(members)]
+
+    rng = np.random.default_rng(seed)
+    ap50 = np.zeros((resamples, len(class_ids)))
+    recall = np.zeros((resamples, len(class_ids)))
+    for n in range(resamples):
+        picked = [i for g in rng.integers(0, len(groups), len(groups)) for i in groups[g]]
+        sample_preds = [preds[i] for i in picked]
+        sample_labels = [labels[i] for i in picked]
+        mean_ap = MeanAveragePrecision().update(sample_preds, sample_labels).compute()
+        ap50[n] = _per_class(mean_ap.ap_per_class[:, 0], mean_ap.matched_classes, class_ids)
+        _, recall[n] = _precision_recall(
+            [above(p, confidence) for p in sample_preds], sample_labels, class_ids
+        )
+
+    tail = (1 - level) / 2 * 100
+    bounds = [tail, 100 - tail]
+    ap_low, ap_high = np.percentile(ap50, bounds, axis=0)
+    rec_low, rec_high = np.percentile(recall, bounds, axis=0)
+    return BootstrapResult(
+        units=len(groups),
+        resamples=resamples,
+        level=level,
+        seed=seed,
+        classes=[
+            ClassInterval(
+                name=classes[c],
+                map50=Interval(low=_round(ap_low[i]), high=_round(ap_high[i])),
+                recall=Interval(low=_round(rec_low[i]), high=_round(rec_high[i])),
+            )
+            for i, c in enumerate(class_ids)
+        ],
+    )
