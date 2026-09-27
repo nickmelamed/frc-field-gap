@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    # Branch protection on main requires this exact name (docs/DECISIONS.md, D-004).
+    name: lint, typecheck, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.11.14"
+          python-version: "3.11"
+          enable-cache: true
+
+      # No extras and no secrets. Unit tests use synthetic fixtures only, and
+      # integration tests are deselected by the pytest config.
+      - name: Install from the lockfile
+        run: uv sync --locked
+
+      - name: Lint, typecheck, test
+        run: make check
+
+      - name: requirements.txt matches uv.lock
+        run: |
+          make requirements
+          git diff --exit-code requirements.txt
+
+      - name: Comment and doc style
+        run: python3 scripts/agent/check_style.py .
