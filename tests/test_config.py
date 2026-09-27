@@ -1,3 +1,5 @@
+import csv
+import re
 from pathlib import Path
 
 import pytest
@@ -6,9 +8,12 @@ from pydantic import BaseModel, ConfigDict, ValidationError
 from frc_xdata.config import (
     API_KEY_VAR,
     AreaBuckets,
+    ClassMapConfig,
     DatasetsConfig,
     DatasetSpec,
     ProjectConfig,
+    SplitFractions,
+    SplitMethod,
     load_yaml,
     roboflow_api_key,
 )
@@ -196,3 +201,74 @@ def test_committed_datasets_config_loads() -> None:
 def test_area_buckets_must_increase(small: float, medium: float) -> None:
     with pytest.raises(ValidationError, match="small_max must be below medium_max"):
         AreaBuckets.model_validate({"small_max": small, "medium_max": medium})
+
+
+def test_committed_class_map_covers_every_inspected_label() -> None:
+    cfg = load_yaml(REPO_ROOT / "configs" / "class_map.yaml", ClassMapConfig)
+    with (REPO_ROOT / "reports" / "class_counts.csv").open(encoding="utf-8") as f:
+        found = {(row["dataset"], row["label"]) for row in csv.DictReader(f)}
+    missing = {(k, label) for k, label in found if label not in cfg.datasets.get(k, {})}
+    assert found
+    assert not missing
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        {"classes": ["fuel"], "datasets": {"a": {"x": "robot"}}},
+        {"classes": ["fuel", "fuel"], "datasets": {}},
+        {"classes": ["fuel", "DROP"], "datasets": {}},
+        {"classes": [], "datasets": {}},
+    ],
+    ids=["unknown-target", "repeated-class", "drop-as-class", "no-classes"],
+)
+def test_class_map_rejects_bad_values(data: dict[str, object]) -> None:
+    with pytest.raises(ValidationError):
+        ClassMapConfig.model_validate(data)
+
+
+def test_class_map_accepts_drop() -> None:
+    cfg = ClassMapConfig.model_validate(
+        {"classes": ["fuel"], "datasets": {"a": {"x": "fuel", "y": "DROP"}}}
+    )
+    assert cfg.datasets["a"]["y"] == "DROP"
+
+
+def test_split_fractions_must_sum_to_one() -> None:
+    with pytest.raises(ValidationError, match="sum to 1"):
+        SplitFractions(train=0.7, valid=0.2, test=0.2)
+
+
+@pytest.mark.parametrize(
+    ("method", "pattern", "message"),
+    [
+        ("temporal", r"^(?P<recording>.+)_\d+$", "frame"),
+        ("grouped", r"^(?P<name>.+)$", "recording"),
+        ("grouped", r"^(?P<recording>.+$", "does not compile"),
+    ],
+    ids=["temporal-needs-frame", "needs-recording", "bad-regex"],
+)
+def test_split_method_checks_its_pattern(method: str, pattern: str, message: str) -> None:
+    with pytest.raises(ValidationError, match=message):
+        SplitMethod.model_validate({"method": method, "recording_pattern": pattern})
+
+
+@pytest.mark.parametrize(
+    ("key", "name", "recording"),
+    [
+        (
+            "marswars",
+            "Basler_daA1280-54uc__24770352__20260112_180633579_0063.png",
+            "Basler_daA1280-54uc__24770352__20260112_180633579",
+        ),
+        ("robotzftp2", "IMG_5839_MOV-0222.jpg", "IMG_5839_MOV"),
+        ("scorekeeper", "FRC_2_mp4-57.jpg", "FRC_2_mp4"),
+        ("scorekeeper", "sLSlrV_S0TI_12.jpg", "sLSlrV_S0TI"),
+        ("scorekeeper", "frame_0324.jpg", None),
+        ("scorekeeper", "youtube-47.jpg", None),
+    ],
+)
+def test_committed_recording_patterns(key: str, name: str, recording: str | None) -> None:
+    cfg = load_yaml(REPO_ROOT / "configs" / "project.yaml", ProjectConfig)
+    match = re.match(cfg.splits.datasets[key].recording_pattern, name)
+    assert (match["recording"] if match else None) == recording
