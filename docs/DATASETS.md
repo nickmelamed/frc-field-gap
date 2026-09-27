@@ -9,12 +9,12 @@ inspect` and `make download ARGS=--resolve` regenerate. Versions are pinned in
 
 ## Choice
 
-Chosen on 2026-09-26 and recorded as D-011 in `docs/DECISIONS.md`.
+Chosen on 2026-09-26, see D-011.
 
 Dataset A, the baseline, is `marswars`. It is the only dataset shot from a
 camera mounted on a robot, which is where our detector will run. None of its
 images are augmented copies, and it shares no images with any other dataset,
-so its test split is clean for cross-dataset comparison. It labels fuel only.
+so its test split is clean against the other datasets. It labels fuel only.
 
 Dataset B is `robotzftp2`. It shows fuel on carpet in a cluttered home, filmed
 from a handheld phone at standing height, which differs from A in viewpoint,
@@ -38,10 +38,10 @@ The main trade-off is the robot class. With `marswars` as A, the baseline
 never sees a robot, so robot results start with the merged model, and only on
 robots from past games. The alternative was to make `scorekeeper` Dataset A,
 which adds robots to the baseline but builds it on augmented, leaky data whose
-robots are not REBUILT robots. We chose `marswars`, because the fuel
-detector on the robot camera is the use case and the dataset that shares no
-images with the others should anchor the comparison. Its own test split still
-leaks from train until it is regrouped by recording.
+robots are not REBUILT robots. We chose `marswars` because the robot-camera
+fuel detector is the use case, and a dataset that shares no images with the
+others makes a clean anchor. Its own test split still leaks from train until
+it is regrouped by recording.
 
 ## Terms
 
@@ -72,8 +72,7 @@ wooden practice-field border, and people's legs at the edge of the frame. A
 smaller group of frames comes from FIRST's official 2026 game videos, which
 show the real field under arena lighting with over a hundred balls on the
 carpet (up to 179 boxes in one image). A few dozen more are portrait phone
-frames of a ball on a shop floor, so A is mostly but not only robot-camera
-footage.
+frames of a ball on a shop floor.
 
 Fuel is labeled `game_piece`, with tight boxes around each ball, including
 balls touching each other in clusters and balls partly cut off by the image
@@ -94,7 +93,10 @@ official-video frames is not labeled, which does not matter because `marswars`
 is never scored on robots. Fuel held in the kitbot's hopper and fuel in the
 hub's funnel are boxed when visible. The fuel packed into the hub's lower
 storage is mostly left unlabeled, with only a few balls at its edge boxed, so
-that part of the field is labeled inconsistently.
+that part of the field is labeled inconsistently. Fuel outside the field,
+behind the border rail, and faint fuel seen through clear panels is not boxed,
+while fuel on the carpet is boxed densely. A detector that finds those balls
+will be charged with false positives on these frames.
 
 Adjacent frames of the same run fall in different splits (289 near-duplicate
 pairs between test and train, 428 between train and valid), so splits have to
@@ -114,9 +116,8 @@ blur in some frames. The camera is at standing height and looks down at a
 steep angle.
 
 Fuel is labeled `fuel` with tight boxes, including balls cut off by the image
-edge and balls partly behind the drying rack. There are no robots, so fuel
-inside a robot never comes up. The zero-label images (54 train, 22 valid) we
-checked show no fuel.
+edge and balls partly behind the drying rack. There are no robots. The
+zero-label images (54 train, 22 valid) we checked show no fuel.
 
 There is no test split, so the pipeline has to make one. Frames of one video
 sit in both splits (815 near-duplicate pairs between train and valid), so the
@@ -149,8 +150,7 @@ box. Robot boxes cover the whole robot, bumpers included. Broadcast frames
 also label the robots in the picture-in-picture insets.
 
 Zero-label images are mostly score screens, crowd shots, and a 2016 field. At
-least one is a 2023 broadcast frame with robots in view and no labels, which
-is a missed label.
+least one, a 2023 broadcast frame with robots in view, is missing its labels.
 
 The same source name appears in more than one split (87 names, see
 `source_name_overlap`), and near duplicates between test and train number 1642
@@ -177,8 +177,7 @@ broadcast frames on their side or upside down.
 
 Fuel is labeled `fuel` and robots `robot`. Fuel boxes are tight, and in the
 home footage balls partly behind furniture are labeled as in `robotzftp2`.
-Robot boxes cover whole robots, including small ones in broadcast insets. As
-in `scorekeeper`, no image shows fuel inside a robot.
+Robot boxes cover whole robots, including small ones in broadcast insets.
 
 It shares near duplicates with `scorekeeper`, `robotzftp2`, and
 `robotzftp2_fuel`. There are 15288 pairs between its train split and
@@ -217,10 +216,13 @@ among the other four involves `testingfrfr`. `scorekeeper`, `robotzftp2`, and
 `robotzftp2_fuel` do not overlap with each other directly. The full counts are
 under `near.counts.cross_dataset` in `reports/duplicates.json`.
 
-For the proposed A, B, and C, this means the three test sets are independent
-of each other, and `testingfrfr` must never be merged into training without
-removing its matches to every test split first. The field test set, once it
-exists, goes through the same check (SPEC section 8).
+For A, B, and C, this means their images do not overlap with each other, and
+`testingfrfr` must never be merged into training without removing its matches
+to every test split first. The pHash used here is not invariant to flips or
+rotations, and `testingfrfr` holds flipped and rotated copies, so these counts
+are lower bounds and a plain pHash filter would miss copies. Matching has to
+compare against flipped and rotated hashes as well. The field test set, once
+it exists, goes through the same check (SPEC section 8).
 
 ## Proposed class mapping
 
@@ -261,5 +263,8 @@ Label-style notes come from looking at the sample grids and at contact sheets
 of the densest and zero-label images of each dataset. That is a sample, and we
 did not audit every box. Near-duplicate counts depend on the pHash threshold,
 and at 4 bits they include adjacent video frames as well as copies of one
-photo (D-010). Source-video and season notes come from file names, and some
-file names (such as `youtube-40.jpg`) do not say which event they are from.
+photo (D-010). They miss copies that were flipped or rotated, so every overlap
+count here is a lower bound. Only `marswars` shows fuel inside a robot, since
+the other datasets either have no robots or show robots from games without
+fuel. Source-video and season notes come from file names, and some file names
+(such as `youtube-40.jpg`) do not say which event they are from.
