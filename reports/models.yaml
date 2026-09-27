@@ -1,0 +1,24 @@
+# Models trained on the Roboflow platform, one entry per run.
+# Filled in by hand from the training page after each run, following
+# docs/RETRAINING.md. The exact version preprocessing and augmentation are
+# in reports/platform_upload_<dataset>.json. null means not reported yet.
+
+models:
+  baseline-a:
+    dataset: marswars
+    split_report: reports/splits.json
+    upload_report: reports/platform_upload_marswars.json
+    project: null
+    version: null
+    model_id: null
+    architecture: null
+    checkpoint: null
+    input_size: null
+    epochs: null
+    preprocessing: null
+    augmentation: none
+    train_time_augmentation: null
+    other_settings: {}
+    trained: null
+    credits_used: null
+    notes: null
