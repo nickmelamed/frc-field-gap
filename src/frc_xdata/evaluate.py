@@ -66,8 +66,8 @@ from frc_xdata.splits import SPLITS, leak_groups, recording_key
 # Metrics are stored rounded, and the report prints them unchanged, so every
 # number in the docs appears verbatim under reports/.
 DECIMALS = 3
-# Cached predictions keep enough precision to re-sweep thresholds without
-# changing a count, at a size that can be committed.
+# Cached predictions are rounded so a whole split is small enough to commit.
+# Runs are scored from the rounded values, so rescoring a cache matches.
 CONFIDENCE_DECIMALS = 4
 COORD_DECIMALS = 1
 PREDICTIONS_NAME = "predictions.json"
@@ -724,7 +724,7 @@ class HostedPredictor:
         return self._server
 
     def predict(self, image: Path) -> list[Prediction]:
-        """Send one image to the hosted model."""
+        """Return the hosted model's predictions for one image."""
         response = self._client.infer(str(image), model_id=self._model_ref)
         return parse_response(response, self._model_name, self._server)
 
@@ -866,13 +866,13 @@ def run_evaluation(
 
     Args:
         repo: The repository root, for git state.
-        project: The project config.
+        project: Settings from ``configs/project.yaml``.
         datasets_config: The Universe datasets config, for the dataset's version.
         config_files: Every file whose hash the run should record.
         model: Run name in ``reports/models.yaml``.
         dataset: Harmonized dataset key.
         split: train, valid, or test.
-        limit: Score only the first this many images, by file name.
+        limit: Score only the first ``limit`` images, sorted by file name.
         from_cache: Run id whose predictions to score again, instead of
             calling the model.
         make_predictor: Builds the predictor for a model entry. Called only

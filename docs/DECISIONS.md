@@ -395,20 +395,22 @@ out of `make setup` and CI (D-001).
 
 Decision. `frc-evaluate` calls the hosted model with `inference_sdk`'s
 `InferenceHTTPClient` against `https://serverless.roboflow.com`, imported only
-when a model is actually called. `make setup-infer` installs the extra, and
+when a model is called. `make setup-infer` installs the extra, and
 tests that need a real model are marked `integration`. The model is named as
 `<project>/<version>` from `reports/models.yaml`. Local weights are left for
 Task 12, behind the same predictor interface. The API key travels in both the
 query string and an `Authorization` header (`api_key_transport="both"`), and is
-redacted from logs either way.
+redacted from logs either way. Sending it only in the header needs server
+support that was not checked for the hosted service, and naming the transport
+stops the SDK's warning that none was chosen.
 
 Why. With inference-sdk 1.7.2, a probe on one A-test image showed
 `frc-rebuilt-fuel-a/2` resolving to the trained model
 `frc-rebuilt-fuel-a-2-rfdetr-nano-t1`, the same model as the
 workspace-qualified name, so the workspace never has to be looked up. The
 hosted endpoint applies the version's own 384x384 stretch and returns boxes in
-the original image's pixels. Its response also names the workspace, so raw
-responses are never stored. The evaluator keeps only boxes, class names, and
+the original image's pixels. Its response also names the workspace, which is
+made from an email address, so raw responses are never stored. The evaluator keeps only boxes, class names, and
 confidences, and checks that the resolved model name (the part after the
 slash) matches `model_id`.
 
@@ -431,11 +433,17 @@ scored, and predictions of other classes are dropped before scoring.
 Precision is stored as null when a class has no predictions, and a box size
 with no labeled boxes as null instead of COCO's -1. Predictions are cached
 with confidence to 4 decimals and boxes to 0.1 pixel, and scores are stored
-to 3 decimals and printed unchanged by `make report`. Intervals come from
+to 3 decimals and printed unchanged by `make report`. A live run is scored
+from the rounded values it caches, so `--from-cache` reproduces it exactly,
+and a rescore must name the same model, dataset, and split as the run it
+reads. A scored class with no labeled box in the split has no mAP or recall,
+and a bootstrap resample with no labeled box of a class is left out of that
+class's interval. Intervals come from
 1000 resamples of whole recordings (temporal datasets) or related-image
 groups (scorekeeper), rebuilt with the split's own rules and checked
 against the unit counts in `reports/splits.json`. The report publishes the
-newest clean whole-split run for each model, dataset, and split.
+newest clean whole-split run for each model, dataset, and split, and leaves
+out a rescore of a run made from a dirty tree.
 
 Why. Mean average precision needs the low-confidence tail, and the floor
 keeps a full split's predictions small enough to commit. The platform's
@@ -443,8 +451,8 @@ keeps a full split's predictions small enough to commit. The platform's
 from one recording are alike, so resampling images would give intervals
 that are too narrow. A full A-test run at the platform's threshold came
 within a few boxes of the counts on the model's page, which checks the
-harness against an independent evaluation. Its size scores differed
-widely, because COCO's size buckets are fixed pixel areas and the platform
+harness against an independent evaluation. Size scores differed widely from
+the platform's, because COCO's size buckets are fixed pixel areas and the platform
 measures them on the 384x384 resized image while `frc-evaluate` uses the
 original. For the same reason size scores are not comparable between
 datasets of different resolutions.
