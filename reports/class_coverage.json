@@ -1,0 +1,234 @@
+{
+  "marswars": {
+    "labeled": [
+      "fuel"
+    ],
+    "splits": {
+      "test": {
+        "images": 171,
+        "classes": {
+          "fuel": {
+            "instances": 455,
+            "images": 136
+          },
+          "robot": {
+            "instances": 0,
+            "images": 0
+          }
+        }
+      },
+      "train": {
+        "images": 942,
+        "classes": {
+          "fuel": {
+            "instances": 8653,
+            "images": 866
+          },
+          "robot": {
+            "instances": 0,
+            "images": 0
+          }
+        }
+      },
+      "valid": {
+        "images": 140,
+        "classes": {
+          "fuel": {
+            "instances": 337,
+            "images": 120
+          },
+          "robot": {
+            "instances": 0,
+            "images": 0
+          }
+        }
+      }
+    }
+  },
+  "testingfrfr": {
+    "labeled": [
+      "fuel",
+      "robot"
+    ],
+    "splits": {
+      "test": {
+        "images": 252,
+        "classes": {
+          "fuel": {
+            "instances": 49,
+            "images": 47
+          },
+          "robot": {
+            "instances": 478,
+            "images": 200
+          }
+        }
+      },
+      "train": {
+        "images": 12015,
+        "classes": {
+          "fuel": {
+            "instances": 7629,
+            "images": 6192
+          },
+          "robot": {
+            "instances": 14556,
+            "images": 5732
+          }
+        }
+      },
+      "valid": {
+        "images": 698,
+        "classes": {
+          "fuel": {
+            "instances": 540,
+            "images": 425
+          },
+          "robot": {
+            "instances": 683,
+            "images": 269
+          }
+        }
+      }
+    }
+  },
+  "scorekeeper": {
+    "labeled": [
+      "fuel",
+      "robot"
+    ],
+    "splits": {
+      "test": {
+        "images": 314,
+        "classes": {
+          "fuel": {
+            "instances": 375,
+            "images": 31
+          },
+          "robot": {
+            "instances": 1007,
+            "images": 281
+          }
+        }
+      },
+      "train": {
+        "images": 1466,
+        "classes": {
+          "fuel": {
+            "instances": 4765,
+            "images": 398
+          },
+          "robot": {
+            "instances": 3811,
+            "images": 1054
+          }
+        }
+      },
+      "valid": {
+        "images": 314,
+        "classes": {
+          "fuel": {
+            "instances": 603,
+            "images": 51
+          },
+          "robot": {
+            "instances": 1161,
+            "images": 262
+          }
+        }
+      }
+    }
+  },
+  "robotzftp2": {
+    "labeled": [
+      "fuel"
+    ],
+    "splits": {
+      "test": {
+        "images": 286,
+        "classes": {
+          "fuel": {
+            "instances": 376,
+            "images": 269
+          },
+          "robot": {
+            "instances": 0,
+            "images": 0
+          }
+        }
+      },
+      "train": {
+        "images": 1293,
+        "classes": {
+          "fuel": {
+            "instances": 1592,
+            "images": 1243
+          },
+          "robot": {
+            "instances": 0,
+            "images": 0
+          }
+        }
+      },
+      "valid": {
+        "images": 249,
+        "classes": {
+          "fuel": {
+            "instances": 354,
+            "images": 245
+          },
+          "robot": {
+            "instances": 0,
+            "images": 0
+          }
+        }
+      }
+    }
+  },
+  "robotzftp2_fuel": {
+    "labeled": [
+      "fuel"
+    ],
+    "splits": {
+      "test": {
+        "images": 48,
+        "classes": {
+          "fuel": {
+            "instances": 49,
+            "images": 48
+          },
+          "robot": {
+            "instances": 0,
+            "images": 0
+          }
+        }
+      },
+      "train": {
+        "images": 320,
+        "classes": {
+          "fuel": {
+            "instances": 320,
+            "images": 320
+          },
+          "robot": {
+            "instances": 0,
+            "images": 0
+          }
+        }
+      },
+      "valid": {
+        "images": 96,
+        "classes": {
+          "fuel": {
+            "instances": 96,
+            "images": 96
+          },
+          "robot": {
+            "instances": 0,
+            "images": 0
+          }
+        }
+      }
+    }
+  }
+}

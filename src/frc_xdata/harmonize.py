@@ -1,10 +1,12 @@
 """Rewrite every downloaded dataset to the two-class schema.
 
 Reads ``data/raw/<key>/``, maps each source label through
-``configs/class_map.yaml``, and writes COCO files with hard-linked images to
-``data/harmonized/<key>/<split>/``. Label counts before and after mapping go
-to ``reports/harmonize_counts.csv`` and the classes each dataset labels to
-``reports/class_coverage.json``.
+``configs/class_map.yaml``, re-splits the datasets listed under ``splits`` in
+``configs/project.yaml``, and writes COCO files with hard-linked images to
+``data/harmonized/<key>/<split>/``. Other datasets keep their own splits.
+Label counts before and after mapping go to ``reports/harmonize_counts.csv``,
+the classes each dataset labels to ``reports/class_coverage.json``, and what
+the re-split kept and dropped to ``reports/splits.json``.
 """
 
 import argparse
@@ -15,15 +17,19 @@ import shutil
 import sys
 from collections import Counter, defaultdict
 from collections.abc import Iterable, Mapping, Sequence
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
+
+import numpy as np
 
 from frc_xdata.config import (
     DROP,
     ClassMapConfig,
     DatasetsConfig,
     ProjectConfig,
+    SplitMethod,
     load_yaml,
 )
 from frc_xdata.download import DATASETS_CONFIG, PROJECT_CONFIG, read_manifest
@@ -31,15 +37,27 @@ from frc_xdata.errors import UnmappedLabelError
 from frc_xdata.inspect_datasets import (
     ANNOTATIONS_NAME,
     ImageRecord,
+    ImageRef,
     find_splits,
     load_split,
+    near_duplicate_pairs,
+    phash,
     write_csv,
 )
 from frc_xdata.logging_utils import add_log_level_argument, setup_logging
+from frc_xdata.splits import (
+    DROP_REASONS,
+    SPLITS,
+    SplitResult,
+    check_no_leak,
+    copy_groups,
+    split_dataset,
+)
 
 CLASS_MAP_CONFIG = Path("configs/class_map.yaml")
 COUNTS_NAME = "harmonize_counts.csv"
 COVERAGE_NAME = "class_coverage.json"
+SPLITS_NAME = "splits.json"
 
 logger = logging.getLogger(__name__)
 
@@ -196,16 +214,76 @@ def _log_counts(counts: Iterable[LabelCount]) -> None:
         logger.info("%s/%s: %d %r -> %s", c.dataset, c.split, c.instances, c.source_label, c.target)
 
 
+def hash_images(
+    records: Sequence[ImageRecord], source_dirs: Mapping[str, Path]
+) -> dict[ImageRef, int]:
+    """Return the perceptual hash of every image, keyed by where it came from."""
+    paths = [source_dirs[r.ref.split] / r.ref.file_name for r in records]
+    with ThreadPoolExecutor() as pool:
+        return dict(zip((r.ref for r in records), pool.map(phash, paths), strict=True))
+
+
+def split_summary(
+    records: Sequence[ImageRecord], result: SplitResult, method: SplitMethod
+) -> dict[str, Any]:
+    """Summarize one re-split dataset for ``reports/splits.json``.
+
+    A unit is a recording for the temporal method and a group of related
+    images for the grouped one, so ``units`` per split counts the
+    independent scenes behind each split's images.
+    """
+    images: Counter[str] = Counter(result.split.values())
+    units: dict[str, set[str]] = defaultdict(set)
+    for ref, s in result.split.items():
+        units[s].add(result.unit[ref])
+    unit_sizes = Counter(result.unit[ref] for ref in result.split)
+    from_source: dict[str, Counter[str]] = defaultdict(Counter)
+    for r in records:
+        from_source[r.ref.split][result.split.get(r.ref, "dropped")] += 1
+    dropped = Counter(result.dropped.values())
+    summary: dict[str, Any] = {
+        "method": method.method,
+        "unit": "recording" if method.method == "temporal" else "group",
+        "units": len(unit_sizes),
+        "largest_unit": max(unit_sizes.values(), default=0),
+        "dropped": {reason: dropped[reason] for reason in DROP_REASONS},
+        "splits": {s: {"images": images[s], "units": len(units[s])} for s in SPLITS},
+        "from_source_split": {
+            src: dict(sorted(counts.items())) for src, counts in sorted(from_source.items())
+        },
+    }
+    if method.dedupe_copies:
+        sizes = Counter(len(g) for g in copy_groups(records).values())
+        summary["copy_group_sizes"] = {str(k): n for k, n in sorted(sizes.items())}
+    return summary
+
+
+def cross_dataset_pairs(hashes: Mapping[ImageRef, int], max_distance: int) -> int:
+    """Count near-duplicate pairs whose two images come from different datasets."""
+    refs = list(hashes)
+    values = np.array([hashes[r] for r in refs], dtype=np.uint64)
+    return sum(
+        refs[i].dataset != refs[j].dataset for i, j in near_duplicate_pairs(values, max_distance)
+    )
+
+
 def run_harmonize(keys: Sequence[str], project: ProjectConfig, class_map: ClassMapConfig) -> None:
     """Harmonize every downloaded dataset in ``keys`` and write the reports.
 
     Each dataset's output directory is replaced as a whole, so files from an
     earlier run never linger. A dataset without a manifest has not finished
     downloading and is skipped with a warning.
+
+    Raises:
+        SplitLeakError: If a re-split test image has a near duplicate in its
+            train or valid split.
     """
     paths = project.paths
+    max_distance = project.inspect.near_duplicate_max_distance
     counts: list[LabelCount] = []
     written: dict[str, dict[str, list[ImageRecord]]] = {}
+    summaries: dict[str, Any] = {}
+    kept_hashes: dict[ImageRef, int] = {}
     for key in keys:
         dataset_dir = paths.raw_dir / key
         if read_manifest(dataset_dir) is None:
@@ -218,8 +296,23 @@ def run_harmonize(keys: Sequence[str], project: ProjectConfig, class_map: ClassM
         _log_counts(dataset_counts)
 
         by_split: dict[str, list[ImageRecord]] = defaultdict(list)
-        for r in mapped:
-            by_split[r.ref.split].append(r)
+        method = project.splits.datasets.get(key)
+        if method is None:
+            for r in mapped:
+                by_split[r.ref.split].append(r)
+        else:
+            hashes = hash_images(mapped, source_dirs)
+            seed = f"{project.seed}:{key}"
+            result = split_dataset(mapped, hashes, method, project.splits, max_distance, seed)
+            check_no_leak(result.split, hashes, max_distance)
+            for r in mapped:
+                if r.ref in result.split:
+                    by_split[result.split[r.ref]].append(r)
+            kept_hashes.update({ref: hashes[ref] for ref in result.split})
+            summaries[key] = split_summary(mapped, result, method)
+            logger.info(
+                "%s: re-split %s, dropped %s", key, method.method, summaries[key]["dropped"]
+            )
         out = paths.harmonized_dir / key
         if out.exists():
             shutil.rmtree(out)
@@ -228,10 +321,24 @@ def run_harmonize(keys: Sequence[str], project: ProjectConfig, class_map: ClassM
             logger.info("%s/%s: wrote %d images", key, split, len(split_records))
         written[key] = dict(sorted(by_split.items()))
 
+    cross = cross_dataset_pairs(kept_hashes, max_distance)
+    if cross:
+        logger.warning("%d near-duplicate pairs across re-split datasets", cross)
+    report = {
+        "fractions": project.splits.fractions.model_dump(),
+        "buffer_frames": project.splits.buffer_frames,
+        "min_recording_images": project.splits.min_recording_images,
+        "near_duplicate_max_distance": max_distance,
+        "cross_dataset_near_duplicates": cross,
+        "datasets": summaries,
+    }
     write_csv(paths.reports_dir / COUNTS_NAME, counts)
     (paths.reports_dir / COVERAGE_NAME).write_text(
         json.dumps(class_coverage(written, class_map.classes), indent=2) + "\n",
         encoding="utf-8",
+    )
+    (paths.reports_dir / SPLITS_NAME).write_text(
+        json.dumps(report, indent=2) + "\n", encoding="utf-8"
     )
 
 
