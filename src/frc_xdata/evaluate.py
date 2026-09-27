@@ -1,5 +1,10 @@
 """Score a model's predictions on a harmonized split.
 
+``frc-evaluate`` runs a model from ``reports/models.yaml`` on every image of
+one harmonized split and writes ``reports/runs/<run_id>/`` with the raw
+predictions, the scores, and the run's metadata. ``--from-cache`` scores an
+earlier run's predictions again without calling the model.
+
 Metrics come from supervision. Mean average precision uses every cached
 prediction, while precision, recall, and the confusion matrix count only
 predictions at or above a confidence threshold. A dataset is scored only on
@@ -8,14 +13,20 @@ robot prediction on a fuel-only dataset is neither a hit nor a false
 positive.
 """
 
+import argparse
 import json
-from collections.abc import Mapping, Sequence
+import logging
+import platform
+import sys
+from collections.abc import Callable, Mapping, Sequence
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 import numpy as np
 import numpy.typing as npt
 import supervision as sv
+import yaml
 from pydantic import BaseModel, ConfigDict
 from supervision.metrics import (
     MeanAveragePrecision,
@@ -24,10 +35,32 @@ from supervision.metrics import (
     Recall,
 )
 
-from frc_xdata.config import SplitMethod
-from frc_xdata.errors import ConfigError, PredictionCacheTooLargeError, UnmappedLabelError
-from frc_xdata.inspect_datasets import ImageRecord
-from frc_xdata.splits import leak_groups, recording_key
+from frc_xdata.config import (
+    DatasetsConfig,
+    ModelEntry,
+    ModelsFile,
+    ProjectConfig,
+    SplitMethod,
+    load_yaml,
+)
+from frc_xdata.download import DATASETS_CONFIG, PROJECT_CONFIG, redact, redacted_api_key
+from frc_xdata.errors import (
+    ConfigError,
+    DirtyTreeError,
+    PredictionCacheTooLargeError,
+    UnmappedLabelError,
+)
+from frc_xdata.harmonize import SPLITS_NAME
+from frc_xdata.inspect_datasets import ANNOTATIONS_NAME, ImageRecord, load_split, phash
+from frc_xdata.logging_utils import add_log_level_argument, setup_logging
+from frc_xdata.provenance import (
+    git_commit,
+    git_is_dirty,
+    package_versions,
+    sha256_file,
+    utc_timestamp,
+)
+from frc_xdata.splits import SPLITS, leak_groups, recording_key
 
 # Metrics are stored rounded, and the report prints them unchanged, so every
 # number in the docs appears verbatim under reports/.
@@ -36,6 +69,12 @@ DECIMALS = 3
 # changing a count, at a size that can be committed.
 CONFIDENCE_DECIMALS = 4
 COORD_DECIMALS = 1
+PREDICTIONS_NAME = "predictions.json"
+METRICS_NAME = "metrics.json"
+META_NAME = "meta.json"
+LOG_EVERY = 25
+
+logger = logging.getLogger(__name__)
 
 
 class _Record(BaseModel):
@@ -543,3 +582,425 @@ def bootstrap(
             for i, c in enumerate(class_ids)
         ],
     )
+
+
+class Predictor(Protocol):
+    """Anything that turns an image file into predicted boxes."""
+
+    @property
+    def server(self) -> dict[str, str]:
+        """Return what the model's host reported about how it ran the model."""
+        ...
+
+    def predict(self, image: Path) -> list[Prediction]:
+        """Return the predictions for one image, in its own pixels."""
+        ...
+
+
+def parse_response(
+    response: Mapping[str, Any], model_name: str, server: dict[str, str]
+) -> list[Prediction]:
+    """Turn one hosted inference response into predictions.
+
+    The response names the model the server ran, including the workspace,
+    which is made from an email address. Only the part after the slash is
+    compared and nothing else from it is kept.
+
+    Args:
+        response: The JSON the server returned for one image.
+        model_name: The model name the response must report.
+        server: Filled in with the backend and quantization the server used.
+
+    Raises:
+        ConfigError: If the server ran a different model.
+    """
+    resolved = response.get("resolved_model")
+    if resolved is not None:
+        name = str(resolved.get("model_id", "")).rsplit("/", 1)[-1]
+        if name != model_name:
+            raise ConfigError(f"the server ran {name!r}, not {model_name!r}")
+        for key in ("backend", "quantization"):
+            if key in resolved:
+                server[key] = str(resolved[key])
+    predictions = []
+    for p in response["predictions"]:
+        x, y, w, h = (float(p[k]) for k in ("x", "y", "width", "height"))
+        predictions.append(
+            Prediction(
+                class_name=p["class"],
+                confidence=float(p["confidence"]),
+                xyxy=(x - w / 2, y - h / 2, x + w / 2, y + h / 2),
+            )
+        )
+    return predictions
+
+
+def inference_errors() -> tuple[type[Exception], ...]:
+    """Return the exceptions a hosted inference call raises for a network or API failure."""
+    import requests
+
+    try:
+        from inference_sdk.http.errors import HTTPClientError
+    except ImportError:
+        return (requests.RequestException, OSError)
+    return (HTTPClientError, requests.RequestException, OSError)
+
+
+class HostedPredictor:
+    """Call a model hosted on Roboflow through inference-sdk."""
+
+    def __init__(self, api_url: str, api_key: str, entry: ModelEntry, floor: float) -> None:
+        """Connect to the hosted model named by ``entry``.
+
+        Raises:
+            ConfigError: If inference-sdk is not installed.
+        """
+        try:
+            from inference_sdk import InferenceConfiguration, InferenceHTTPClient
+        except ImportError as e:
+            raise ConfigError("frc-evaluate needs the inference extra. Run make setup-infer") from e
+        self._client = InferenceHTTPClient(api_url=api_url, api_key=api_key)
+        self._client.configure(
+            InferenceConfiguration(confidence_threshold=floor, api_key_transport="both")
+        )
+        self._model_ref = f"{entry.project}/{entry.version}"
+        self._model_name = entry.model_id
+        self._server: dict[str, str] = {}
+
+    @property
+    def server(self) -> dict[str, str]:
+        """Return the backend and quantization the server last reported."""
+        return self._server
+
+    def predict(self, image: Path) -> list[Prediction]:
+        """Send one image to the hosted model."""
+        response = self._client.infer(str(image), model_id=self._model_ref)
+        return parse_response(response, self._model_name, self._server)
+
+
+class RunResult(_Record):
+    """Everything ``metrics.json`` holds for one run."""
+
+    run_id: str
+    model: str
+    dataset: str
+    split: str
+    limit: int | None
+    predictions_from: str
+    scored_classes: list[str]
+    metrics: EvalMetrics
+    units: list[UnitCount]
+    bootstrap: BootstrapResult
+
+
+def _run_id(model: str, dataset: str, split: str, limit: int | None) -> str:
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    slice_tag = "" if limit is None else f"__first{limit}"
+    return f"{model}__{dataset}-{split}{slice_tag}__{stamp}"
+
+
+def _dump(path: Path, data: Any) -> None:
+    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+
+def _predict_all(
+    predictor: Predictor, split_dir: Path, names: Sequence[str]
+) -> dict[str, list[Prediction]]:
+    predictions = {}
+    for n, name in enumerate(names, start=1):
+        predictions[name] = predictor.predict(split_dir / name)
+        if n % LOG_EVERY == 0 or n == len(names):
+            logger.info("predicted %d of %d images", n, len(names))
+    return predictions
+
+
+def _file_hashes(paths: Sequence[Path]) -> dict[str, str | None]:
+    return {str(p): sha256_file(p) if p.is_file() else None for p in paths}
+
+
+def run_meta(
+    *,
+    repo: Path,
+    project: ProjectConfig,
+    datasets_config: Path,
+    config_files: Sequence[Path],
+    run_id: str,
+    model: str,
+    dataset: str,
+    split: str,
+    split_dir: Path,
+    images: int,
+    limit: int | None,
+    predictions_from: str,
+    server: Mapping[str, str],
+    argv: Sequence[str],
+    dirty: bool,
+) -> dict[str, Any]:
+    """Return what SPEC section 3.5 asks every eval record to keep."""
+    datasets = load_yaml(datasets_config, DatasetsConfig).datasets
+    manifest = _manifest(project, dataset)
+    raw_models = yaml.safe_load(project.evaluate.models_file.read_text(encoding="utf-8"))
+    spec = datasets.get(dataset)
+    return {
+        "run_id": run_id,
+        "created": utc_timestamp(),
+        "command": ["frc-evaluate", *argv],
+        "git": {"commit": git_commit(repo), "dirty": dirty},
+        "seed": project.seed,
+        "configs": _file_hashes(config_files),
+        "dataset": {
+            "key": dataset,
+            "universe": None if spec is None else spec.model_dump(mode="json"),
+            "manifest_sha256": sha256_file(manifest),
+            "split": split,
+            "annotations_sha256": sha256_file(split_dir / ANNOTATIONS_NAME),
+            "images": images,
+            "limit": limit,
+        },
+        "model": {"name": model, **raw_models["models"][model], "server": dict(server)},
+        "predictions_from": predictions_from,
+        "evaluate": project.evaluate.model_dump(mode="json"),
+        "hardware": {
+            "platform": platform.platform(),
+            "machine": platform.machine(),
+            "processor": platform.processor(),
+            "python": platform.python_version(),
+        },
+        "packages": package_versions(),
+    }
+
+
+def _manifest(project: ProjectConfig, dataset: str) -> Path:
+    """Return the committed manifest digest that ties a run to its raw data.
+
+    Raises:
+        ConfigError: If it is missing, so the data behind a run could not be
+            traced.
+    """
+    manifest = project.paths.manifests_dir / f"{dataset}.sha256"
+    if not manifest.is_file():
+        raise ConfigError(f"{manifest} is missing. Run make download for {dataset}")
+    return manifest
+
+
+def run_evaluation(
+    *,
+    repo: Path,
+    project: ProjectConfig,
+    datasets_config: Path,
+    config_files: Sequence[Path],
+    model: str,
+    dataset: str,
+    split: str,
+    limit: int | None,
+    from_cache: str | None,
+    make_predictor: Callable[[ModelEntry], Predictor],
+    argv: Sequence[str],
+    dirty: bool,
+) -> Path:
+    """Score ``model`` on one harmonized split and write its run directory.
+
+    Args:
+        repo: The repository root, for git state.
+        project: The project config.
+        datasets_config: The Universe datasets config, for the dataset's version.
+        config_files: Every file whose hash the run should record.
+        model: Run name in ``reports/models.yaml``.
+        dataset: Harmonized dataset key.
+        split: train, valid, or test.
+        limit: Score only the first this many images, by file name.
+        from_cache: Run id whose predictions to score again, instead of
+            calling the model.
+        make_predictor: Builds the predictor for a model entry. Called only
+            when predictions are not cached.
+        argv: The command-line arguments, recorded in ``meta.json``.
+        dirty: Whether the working tree had uncommitted changes.
+
+    Returns:
+        The new run directory.
+
+    Raises:
+        ConfigError: If the model, dataset, split, or cached run is unknown.
+    """
+    cfg = project.evaluate
+    entries = load_yaml(cfg.models_file, ModelsFile).models
+    if model not in entries:
+        raise ConfigError(f"{model} is not in {cfg.models_file}")
+    split_dir = project.paths.harmonized_dir / dataset / split
+    if not (split_dir / ANNOTATIONS_NAME).is_file():
+        raise ConfigError(f"{split_dir} has no annotations. Run make harmonize first")
+    _manifest(project, dataset)
+
+    ds = sv.DetectionDataset.from_coco(
+        images_directory_path=str(split_dir), annotations_path=str(split_dir / ANNOTATIONS_NAME)
+    )
+    records = sorted(load_split(split_dir, dataset), key=lambda r: r.ref.file_name)[:limit]
+    names = [r.ref.file_name for r in records]
+    targets = [ds.annotations[str(split_dir / name)] for name in names]
+    scored = scored_classes(cfg.coverage_file, dataset)
+    run_id = _run_id(model, dataset, split, limit)
+    run_dir = cfg.runs_dir / run_id
+    if run_dir.exists():
+        raise ConfigError(f"{run_dir} already exists")
+
+    method = project.splits.datasets.get(dataset)
+    hashes = (
+        [phash(split_dir / n) for n in names] if method and method.method == "grouped" else None
+    )
+    units = image_units(records, method, hashes, project.inspect.near_duplicate_max_distance)
+    _check_units(units, project, dataset, split, limit)
+
+    server: dict[str, str] = {}
+    if from_cache is None:
+        predictor = make_predictor(entries[model])
+        predictions = _predict_all(predictor, split_dir, names)
+        server = predictor.server
+        source = "this run"
+    else:
+        cache = cfg.runs_dir / from_cache / PREDICTIONS_NAME
+        if not cache.is_file():
+            raise ConfigError(f"{cache} does not exist")
+        predictions = load_predictions(cache)
+        source = from_cache
+    detections = align(predictions, names, ds.classes)
+
+    if from_cache is None:
+        size = save_predictions(
+            run_dir / PREDICTIONS_NAME, predictions, cfg.confidence_floor, cfg.max_prediction_bytes
+        )
+        logger.info("cached predictions: %d bytes", size)
+    run_dir.mkdir(parents=True, exist_ok=from_cache is None)
+
+    result = RunResult(
+        run_id=run_id,
+        model=model,
+        dataset=dataset,
+        split=split,
+        limit=limit,
+        predictions_from=source,
+        scored_classes=list(scored),
+        metrics=compute_metrics(
+            detections,
+            targets,
+            ds.classes,
+            scored,
+            confidence=cfg.confidence,
+            iou=cfg.iou,
+            thresholds=cfg.pr_thresholds.values,
+        ),
+        units=unit_counts(records, units, scored),
+        bootstrap=bootstrap(
+            detections,
+            targets,
+            units,
+            ds.classes,
+            scored,
+            confidence=cfg.confidence,
+            resamples=cfg.bootstrap.resamples,
+            level=cfg.bootstrap.level,
+            seed=project.seed,
+        ),
+    )
+    _dump(run_dir / METRICS_NAME, result.model_dump(mode="json"))
+    meta = run_meta(
+        repo=repo,
+        project=project,
+        datasets_config=datasets_config,
+        config_files=config_files,
+        run_id=run_id,
+        model=model,
+        dataset=dataset,
+        split=split,
+        split_dir=split_dir,
+        images=len(names),
+        limit=limit,
+        predictions_from=source,
+        server=server,
+        argv=argv,
+        dirty=dirty,
+    )
+    _dump(run_dir / META_NAME, meta)
+    return run_dir
+
+
+def _check_units(
+    units: Sequence[str], project: ProjectConfig, dataset: str, split: str, limit: int | None
+) -> None:
+    """Fail if the rebuilt units disagree with the split report, unless only a slice was scored.
+
+    Raises:
+        ConfigError: If the unit count differs from ``reports/splits.json``.
+    """
+    report = project.paths.reports_dir / SPLITS_NAME
+    if limit is not None or not report.is_file():
+        return
+    expected = json.loads(report.read_text(encoding="utf-8"))["datasets"].get(dataset)
+    if expected is None:
+        return
+    want = expected["splits"][split]["units"]
+    if len(set(units)) != want:
+        raise ConfigError(
+            f"{dataset} {split} rebuilt {len(set(units))} units, but {report} records {want}"
+        )
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run the evaluation command line and return the exit code."""
+    parser = argparse.ArgumentParser(
+        description="Score a model on a harmonized split and write reports/runs/<run_id>/."
+    )
+    parser.add_argument("model", help="run name in reports/models.yaml, such as baseline-a")
+    parser.add_argument("dataset", help="harmonized dataset key, such as marswars")
+    parser.add_argument("--split", choices=SPLITS, default="test")
+    parser.add_argument("--limit", type=int, help="score only the first N images, by file name")
+    parser.add_argument("--from-cache", metavar="RUN_ID", help="score this run's predictions again")
+    parser.add_argument("--allow-dirty", action="store_true", help="run from a dirty tree")
+    parser.add_argument("--project-config", type=Path, default=PROJECT_CONFIG)
+    parser.add_argument("--datasets-config", type=Path, default=DATASETS_CONFIG)
+    add_log_level_argument(parser)
+    raw_args = sys.argv[1:] if argv is None else argv
+    args = parser.parse_args(raw_args)
+    setup_logging(args.log_level)
+    if args.limit is not None and args.limit < 1:
+        parser.error("--limit must be at least 1")
+
+    repo = Path.cwd()
+    dirty = git_is_dirty(repo)
+    if dirty and not args.allow_dirty:
+        raise DirtyTreeError("commit or stash changes first, or pass --allow-dirty")
+    project = load_yaml(args.project_config, ProjectConfig)
+    cfg = project.evaluate
+    config_files = [
+        args.project_config,
+        args.datasets_config,
+        cfg.models_file,
+        cfg.coverage_file,
+        project.paths.reports_dir / SPLITS_NAME,
+    ]
+
+    api_key = "" if args.from_cache else redacted_api_key()
+
+    def hosted(entry: ModelEntry) -> Predictor:
+        return HostedPredictor(cfg.api_url, api_key, entry, cfg.confidence_floor)
+
+    try:
+        run_dir = run_evaluation(
+            repo=repo,
+            project=project,
+            datasets_config=args.datasets_config,
+            config_files=config_files,
+            model=args.model,
+            dataset=args.dataset,
+            split=args.split,
+            limit=args.limit,
+            from_cache=args.from_cache,
+            make_predictor=hosted,
+            argv=raw_args,
+            dirty=dirty,
+        )
+    except inference_errors() as e:
+        # These can carry the key in a request URL.
+        logger.error("inference failed: %s", redact(f"{type(e).__name__}: {e}", api_key))
+        return 1
+    logger.info("wrote %s", run_dir)
+    return 0
