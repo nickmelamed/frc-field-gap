@@ -38,5 +38,5 @@ uses [Semantic Versioning](https://semver.org/).
   one split at a time with the split named. `frc-verify-upload`
   (`make verify-upload`) downloads the generated version and checks every
   image's split and box count (D-015).
-- `docs/RETRAINING.md`, the procedure for platform training, and
-  `reports/models.yaml` for recording each run.
+- `docs/RETRAINING.md` gives the platform training steps, and
+  `reports/models.yaml` records each run.

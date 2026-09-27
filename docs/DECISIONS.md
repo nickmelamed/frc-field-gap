@@ -341,17 +341,17 @@ Decision. `frc-upload` uploads train, valid, and test in separate calls with
 sizes against `reports/splits.json` and the images against the field test
 set. `frc-verify-upload` downloads the generated version and matches every
 image to its harmonized file by upload name. Training starts only after it
-passes. Harmonized COCO files now carry empty `info` and `licenses`. The
+passes. Harmonized COCO files carry empty `info` and `licenses`. The
 version keeps auto-orient, adds a resize only if the architecture requires
 one, and has no augmentation and no null filter.
 
 Why. Parsed one folder at a time, the SDK put every harmonized image in
 train. Checking counts in the web app would miss an image that moved from
-test to train while another moved back. Matching by name works after
-Roboflow re-encodes the images. The export does not keep the uploaded file
-name, since Roboflow drops the `.rf.<hash>` suffix and a `_jpg` before it,
-so both sides are compared without them. On the first real export this
-matched every image exactly once, and the box count check catches an image
+test to train while another moved back. Names survive Roboflow
+re-encoding the images, while hashes do not. The export drops the
+`.rf.<hash>` suffix and a `_jpg` before it, so both sides are compared
+without them. On the first real export this matched every image exactly
+once, and the box count check catches an image
 whose annotations failed to upload. Filtering nulls would drop the
 background images that D-012 keeps.
 
@@ -370,13 +370,12 @@ than they are tall and larger than 384 pixels on each side.
 
 Decision. The baseline is RF-DETR Nano trained on version 2, which adds
 "Resize, Stretch to 384x384" and is otherwise identical to version 1.
-Stretch was chosen over Fit, which pads every image with black borders.
+Stretch was chosen over Fit, which pads with black borders.
 Version 1 stays in the project unused. Settings and the platform's own
 test-split numbers are in `reports/models.yaml`.
 
 Why. The model runs at 384x384 either way, so putting the resize in the
-version records exactly the pixels it trained on and lowered the credit
-estimate. Stretch matches how the model is fed at inference time when the
+version records the pixels it trained on. Stretch matches how the model is fed at inference time when the
 version's preprocessing is reused.
 
 Consequences. Stretching changes the aspect ratio, so round fuel becomes
