@@ -223,3 +223,100 @@ results start with the merged model and cover robots from past games only.
 Task 4 has to group every split by recording and, for `scorekeeper`, by photo,
 since source names alone undercount photos. Removing `testingfrfr` matches to
 test images needs a hash check that also covers flipped and rotated copies.
+
+## D-012: Map every label to fuel, robot, or DROP (2026-09-27)
+
+Context. SPEC section 4 fixes two classes and asks for every source label
+to be mapped explicitly. The five downloaded datasets use four names for
+fuel, and `marswars` also labels the hub's lit state.
+
+Decision. `configs/class_map.yaml` maps `game_piece`, `fuel`, `FUEL`, and
+`Fuels` to fuel and `robot` to robot. The `marswars` labels `blue_active`,
+`red_active`, and `inactive` map to DROP. Their boxes are removed and their
+images kept, so an image that only showed a dropped label becomes a
+background image. Roboflow's placeholder category at id 0 is ignored because
+no annotation uses it. Harmonized files hold exactly two categories, fuel
+with id 1 and robot with id 2.
+
+Why. The state classes record whether the hub is lit, which is field state
+rather than an object to detect. supervision builds its class list from the
+category names sorted by id, so a leftover placeholder would shift every
+class id by one. In `robotzftp2` the placeholder is even named `fuel`, the
+same as the real class. A test checks the class map against
+`reports/class_counts.csv`, so a label found by a later inspection cannot be
+missed. An unmapped label raises `UnmappedLabelError`.
+
+Consequences. Every harmonized dataset has the same class ids, including
+datasets that label only fuel. `reports/class_coverage.json` records which
+classes each dataset labels, and evaluation scores only those.
+
+## D-013: Split A and B by frame order and C by related-image groups (2026-09-27)
+
+Context. The Roboflow splits leak in all three chosen datasets (D-011).
+Adjacent video frames sit on both sides, `robotzftp2` has no test split, and
+`scorekeeper` spreads copies of one photo across splits. `marswars` has only
+13 recordings, and a few of them hold most of its fuel boxes, so holding out
+whole recordings made test depend on which two or three recordings landed
+there. It could also put all the official-field frames in one split.
+
+Decision. `marswars` and `robotzftp2` are cut by frame order within each
+recording: the first 70 percent of images go to train, the next 15 percent
+to valid, and the last 15 percent to test. Valid therefore sits between train
+and test in time. An image is dropped when the first frame of the next split
+is at most 5 frames after it. Recordings under 20 images go whole to train,
+and so do FIRST's official videos in `marswars`. `scorekeeper` joins images
+that share a video recording, a source name, or a pHash within 4 bits, and
+assigns whole groups, largest first, to the split furthest below its target,
+with ties ordered by a seeded hash. A final pass drops any train or valid
+image within 4 bits of a test image, and the run fails if one remains.
+Settings are under `splits` in `configs/project.yaml`.
+
+Why. Before choosing, we measured how alike each test frame is to its
+nearest train frame under several candidate splits. With random blocks of
+consecutive frames, a large share of `marswars` test frames had a near
+duplicate in train even with a buffer, because the robot often sits still or
+comes back to the same spot. Cutting each recording in frame order gave test
+frames about as far from train as holding out whole recordings did, while
+keeping every Basler run in test. Frames 5 apart were rarely near
+duplicates. The official videos are edited from many shots, so their last
+frames are a different scene, not later in one run. Cut in frame order, a
+few dense full-field frames held most of A-test's fuel boxes and would have
+set the in-domain score. `scorekeeper` has hundreds of groups, so grouped
+assignment is not lumpy there.
+
+Consequences. Test holds 0 near duplicates of train or valid by
+construction (see `reports/splits.json`). A-test and B-test measure "later
+in the same runs", not "a new run". They share each run's lighting, balls,
+and background with train, which a pixel-similarity check cannot rule out.
+A-test has no official-field frames. Each test split rests on few
+independent scenes (6 recordings for A and 7 for B), so Task 6 should report
+that count and consider a bootstrap over recordings for confidence
+intervals.
+
+## D-014: Keep one augmented copy per scorekeeper photo (2026-09-27)
+
+Context. D-011 reduces `scorekeeper` to one image per source photo. Its
+train split holds three augmented copies of each photo, made with random
+rotation, exposure, and blur. Some source names are shared by several
+photos.
+
+Decision. Train images are grouped by source name plus the number of boxes
+of each class. From each group the copy with the smallest total box area is
+kept, with ties going to the first file name. Valid and test are not
+augmented and are left alone.
+
+Why. pHash cannot find these copies. During planning, copies of one photo
+were usually as far apart in pHash bits as unrelated images, because
+rotation moves the whole picture. Rotation and exposure changes keep the
+number of boxes of each class, so the name and those counts separate photos
+that share a name. Rotating a box and taking its axis-aligned hull only
+makes it larger, so the smallest total area picks the least rotated copy. A
+contact sheet of copy groups confirmed this.
+
+Consequences. `reports/splits.json` lists the copy group sizes. Most groups
+hold exactly three copies. A few groups of six or nine are different photos
+that share both a name and box counts, and they lose all but one photo. A
+few groups of one or two are most likely copies that lost an edge box to
+rotation, and they keep an extra copy. The untouched original is usually
+not among the copies, so the kept image is still slightly rotated, with
+slightly loose boxes, and its exposure or blur is changed.
