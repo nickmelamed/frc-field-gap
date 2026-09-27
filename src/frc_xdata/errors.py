@@ -1,0 +1,25 @@
+"""Exceptions raised by the pipeline.
+
+Each stage fails with a specific error so a bad input stops the run with a
+message that says what to fix.
+"""
+
+
+class FrcXdataError(Exception):
+    """Base class for every error this package raises on purpose."""
+
+
+class ConfigError(FrcXdataError):
+    """A config file or environment variable is missing or invalid."""
+
+
+class UnmappedLabelError(FrcXdataError):
+    """A source label has no entry in the class map."""
+
+
+class DataLeakError(FrcXdataError):
+    """A field-test image turned up in data meant for training."""
+
+
+class DirtyTreeError(FrcXdataError):
+    """Results would be written from a working tree with uncommitted changes."""
