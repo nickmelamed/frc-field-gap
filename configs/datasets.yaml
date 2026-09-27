@@ -1,0 +1,33 @@
+# Candidate Roboflow Universe datasets for REBUILT (2026), by key.
+#
+# A dataset is downloaded only once both project and version are set. Look
+# candidates up with `make download ARGS=--resolve`, which writes
+# reports/dataset_resolution.json, and pin the version here by hand.
+# Every change to a pinned version needs a line in docs/DECISIONS.md.
+
+datasets:
+  marswars:
+    workspace: marswars-robotics-program
+    project: 2026-rebuilt
+    license: CC BY 4.0
+
+  lava:
+    workspace: lava
+    project: frc-2026-aagvs
+    license: CC BY 4.0
+
+  testingfrfr:
+    workspace: testing-frfr
+    project: frc-2026-mldc0
+    license: CC BY 4.0
+
+  scorekeeper:
+    workspace: blind-assistant-model
+    project: frc-scorekeeper-2026
+    license: CC BY 4.0
+
+  # The workspace has several projects. The lookup lists them all so one can
+  # be picked.
+  robotzftp2:
+    workspace: robot-zftp2
+    license: CC BY 4.0
