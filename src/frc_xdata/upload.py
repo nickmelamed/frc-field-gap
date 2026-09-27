@@ -18,6 +18,7 @@ missing, extra, in another split, or has a different number of boxes.
 import argparse
 import json
 import logging
+import re
 import sys
 from collections import Counter
 from collections.abc import Callable, Mapping, Sequence
@@ -69,10 +70,10 @@ Export = Callable[[Path], VersionInfo]
 class UploadComparison:
     """How a downloaded version differs from the harmonized dataset.
 
-    Images are matched by the file name Roboflow recorded at upload. Entries
-    in ``moved`` are ``(file name, harmonized split, exported split)``. A
-    file exported more than once is listed in ``extra`` once per copy after
-    the first.
+    Images are matched by the name Roboflow recorded at upload. Entries in
+    ``moved`` are ``(file name, harmonized split, exported split)``. A file
+    exported more than once is listed in ``extra`` once per copy after the
+    first.
     """
 
     expected: dict[str, int]
@@ -195,41 +196,71 @@ def upload_splits(dataset_dir: Path, upload: Upload) -> None:
         upload(dataset_dir / split, split)
 
 
-def _by_name(records: Sequence[ImageRecord]) -> dict[str, ImageRecord]:
-    by_name = {r.ref.file_name: r for r in records}
-    if len(by_name) < len(records):
-        raise UploadCheckError("a file name appears in more than one harmonized split")
-    return by_name
+# Universe exports name files <stem>_<ext>.rf.<hash>.jpg.
+RF_SUFFIX = re.compile(r"\.rf\.[0-9a-f]{32}")
+IMAGE_EXTENSION = re.compile(r"\.(?:jpe?g|png)$", re.IGNORECASE)
+JPG_TAG = re.compile(r"_jpe?g$", re.IGNORECASE)
+
+
+def match_key(name: str) -> str:
+    """Return the part of an image name that survives a Roboflow upload.
+
+    Roboflow drops the ``.rf.<hash>`` suffix of an uploaded Universe file,
+    and a ``_jpg`` tag before it, so ``x_jpg.rf.<hash>.jpg`` is exported
+    as ``x.jpg`` and ``x_png.rf.<hash>.jpg`` as ``x_png.jpg``. Both map to
+    the same key as the file they came from.
+    """
+    stem = IMAGE_EXTENSION.sub("", RF_SUFFIX.sub("", name))
+    return JPG_TAG.sub("", stem)
+
+
+def _by_key(records: Sequence[ImageRecord]) -> dict[str, ImageRecord]:
+    by_key = {match_key(r.ref.file_name): r for r in records}
+    if len(by_key) < len(records):
+        raise UploadCheckError(
+            "a file name appears in more than one harmonized split, or two names "
+            "differ only in the suffix Roboflow drops on upload"
+        )
+    return by_key
 
 
 def compare_export(export_dir: Path, dataset_dir: Path, key: str) -> UploadComparison:
     """Match every image in a downloaded version to its harmonized file.
 
+    Exported images are matched by the name Roboflow recorded at upload,
+    through ``match_key``. Missing, moved, and changed images are listed by
+    their harmonized file name, and extra ones by their exported name.
+
     Raises:
-        UploadCheckError: If two harmonized splits share a file name, which
+        UploadCheckError: If two harmonized images share a match key, which
             would make the match ambiguous.
     """
-    expected = _by_name([r for split in SPLITS for r in load_split(dataset_dir / split, key)])
-    exported = [r for d in find_splits(export_dir).values() for r in load_split(d, key)]
-    copies = Counter(r.source_name for r in exported)
-    extra = [
-        name for name, n in sorted(copies.items()) for _ in range(n - 1 if name in expected else n)
-    ]
+    expected = _by_key([r for split in SPLITS for r in load_split(dataset_dir / split, key)])
+    exported = sorted(
+        (r for d in find_splits(export_dir).values() for r in load_split(d, key)),
+        key=lambda r: r.source_name,
+    )
+    seen: set[str] = set()
+    extra = []
     moved = []
     box_count_changed = []
-    for r in sorted(exported, key=lambda r: r.source_name):
-        original = expected.get(r.source_name)
-        if original is None:
+    for r in exported:
+        k = match_key(r.source_name)
+        original = expected.get(k)
+        if original is None or k in seen:
+            extra.append(r.source_name)
             continue
+        seen.add(k)
+        name = original.ref.file_name
         if original.ref.split != r.ref.split:
-            moved.append((r.source_name, original.ref.split, r.ref.split))
+            moved.append((name, original.ref.split, r.ref.split))
         if len(original.boxes) != len(r.boxes):
-            box_count_changed.append(r.source_name)
+            box_count_changed.append(name)
     exported_sizes = Counter(r.ref.split for r in exported)
     return UploadComparison(
         expected=dict(Counter(r.ref.split for r in expected.values())),
         exported={split: exported_sizes[split] for split in SPLITS},
-        missing=sorted(set(expected) - set(copies)),
+        missing=sorted(r.ref.file_name for k, r in expected.items() if k not in seen),
         extra=extra,
         moved=moved,
         box_count_changed=box_count_changed,
