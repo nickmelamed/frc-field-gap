@@ -8,6 +8,7 @@ import supervision as sv
 from frc_xdata.config import SplitMethod
 from frc_xdata.errors import ConfigError, PredictionCacheTooLargeError, UnmappedLabelError
 from frc_xdata.evaluate import (
+    Interval,
     Prediction,
     align,
     bootstrap,
@@ -185,3 +186,22 @@ def test_bootstrap_interval_brackets_the_point_value() -> None:
 def test_bootstrap_over_one_unit_collapses_to_the_point_value() -> None:
     (interval,) = run_bootstrap(["r1"] * 4).classes
     assert interval.recall.low == interval.recall.high == 0.5
+
+
+def test_bootstrap_skips_resamples_without_a_labeled_box() -> None:
+    hit = [0, 0, 10, 10]
+    result = bootstrap(
+        [fuel(hit, conf=0.9), sv.Detections.empty()],
+        [fuel(hit), sv.Detections.empty()],
+        ["r1", "r2"],
+        CLASSES,
+        ["fuel", "robot"],
+        confidence=0.5,
+        resamples=50,
+        level=0.9,
+        seed=3,
+    )
+    fuel_interval, robot_interval = result.classes
+    # A resample of only r2 has no fuel to find, which says nothing about recall.
+    assert fuel_interval.recall == fuel_interval.map50 == Interval(low=1.0, high=1.0)
+    assert (robot_interval.map50, robot_interval.recall) == (None, None)

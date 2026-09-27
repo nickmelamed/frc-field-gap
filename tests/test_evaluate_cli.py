@@ -362,3 +362,23 @@ def test_rescoring_a_dirty_run_is_marked_as_coming_from_one(
     assert evaluate.main([*ARGS, "--from-cache", "run1"]) == 0
     meta = read("run2", "meta.json")
     assert (meta["git"]["dirty"], meta["source_dirty"]) == (False, True)
+
+
+def test_an_empty_split_is_refused(workspace: Path, fake: FakePredictor) -> None:
+    split_dir = workspace / "data" / "harmonized" / "alpha" / "test"
+    write_split(split_dir, to_coco([], ["fuel", "robot"]))
+    with pytest.raises(ConfigError, match="no images"):
+        evaluate.main(ARGS)
+    assert not fake.calls
+
+
+def test_a_local_file_error_is_not_reported_as_an_inference_failure(
+    workspace: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class Unreadable(FakePredictor):
+        def predict(self, image: Path) -> list[Prediction]:
+            raise PermissionError(f"cannot read {image}")
+
+    monkeypatch.setattr(evaluate, "HostedPredictor", lambda *a: Unreadable())
+    with pytest.raises(PermissionError):
+        evaluate.main(ARGS)

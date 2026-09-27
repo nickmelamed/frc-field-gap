@@ -154,3 +154,13 @@ def test_fuel_only_datasets_in_the_real_coverage_report() -> None:
     coverage = REPO_ROOT / "reports" / "class_coverage.json"
     assert scored_classes(coverage, "marswars") == ["fuel"]
     assert scored_classes(coverage, "scorekeeper") == ["fuel", "robot"]
+
+
+def test_a_scored_class_with_no_labeled_boxes_has_no_score() -> None:
+    m = score([preds((A, 0.9, FUEL), (C, 0.9, ROBOT))], [labels(A)], scored=["fuel", "robot"])
+    fuel, robot = m.classes
+    assert (fuel.map50, fuel.recall) == (1.0, 1.0)
+    assert robot.instances == 0
+    assert (robot.map50, robot.map50_95, robot.recall) == (None, None, None)
+    # Its one prediction is still a false positive, so precision is defined.
+    assert (robot.precision, robot.false_positives) == (0.0, 1)
