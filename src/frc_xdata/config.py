@@ -24,8 +24,7 @@ UNIVERSE_URL = "https://universe.roboflow.com"
 
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
-# Keys name directories under data/raw/ and report files, so keep them to
-# characters that are safe everywhere.
+# Keys become directory and file names, so keep them path-safe.
 DatasetKey = Annotated[str, StringConstraints(pattern=r"^[a-z0-9_]+$")]
 Slug = Annotated[str, StringConstraints(pattern=r"^[a-z0-9][a-z0-9-]*$")]
 

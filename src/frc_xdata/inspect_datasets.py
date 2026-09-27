@@ -1,12 +1,8 @@
 """Measure each downloaded dataset and find duplicate images across all of them.
 
-For every dataset and split this writes image counts, resolutions, class
-instance counts, boxes per image, box sizes as a fraction of the image,
-zero-label images, and invalid boxes to ``reports/dataset_stats.csv`` and
-``reports/class_counts.csv``. Exact duplicates (same SHA256) and near
-duplicates (close perceptual hashes) are found within and across datasets
-and summarized in ``reports/duplicates.json``. A sample grid per dataset is
-drawn with supervision to ``docs/assets/samples_<key>.png``.
+Writes per-split stats and class counts to ``reports/``, exact and
+perceptual-hash duplicates to ``reports/duplicates.json``, and one sample
+grid per dataset to ``docs/assets/samples_<key>.png``.
 """
 
 import argparse
@@ -302,7 +298,7 @@ def near_duplicate_pairs(
     """Return index pairs ``(i, j)``, ``i < j``, within ``max_distance`` bits.
 
     Each row compares one hash against every later one in a single vector
-    operation, which keeps tens of thousands of images to a few seconds.
+    operation instead of a Python loop.
     """
     pairs = []
     for i in range(len(hashes) - 1):
@@ -370,10 +366,8 @@ def sample_grid(
 ) -> Image.Image:
     """Draw a grid of randomly chosen images with their boxes and labels.
 
-    The choice depends only on ``seed`` and the records, so the same data
-    gives the same grid. Excluded file names never appear, and excluding one
-    image only swaps in the next one in the shuffled order, so the rest of
-    the grid stays the same.
+    Excluding a file swaps in the next image in the seeded order, so the
+    rest of the grid stays the same.
     """
     excluded = set(grid.exclude.get(records[0].ref.dataset, [])) if records else set()
     order = sorted(records, key=lambda r: str(r.ref))

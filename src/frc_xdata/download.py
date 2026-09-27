@@ -2,9 +2,8 @@
 
 Each dataset lands in ``data/raw/<key>/`` with a ``MANIFEST.json`` listing
 every file, its size, and its SHA256. A short ``<key>.sha256`` digest in
-``reports/data_manifests/`` is committed and rewritten on every run, so drift
-in the source data shows up in ``git diff`` down to the annotation file or
-image directory that changed.
+``reports/data_manifests/`` is committed, so drift in the source data shows
+up in ``git diff``.
 
 With ``--resolve`` nothing is downloaded. Each candidate is looked up on
 Universe instead, and its versions, split sizes, and classes are written to
@@ -149,8 +148,7 @@ def build_manifest(root: Path, key: str, spec: DatasetSpec) -> Manifest:
 def verify_manifest(root: Path, manifest: Manifest) -> list[str]:
     """Return every difference between ``root`` and ``manifest``, or nothing.
 
-    Missing, changed, and unlisted files are all reported, since any of them
-    means the local copy is not the dataset the manifest describes.
+    Reports missing, changed, and unlisted files.
     """
     problems = []
     listed = {entry.path for entry in manifest.files}
@@ -357,8 +355,7 @@ def summarize_project(workspace: str, project: str, response: Any) -> ProjectSum
     """Summarize a project lookup response from the Roboflow API.
 
     Raises:
-        ValueError: If the response does not have the expected shape, which
-            includes pydantic's ValidationError.
+        ValueError: If the response does not have the expected shape.
     """
     parsed = _ApiProjectResponse.model_validate(response)
     versions = sorted(
@@ -411,8 +408,7 @@ def resolve_all(
     Returns:
         The resolved datasets and the ones that failed.
     """
-    # ValueError also covers pydantic's ValidationError when the API response
-    # has a shape this code does not expect.
+    # Catches ValidationError from an unexpected response shape.
     caught: tuple[type[Exception], ...] = (*errors, ValueError)
     resolved = []
     failures = []
