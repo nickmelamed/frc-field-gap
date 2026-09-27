@@ -70,8 +70,19 @@ images in each split with `reports/splits.json`.
 
 ### 5. Generate a version
 
-In the web app, generate a new version with these settings.
+Roboflow never trains on the uploaded images directly. It trains on a
+version, which is a frozen copy of the dataset with its splits,
+preprocessing, and augmentation applied. Versions are numbered from 1 within
+a project and never change once made, so a model can always be traced back
+to exactly the images it saw. Editing or adding images later only affects
+versions made after that.
 
+In the web app, open the project and choose Versions in the sidebar (or
+Generate, depending on the layout), then create a new version. The page walks
+through a few steps. Use these settings.
+
+- Source images. Include every image. There should be no unannotated
+  images, since background images were uploaded as null.
 - Train/test split. Leave it as uploaded. Do not rebalance.
 - Preprocessing. Keep auto-orient. Add a resize only if the training page
   for your architecture asks for one, and then use the size it names. Add
@@ -79,7 +90,8 @@ In the web app, generate a new version with these settings.
   the background images.
 - Augmentation. None for the baseline.
 
-Then download the version and check it:
+Generating takes a minute or two. The version number shown on its page is the
+`VERSION` below. Then download the version and check it:
 
 ```bash
 make verify-upload KEY=marswars VERSION=1
