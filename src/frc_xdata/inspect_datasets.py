@@ -358,13 +358,8 @@ def _fit(
     return resized, sv.Detections(xyxy=xyxy, class_id=class_id), [b.label for b in boxes]
 
 
-def sample_grid(
-    records: Sequence[ImageRecord],
-    split_dirs: dict[str, Path],
-    grid: GridConfig,
-    seed: str,
-) -> Image.Image:
-    """Draw a grid of randomly chosen images with their boxes and labels.
+def grid_order(records: Sequence[ImageRecord], grid: GridConfig, seed: str) -> list[ImageRecord]:
+    """Return the images a sample grid shows, row by row.
 
     Excluding a file swaps in the next image in the seeded order, so the
     rest of the grid stays the same.
@@ -372,7 +367,17 @@ def sample_grid(
     excluded = set(grid.exclude.get(records[0].ref.dataset, [])) if records else set()
     order = sorted(records, key=lambda r: str(r.ref))
     random.Random(seed).shuffle(order)
-    chosen = [r for r in order if r.ref.file_name not in excluded][: grid.rows * grid.cols]
+    return [r for r in order if r.ref.file_name not in excluded][: grid.rows * grid.cols]
+
+
+def sample_grid(
+    records: Sequence[ImageRecord],
+    split_dirs: dict[str, Path],
+    grid: GridConfig,
+    seed: str,
+) -> Image.Image:
+    """Draw the images from ``grid_order`` with their boxes and labels."""
+    chosen = grid_order(records, grid, seed)
     box_annotator = sv.BoxAnnotator(thickness=2)
     label_annotator = sv.LabelAnnotator(text_scale=0.35, text_padding=2)
     tiles = []
@@ -420,6 +425,11 @@ def encode_png(image: Image.Image, max_bytes: int) -> bytes:
         if min(image.size) < 64:
             raise ValueError(f"cannot fit the grid in {max_bytes} bytes")
         image = image.resize((image.width * 9 // 10, image.height * 9 // 10))
+
+
+def _grid_seed(project: ProjectConfig, key: str) -> str:
+    # One seed per dataset, so adding a dataset leaves the other grids alone.
+    return f"{project.seed}:{key}"
 
 
 def _split_dirs(dataset_dir: Path) -> dict[str, Path]:
@@ -487,7 +497,7 @@ def run_inspection(
         logger.info("%s: %d images in %s", key, len(dataset_records), sorted(split_dirs))
         if grids and dataset_records:
             png = encode_png(
-                sample_grid(dataset_records, split_dirs, cfg.grid, f"{project.seed}:{key}"),
+                sample_grid(dataset_records, split_dirs, cfg.grid, _grid_seed(project, key)),
                 cfg.grid.max_bytes,
             )
             paths.assets_dir.mkdir(parents=True, exist_ok=True)
@@ -523,18 +533,40 @@ def run_inspection(
     logger.info("%d exact groups, %d near-duplicate pairs", len(exact), len(near))
 
 
+def list_grids(keys: Sequence[str], project: ProjectConfig) -> None:
+    """Log the file behind each grid tile, for checking the grids by eye.
+
+    Positions read ``r<row>c<col>``, counted from 1 at the top left.
+    """
+    grid = project.inspect.grid
+    for key in keys:
+        dataset_dir = project.paths.raw_dir / key
+        if read_manifest(dataset_dir) is None:
+            continue
+        records = [r for d in _split_dirs(dataset_dir).values() for r in load_split(d, key)]
+        for n, r in enumerate(grid_order(records, grid, _grid_seed(project, key))):
+            row, col = divmod(n, grid.cols)
+            logger.info("%s r%dc%d %s/%s", key, row + 1, col + 1, r.ref.split, r.ref.file_name)
+
+
 def main(argv: list[str] | None = None) -> int:
     """Run the inspection command line and return the exit code."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--project-config", type=Path, default=PROJECT_CONFIG)
     parser.add_argument("--datasets-config", type=Path, default=DATASETS_CONFIG)
     parser.add_argument("--no-grids", action="store_true", help="skip the sample grids")
+    parser.add_argument(
+        "--list-grid", action="store_true", help="log the file behind each grid tile, write nothing"
+    )
     add_log_level_argument(parser)
     args = parser.parse_args(argv)
     setup_logging(args.log_level)
 
     project = load_yaml(args.project_config, ProjectConfig)
     datasets = load_yaml(args.datasets_config, DatasetsConfig)
+    if args.list_grid:
+        list_grids(list(datasets.datasets), project)
+        return 0
     run_inspection(list(datasets.datasets), project, grids=not args.no_grids)
     return 0
 
