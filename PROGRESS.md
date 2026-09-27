@@ -38,8 +38,8 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     `rebuilt-dataset-hcmwl` is `robotzftp2` and `frc-2026-fuel-ndrbj` is an
     extra key, `robotzftp2_fuel`. The committed hash files hold one hash per
     image directory instead of one per image (D-009). Grids are laid out
-    with PIL, since supervision's `create_tiles` is deprecated, and boxes
-    and labels still use supervision annotators. Test fixtures are built
+    with PIL because supervision's `create_tiles` is deprecated. Boxes and
+    labels still use supervision annotators. Test fixtures are built
     in `tests/conftest.py` at test time instead of committed images.
   - For Task 3. `testingfrfr` and `scorekeeper` versions hold augmented
     copies, and the same source photo appears in more than one split.
