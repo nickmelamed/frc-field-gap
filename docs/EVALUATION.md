@@ -138,12 +138,14 @@ The field test set has not been scored yet.
 <!-- EVALUATION:START -->
 ### baseline-a on marswars test
 
-Run `baseline-a__marswars-test__20260927T215138Z`, scored on 171 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
+Run `baseline-a__marswars-test__20260927T221432Z`, scored on 171 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
 Intervals come from 1000 resamples of the split's 6 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
 
 | Class | Labeled boxes | mAP50 | mAP50 interval | mAP50-95 | Precision | Recall | Recall interval | Hits | False positives | Misses |
 |---|---|---|---|---|---|---|---|---|---|---|
 | fuel | 455 | 0.936 | 0.923 to 1.0 | 0.623 | 0.963 | 0.927 | 0.908 to 1.0 | 422 | 16 | 33 |
+
+35 of 171 images reached the limit of 25 predictions per image (D-020), so fainter boxes may have been dropped there.
 
 mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
 
@@ -195,12 +197,14 @@ Recordings or groups with the most labeled boxes:
 
 ### baseline-a on robotzftp2 test
 
-Run `baseline-a__robotzftp2-test__20260927T215447Z`, scored on 286 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
+Run `baseline-a__robotzftp2-test__20260927T221735Z`, scored on 286 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
 Intervals come from 1000 resamples of the split's 7 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
 
 | Class | Labeled boxes | mAP50 | mAP50 interval | mAP50-95 | Precision | Recall | Recall interval | Hits | False positives | Misses |
 |---|---|---|---|---|---|---|---|---|---|---|
 | fuel | 376 | 0.994 | 0.985 to 1.0 | 0.864 | 0.966 | 0.973 | 0.94 to 1.0 | 366 | 13 | 10 |
+
+122 of 286 images reached the limit of 25 predictions per image (D-020), so fainter boxes may have been dropped there.
 
 mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
 
@@ -253,14 +257,16 @@ Recordings or groups with the most labeled boxes:
 
 ### baseline-a on scorekeeper test
 
-Run `baseline-a__scorekeeper-test__20260927T215915Z`, scored on 314 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
+Run `baseline-a__scorekeeper-test__20260927T222144Z`, scored on 314 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
 Intervals come from 1000 resamples of the split's 109 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
 
 | Class | Labeled boxes | mAP50 | mAP50 interval | mAP50-95 | Precision | Recall | Recall interval | Hits | False positives | Misses |
 |---|---|---|---|---|---|---|---|---|---|---|
 | fuel | 375 | 0.836 | 0.773 to 0.895 | 0.725 | 0.257 | 1.0 | 1.0 to 1.0 | 375 | 1083 | 0 |
 
-The robot boxes in scorekeeper are not scored, since baseline-a was not trained on robot.
+The robot boxes in scorekeeper are not scored, since baseline-a was never trained to find them.
+
+286 of 314 images reached the limit of 25 predictions per image (D-020), so fainter boxes may have been dropped there. In 4 of them every kept box is at or above the threshold, so boxes that would have counted at it were dropped, and the false positive count at the threshold is a lower bound.
 
 mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
 
