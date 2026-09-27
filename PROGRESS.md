@@ -120,7 +120,22 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     dirty tree and a new run leaves untracked files, so commit each run
     before the next or the next one needs `--allow-dirty`, which the report
     leaves out. A full split takes a few minutes, mostly the bootstrap.
-- [ ] Task 7: Cross-dataset results (Sun Sept 27)
+- [x] Task 7: Cross-dataset results (Sun Sept 27)
+  - baseline-a scored on A-test, B-test, and C-test at confidence 0.5,
+    published by `make report`, and written up at the top of
+    `docs/EVALUATION.md`. B scores as well as A. C drops on false positives
+    alone, and recall stays at 1.0.
+  - Differences from SPEC section 7. Runs score only classes the model was
+    trained on, so C is scored on fuel only (D-019). C's prediction cache
+    was far over the size limit at the 0.01 floor, so every image keeps its
+    25 most confident predictions (D-020). A and B were rescored from their
+    first caches under that limit, and the first runs stay committed.
+    The field test set was not scored, since it is not confirmed.
+  - For Task 8. Most of C's false positives appear to land on robot and
+    broadcast photos from earlier games, which have no fuel labels, and one
+    of those games used balls. This came from a quick look at the cached
+    predictions, so Task 8 should measure it. Why B is no harder than A is
+    also open.
 - [ ] Task 8: Diagnosis (Sun to Mon Sept 27 to 28)
 - [ ] Task 9: Draft write-up + v0.1.0 (Tue to Wed Sept 29 to 30)
 - [ ] Task 10: Merged-data fix (v0.2.0)
