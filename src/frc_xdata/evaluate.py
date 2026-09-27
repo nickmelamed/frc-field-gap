@@ -56,6 +56,7 @@ from frc_xdata.logging_utils import add_log_level_argument, setup_logging
 from frc_xdata.provenance import (
     git_commit,
     git_is_dirty,
+    git_tree,
     package_versions,
     sha256_file,
     utc_timestamp,
@@ -785,7 +786,7 @@ def run_meta(
         "run_id": run_id,
         "created": utc_timestamp(),
         "command": ["frc-evaluate", *argv],
-        "git": {"commit": git_commit(repo), "dirty": dirty},
+        "git": {"commit": git_commit(repo), "tree": git_tree(repo), "dirty": dirty},
         "seed": project.seed,
         "configs": _file_hashes(config_files),
         "dataset": {

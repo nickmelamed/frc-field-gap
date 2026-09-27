@@ -138,7 +138,7 @@ def test_load_runs_of_a_missing_directory_is_empty(tmp_path: Path) -> None:
 
 
 def clean(r: RunResult) -> PublishedRun:
-    return PublishedRun(result=r, created="2026-09-27T10:00:00+00:00", commit="abc123", dirty=False)
+    return PublishedRun(result=r, created="2026-09-27T10:00:00+00:00", dirty=False)
 
 
 def published(r: RunResult) -> list[PublishedRun]:
@@ -216,6 +216,8 @@ def test_write_report_is_idempotent_and_keeps_hand_written_text(tmp_path: Path) 
     assert first[0].startswith("# Title\n")
     assert first[0].endswith("Attribution\n")
     assert "### m on alpha test" in first[1]
+    # Rebase merges rewrite commit SHAs, so docs name the run, not the commit.
+    assert "abc123" not in first[1]
 
 
 def test_main_rewrites_both_documents_from_the_configured_runs(
