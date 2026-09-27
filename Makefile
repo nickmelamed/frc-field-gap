@@ -1,4 +1,4 @@
-.PHONY: help setup lint typecheck test check requirements agent-check download inspect
+.PHONY: help setup lint typecheck test check requirements agent-check download inspect harmonize
 
 help:  ## List targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -31,3 +31,6 @@ download:  ## Download pinned datasets to data/raw/ (ARGS=--resolve to look them
 
 inspect:  ## Write dataset stats, duplicate report, and sample grids from data/raw/
 	uv run frc-inspect $(ARGS)
+
+harmonize:  ## Map labels to fuel and robot, re-split, and write data/harmonized/
+	uv run frc-harmonize $(ARGS)
