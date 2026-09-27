@@ -183,3 +183,9 @@ def test_datasets_config_rejects_unsafe_keys(key: str) -> None:
 def test_datasets_config_accepts_snake_case_keys() -> None:
     cfg = DatasetsConfig.model_validate({"datasets": {"robot_zftp2": SPEC}})
     assert list(cfg.datasets) == ["robot_zftp2"]
+
+
+def test_committed_datasets_config_loads() -> None:
+    cfg = load_yaml(REPO_ROOT / "configs" / "datasets.yaml", DatasetsConfig)
+    assert cfg.datasets
+    assert all(spec.license == "CC BY 4.0" for spec in cfg.datasets.values())
