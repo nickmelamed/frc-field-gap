@@ -9,7 +9,7 @@ positive.
 """
 
 import json
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -24,11 +24,15 @@ from supervision.metrics import (
     Recall,
 )
 
-from frc_xdata.errors import ConfigError
+from frc_xdata.errors import ConfigError, PredictionCacheTooLargeError, UnmappedLabelError
 
 # Metrics are stored rounded, and the report prints them unchanged, so every
 # number in the docs appears verbatim under reports/.
 DECIMALS = 3
+# Cached predictions keep enough precision to re-sweep thresholds without
+# changing a count, at a size that can be committed.
+CONFIDENCE_DECIMALS = 4
+COORD_DECIMALS = 1
 
 
 class _Record(BaseModel):
@@ -269,3 +273,105 @@ def _reindex(detections: sv.Detections, remap: dict[int, int]) -> sv.Detections:
         confidence=detections.confidence,
         class_id=np.array([remap[int(c)] for c in detections.class_id], dtype=int),
     )
+
+
+class Prediction(_Record):
+    """One predicted box, in the original image's pixels."""
+
+    class_name: str
+    confidence: float
+    xyxy: tuple[float, float, float, float]
+
+
+def _row(p: Prediction) -> list[str | float]:
+    return [
+        p.class_name,
+        round(p.confidence, CONFIDENCE_DECIMALS),
+        *(round(v, COORD_DECIMALS) for v in p.xyxy),
+    ]
+
+
+def save_predictions(
+    path: Path,
+    predictions: Mapping[str, Sequence[Prediction]],
+    floor: float,
+    max_bytes: int,
+) -> int:
+    """Write predictions at or above ``floor`` to ``path`` and return its size in bytes.
+
+    Each image is one line keyed by file name, so a diff shows which images
+    changed. An image with no predictions is kept with an empty list, which
+    tells it apart from an image that was never run.
+
+    Raises:
+        PredictionCacheTooLargeError: If the file would exceed ``max_bytes``.
+            Nothing is written in that case.
+    """
+    lines = [
+        f"{json.dumps(name)}: {json.dumps([_row(p) for p in preds if p.confidence >= floor])}"
+        for name, preds in predictions.items()
+    ]
+    text = (
+        "{\n"
+        f'"confidence_floor": {json.dumps(floor)},\n'
+        '"images": {\n' + ",\n".join(lines) + "\n}\n}\n"
+    )
+    size = len(text.encode("utf-8"))
+    if size > max_bytes:
+        raise PredictionCacheTooLargeError(
+            f"{path} would be {size} bytes, over the {max_bytes} byte limit. "
+            "Raise the confidence floor or evaluate a smaller split"
+        )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")
+    return size
+
+
+def load_predictions(path: Path) -> dict[str, list[Prediction]]:
+    """Read predictions written by :func:`save_predictions`, keyed by image file name."""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return {
+        name: [
+            Prediction(class_name=row[0], confidence=row[1], xyxy=(row[2], row[3], row[4], row[5]))
+            for row in rows
+        ]
+        for name, rows in data["images"].items()
+    }
+
+
+def to_detections(predictions: Sequence[Prediction], classes: Sequence[str]) -> sv.Detections:
+    """Convert predictions to supervision detections with the dataset's class ids.
+
+    Classes are matched by name, since a model numbers its classes its own way.
+
+    Raises:
+        UnmappedLabelError: If the model predicts a class the dataset does not
+            have.
+    """
+    unknown = sorted({p.class_name for p in predictions} - set(classes))
+    if unknown:
+        raise UnmappedLabelError(f"model predicts {unknown}, which are not in {list(classes)}")
+    if not predictions:
+        return sv.Detections.empty()
+    return sv.Detections(
+        xyxy=np.array([p.xyxy for p in predictions], dtype=float),
+        confidence=np.array([p.confidence for p in predictions], dtype=float),
+        class_id=np.array([classes.index(p.class_name) for p in predictions], dtype=int),
+    )
+
+
+def align(
+    predictions: Mapping[str, Sequence[Prediction]],
+    image_names: Sequence[str],
+    classes: Sequence[str],
+) -> list[sv.Detections]:
+    """Return one set of detections per image, in the order of ``image_names``.
+
+    Raises:
+        ConfigError: If an image has no entry in ``predictions``, so a cache
+            from another split or a partial run is never scored.
+    """
+    missing = [name for name in image_names if name not in predictions]
+    if missing:
+        raise ConfigError(f"{len(missing)} images have no cached predictions, such as {missing[0]}")
+    return [to_detections(predictions[name], classes) for name in image_names]

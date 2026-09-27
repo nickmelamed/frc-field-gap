@@ -27,3 +27,7 @@ class SplitLeakError(FrcXdataError):
 
 class UploadCheckError(FrcXdataError):
     """Data sent to or received from Roboflow does not match the harmonized dataset."""
+
+
+class PredictionCacheTooLargeError(FrcXdataError):
+    """Cached predictions would be too large to commit under reports/."""
