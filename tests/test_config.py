@@ -51,6 +51,24 @@ def test_api_key_read_from_environment(monkeypatch: pytest.MonkeyPatch, tmp_path
     assert roboflow_api_key() == "test-key"
 
 
+def test_api_key_read_from_dotenv_in_working_directory(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    (tmp_path / ".env").write_text(f"{API_KEY_VAR}=from-file\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv(API_KEY_VAR, raising=False)
+    assert roboflow_api_key() == "from-file"
+
+
+def test_api_key_environment_wins_over_dotenv(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    (tmp_path / ".env").write_text(f"{API_KEY_VAR}=from-file\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv(API_KEY_VAR, "from-env")
+    assert roboflow_api_key() == "from-env"
+
+
 @pytest.mark.parametrize("value", [None, "", "   "])
 def test_api_key_missing_raises(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, value: str | None
