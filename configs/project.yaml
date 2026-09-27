@@ -1,0 +1,12 @@
+# Settings shared by every pipeline stage. Paths are relative to the repo root.
+
+# One seed for Python, NumPy, and any framework in use, so sampling and
+# splits come out the same on every run.
+seed: 2026
+
+paths:
+  raw_dir: data/raw
+  reports_dir: reports
+  manifests_dir: reports/data_manifests
+  assets_dir: docs/assets
+  field_test_dir: data/field_test

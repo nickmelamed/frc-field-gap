@@ -1,9 +1,16 @@
 from pathlib import Path
 
 import pytest
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, ValidationError
 
-from frc_xdata.config import API_KEY_VAR, load_yaml, roboflow_api_key
+from frc_xdata.config import (
+    API_KEY_VAR,
+    DatasetsConfig,
+    DatasetSpec,
+    ProjectConfig,
+    load_yaml,
+    roboflow_api_key,
+)
 from frc_xdata.errors import ConfigError
 
 
@@ -117,3 +124,62 @@ def test_api_key_missing_raises(
         monkeypatch.setenv(API_KEY_VAR, value)
     with pytest.raises(ConfigError, match=API_KEY_VAR):
         roboflow_api_key()
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+SPEC = {"workspace": "robot-zftp2", "license": "CC BY 4.0"}
+
+
+def test_committed_project_config_loads() -> None:
+    cfg = load_yaml(REPO_ROOT / "configs" / "project.yaml", ProjectConfig)
+    assert cfg.paths.raw_dir == Path("data/raw")
+
+
+def test_project_config_rejects_absolute_paths(tmp_path: Path) -> None:
+    text = (REPO_ROOT / "configs" / "project.yaml").read_text(encoding="utf-8")
+    path = write(tmp_path, text.replace("raw_dir: data/raw", "raw_dir: /data/raw"))
+    with pytest.raises(ConfigError, match="must be relative"):
+        load_yaml(path, ProjectConfig)
+
+
+def test_dataset_spec_defaults_to_unpinned_coco() -> None:
+    spec = DatasetSpec.model_validate(SPEC)
+    assert spec.format == "coco"
+    assert not spec.pinned
+    assert spec.url == "https://universe.roboflow.com/robot-zftp2"
+
+
+def test_dataset_spec_pinned_needs_project_and_version() -> None:
+    assert not DatasetSpec.model_validate({**SPEC, "project": "rebuilt"}).pinned
+    assert not DatasetSpec.model_validate({**SPEC, "version": 3}).pinned
+    spec = DatasetSpec.model_validate({**SPEC, "project": "rebuilt", "version": 3})
+    assert spec.pinned
+    assert spec.url == "https://universe.roboflow.com/robot-zftp2/rebuilt"
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"version": 0},
+        {"format": "yolov8"},
+        {"workspace": "Robot ZFTP2"},
+        {"project": "../escape"},
+        {"classes": ["fuel"]},
+    ],
+    ids=["version-zero", "format", "workspace-case", "project-path", "unknown-field"],
+)
+def test_dataset_spec_rejects_bad_values(change: dict[str, object]) -> None:
+    with pytest.raises(ValidationError):
+        DatasetSpec.model_validate({**SPEC, **change})
+
+
+@pytest.mark.parametrize("key", ["MarsWars", "lava-2026", "", "../raw"])
+def test_datasets_config_rejects_unsafe_keys(key: str) -> None:
+    with pytest.raises(ValidationError):
+        DatasetsConfig.model_validate({"datasets": {key: SPEC}})
+
+
+def test_datasets_config_accepts_snake_case_keys() -> None:
+    cfg = DatasetsConfig.model_validate({"datasets": {"robot_zftp2": SPEC}})
+    assert list(cfg.datasets) == ["robot_zftp2"]
