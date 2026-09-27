@@ -14,6 +14,7 @@ from frc_xdata.evaluate import (
     ConfusionTable,
     EvalMetrics,
     Interval,
+    PerImageLimit,
     PRPoint,
     RunResult,
     UnitCount,
@@ -264,6 +265,26 @@ def test_main_rewrites_both_documents_from_the_configured_runs(
 def test_run_section_names_classes_the_model_was_not_trained_on() -> None:
     assert "not scored" not in run_section(clean(result("r1")))
     r = result("r1").model_copy(update={"unscored_classes": ["robot"]})
-    assert "The robot boxes in alpha are not scored, since m was not trained on robot." in (
+    assert "The robot boxes in alpha are not scored, since m was never trained to find them." in (
         run_section(clean(r))
     )
+
+
+def with_limit(at_limit: int, above: int) -> RunResult:
+    limit = PerImageLimit(per_image=25, images_at_limit=at_limit, images_above_threshold=above)
+    return result("r1").model_copy(update={"per_image_limit": limit})
+
+
+def test_run_section_says_when_the_per_image_limit_was_reached() -> None:
+    assert "most predictions kept" not in run_section(clean(result("r1")))
+    assert "most predictions kept" not in run_section(clean(with_limit(0, 0)))
+    reached = run_section(clean(with_limit(3, 0)))
+    assert "3 of 5 images hold the most predictions kept per image, 25" in reached
+    assert "lower bound" not in reached
+    assert "In 2 of them every kept box" in run_section(clean(with_limit(3, 2)))
+
+
+def test_limit_note_numbers_are_stored_in_the_run() -> None:
+    r = with_limit(3, 2)
+    reported = {n for line in run_section(clean(r)).splitlines() for n in NUMBER.findall(line)}
+    assert reported <= set(NUMBER.findall(r.model_dump_json())) | {"95%"}

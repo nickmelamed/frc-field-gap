@@ -478,9 +478,9 @@ labels that the model's training dataset also labels, both read from
 `unscored_classes` in `metrics.json`, and the report names them under the
 run's table.
 
-Why. A zero for a class the model was never shown measures the training
-data, not how well the model generalizes, and the project asks how a fuel
-detector does on other teams' fuel.
+Why. A zero for a class the model was never shown says only that its
+training data lacked that class. The project asks how a fuel detector does
+on other teams' fuel.
 
 Consequences. The baseline's cross-dataset results are about fuel only.
 `scorekeeper`'s robot boxes are first scored by a model trained on robots in
@@ -503,16 +503,24 @@ rescored under it from their earlier caches, which hold every box down to
 the floor, so the model was not called again.
 
 Why. No test image of A, B, or C has more than 16 labeled fuel boxes, so 25
-still lets every labeled box be found, and COCO's own evaluation keeps at
-most 100 per image. The cache stays in git, so `--from-cache` works from a
+still lets every labeled box be found. COCO's own evaluation keeps at most
+100 per image and class. The cache stays in git, so `--from-cache` works from a
 fresh clone. Raising the floor instead would cut the low-confidence tail on
 every image, including sparse ones.
 
-Consequences. The dropped boxes include low-ranked false positives and some
-low-confidence hits, so mAP can move slightly either way compared with no
-limit. On A-test it came out slightly lower (compare the two A-test runs'
-`metrics.json`). Recall
-at the 0.5 threshold is unchanged unless an image has more than 25
-predictions above 0.5. The first A-test and B-test runs, made without the
-limit, stay under `reports/runs/`, since the rescores read their caches, and
-the report uses the newer rescores.
+Consequences. The dropped boxes can include low-confidence hits as well as
+false positives, so mAP can move either way compared with no limit. On
+A-test it came out slightly lower (compare the two A-test runs'
+`metrics.json`). When every labeled box survives the limit, as on
+`scorekeeper` test where recall is 1.0 even at the lowest threshold, only
+false positives were dropped, so mAP there is an upper bound. When an image
+reaches the limit with every kept box at or above the threshold, boxes that
+would have counted at the threshold were dropped, so that run's false
+positive count is a lower bound and its precision an upper bound. Each run
+records both counts under `per_image_limit` in `metrics.json`, and the
+report prints them under the run's table. The limit counts boxes of every
+class the model predicts, before unscored classes are dropped, so a model
+that also predicts robots could lose fuel boxes to it on a fuel-only
+dataset. That needs another look before Task 10. The first A-test and
+B-test runs, made without the limit, stay under `reports/runs/`, since the
+rescores read their caches, and the report uses the newer rescores.

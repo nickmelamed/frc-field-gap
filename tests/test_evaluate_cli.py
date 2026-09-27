@@ -414,3 +414,9 @@ def test_rescoring_an_older_cache_applies_the_per_image_limit(
     assert rescored["metrics"] == live["metrics"]
     cached = read("run3", "predictions.json")["images"]
     assert max(len(rows) for rows in cached.values()) == 1
+    # a.jpg and b.jpg keep a box at 0.9, and c.jpg only its box at 0.2.
+    assert live["per_image_limit"] == {
+        "per_image": 1,
+        "images_at_limit": 3,
+        "images_above_threshold": 2,
+    }
