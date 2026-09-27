@@ -1,12 +1,15 @@
 """Record where a result came from: git state, file hashes, and package versions."""
 
 import hashlib
+import logging
 import subprocess
 from datetime import UTC, datetime
 from importlib.metadata import distributions
 from pathlib import Path
 
 CHUNK_BYTES = 1 << 20
+
+logger = logging.getLogger(__name__)
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -39,8 +42,19 @@ def sha256_file(path: Path) -> str:
 
 
 def package_versions() -> dict[str, str]:
-    """Return every installed distribution and its version, sorted by name."""
-    found = {d.metadata["Name"].lower(): d.version for d in distributions()}
+    """Return every installed distribution and its version, sorted by name.
+
+    A distribution with no ``Name`` in its metadata, which a half-removed
+    install can leave behind, is skipped with a warning.
+    """
+    found = {}
+    for dist in distributions():
+        names = dist.metadata.get_all("Name") or []
+        name = names[0] if names else ""
+        if not name:
+            logger.warning("skipping an installed distribution with no Name metadata")
+            continue
+        found[name.lower()] = dist.version
     return dict(sorted(found.items()))
 
 

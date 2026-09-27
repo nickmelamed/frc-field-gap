@@ -69,3 +69,31 @@ def test_utc_timestamp_is_timezone_aware() -> None:
     parsed = datetime.fromisoformat(utc_timestamp())
     assert parsed.utcoffset() is not None
     assert parsed.utcoffset().total_seconds() == 0
+
+
+class FakeMetadata:
+    def __init__(self, fields: dict[str, str]) -> None:
+        self.fields = fields
+
+    def get_all(self, name: str) -> list[str] | None:
+        return [self.fields[name]] if name in self.fields else None
+
+
+class FakeDist:
+    def __init__(self, metadata: dict[str, str], version: str) -> None:
+        self.metadata = FakeMetadata(metadata)
+        self.version = version
+
+
+def test_package_versions_skips_distributions_without_name(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    fakes = [
+        FakeDist({"Name": "Zeta"}, "1.0"),
+        FakeDist({}, "9.9"),
+        FakeDist({"Name": ""}, "8.8"),
+        FakeDist({"Name": "alpha"}, "2.0"),
+    ]
+    monkeypatch.setattr("frc_xdata.provenance.distributions", lambda: fakes)
+    assert package_versions() == {"alpha": "2.0", "zeta": "1.0"}
+    assert caplog.text.count("no Name metadata") == 2
