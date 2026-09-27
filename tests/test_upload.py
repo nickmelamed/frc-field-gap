@@ -310,3 +310,83 @@ def test_compare_export_refuses_names_that_differ_only_in_the_dropped_suffix(
     write_export(tmp_path / "export", {"train": [("x.jpg", 0)]})
     with pytest.raises(UploadCheckError, match="differ only in the suffix"):
         compare_export(tmp_path / "export", dataset, "alpha")
+
+
+class FakeVersion:
+    def __init__(self, calls: list[tuple[str, Any]]) -> None:
+        self.calls = calls
+        self.splits = {"train": 1}
+        self.preprocessing = {"auto-orient": True}
+        self.augmentation: dict[str, Any] = {}
+
+    def download(self, fmt: str, location: str, overwrite: bool) -> None:
+        self.calls.append(("download", (fmt, location, overwrite)))
+
+
+class FakeWorkspace:
+    def __init__(self, calls: list[tuple[str, Any]], projects: set[str]) -> None:
+        self.calls = calls
+        self.projects = projects
+
+    def project(self, slug: str) -> Any:
+        from roboflow.adapters.rfapi import RoboflowError
+
+        if slug not in self.projects:
+            raise RoboflowError(f"no project {slug}")
+        calls = self.calls
+
+        class Project:
+            def version(self, n: int) -> FakeVersion:
+                calls.append(("version", n))
+                return FakeVersion(calls)
+
+        return Project()
+
+    def upload_dataset(self, path: str, slug: str, **kwargs: Any) -> None:
+        self.calls.append(("upload_dataset", (path, slug, kwargs)))
+
+
+@pytest.fixture
+def sdk(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, Any]]:
+    """Replace the Roboflow client with one that records calls, holding project p."""
+    calls: list[tuple[str, Any]] = []
+
+    class FakeRoboflow:
+        def __init__(self, api_key: str) -> None:
+            calls.append(("key", api_key))
+
+        def workspace(self) -> FakeWorkspace:
+            return FakeWorkspace(calls, {"p"})
+
+    monkeypatch.setattr("roboflow.Roboflow", FakeRoboflow)
+    return calls
+
+
+def test_roboflow_upload_names_the_split_in_every_sdk_call(
+    sdk: list[tuple[str, Any]], tmp_path: Path
+) -> None:
+    upload._roboflow_upload(SECRET, "p", "alpha", 3)(tmp_path / "valid", "valid")
+    assert sdk[-1] == (
+        "upload_dataset",
+        (
+            str(tmp_path / "valid"),
+            "p",
+            {"num_retries": 3, "batch_name": "harmonized-alpha-valid", "split": "valid"},
+        ),
+    )
+
+
+def test_roboflow_project_refuses_a_missing_project(sdk: list[tuple[str, Any]]) -> None:
+    with pytest.raises(ConfigError, match="Create it in the web app"):
+        upload._roboflow_upload(SECRET, "missing", "alpha", 3)
+    assert not [c for c in sdk if c[0] == "upload_dataset"]
+
+
+def test_roboflow_export_downloads_coco_over_a_partial_copy(
+    sdk: list[tuple[str, Any]], tmp_path: Path
+) -> None:
+    info = upload._roboflow_export(SECRET, "p", 2)(tmp_path / "v2")
+    assert sdk[1:] == [("version", 2), ("download", ("coco", str(tmp_path / "v2"), True))]
+    assert info == VersionInfo(
+        splits={"train": 1}, preprocessing={"auto-orient": True}, augmentation={}
+    )
