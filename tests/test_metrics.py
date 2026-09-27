@@ -11,7 +11,7 @@ from frc_xdata.evaluate import compute_metrics, scored_classes
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CLASSES = ["fuel", "robot"]
 FUEL, ROBOT = 0, 1
-THRESHOLDS = [0.1, 0.5, 0.85]
+THRESHOLDS = [0.1, 0.5, 0.85, 0.95]
 A = [0, 0, 10, 10]
 B = [20, 20, 30, 30]
 C = [40, 40, 50, 50]
@@ -58,12 +58,17 @@ def test_perfect_predictions_score_one() -> None:
     assert (fuel.precision, fuel.recall) == (1.0, 1.0)
     assert (fuel.true_positives, fuel.false_positives, fuel.false_negatives) == (3, 0, 0)
     assert fuel.instances == 3
+    # Every box is small, so there is no medium or large score to report.
+    assert m.small_map50_95 == 1.0
+    assert (m.medium_map50_95, m.large_map50_95) == (None, None)
 
 
 def test_no_predictions_give_zero_recall() -> None:
     m = score([sv.Detections.empty(), sv.Detections.empty()], [labels(A, B), labels(C)])
     fuel = m.classes[0]
     assert fuel.recall == 0.0
+    # Precision is undefined with no predictions, not zero.
+    assert fuel.precision is None
     assert m.map50 == 0.0
     assert (fuel.true_positives, fuel.false_negatives) == (0, 3)
     assert m.confusion.matrix == [[0, 3], [0, 0]]
@@ -98,6 +103,7 @@ def test_pr_curve_sweeps_thresholds() -> None:
         (0.1, 0.5, 0.667),
         (0.5, 0.333, 0.333),
         (0.85, 1.0, 0.333),
+        (0.95, None, 0.0),
     ]
 
 

@@ -88,7 +88,9 @@ class ClassMetrics(_Record):
     instances: int
     map50: float
     map50_95: float
-    precision: float
+    # None when the model made no prediction of this class, since precision
+    # is then undefined rather than zero.
+    precision: float | None
     recall: float
     true_positives: int
     false_positives: int
@@ -99,7 +101,7 @@ class PRPoint(_Record):
     """Precision and recall for one class at one confidence threshold."""
 
     threshold: float
-    precision: float
+    precision: float | None
     recall: float
 
 
@@ -122,9 +124,10 @@ class EvalMetrics(_Record):
     iou: float
     map50: float
     map50_95: float
-    small_map50_95: float
-    medium_map50_95: float
-    large_map50_95: float
+    # None when the split has no labeled box of that size.
+    small_map50_95: float | None
+    medium_map50_95: float | None
+    large_map50_95: float | None
     classes: list[ClassMetrics]
     confusion: ConfusionTable
     pr_curve: dict[str, list[PRPoint]]
@@ -169,6 +172,10 @@ def _round(value: float) -> float:
     return round(float(value), DECIMALS)
 
 
+def _maybe_round(value: float | None) -> float | None:
+    return None if value is None else _round(value)
+
+
 def _per_class(
     values: npt.NDArray[np.floating[Any]],
     found: npt.NDArray[np.integer[Any]],
@@ -179,14 +186,25 @@ def _per_class(
     return [lookup.get(c, 0.0) for c in class_ids]
 
 
+def _predicted(predictions: list[sv.Detections], class_id: int) -> int:
+    return sum(int((p.class_id == class_id).sum()) for p in predictions if p.class_id is not None)
+
+
 def _precision_recall(
     predictions: list[sv.Detections], targets: list[sv.Detections], class_ids: Sequence[int]
-) -> tuple[list[float], list[float]]:
+) -> tuple[list[float | None], list[float]]:
     precision = Precision().update(predictions, targets).compute()
     recall = Recall().update(predictions, targets).compute()
-    # Column 0 is IoU 0.5.
+    # Column 0 is IoU 0.5. supervision reports 0 precision for a class with
+    # no predictions, where it is really undefined.
+    per_class = _per_class(
+        precision.precision_per_class[:, 0], precision.matched_classes, class_ids
+    )
     return (
-        _per_class(precision.precision_per_class[:, 0], precision.matched_classes, class_ids),
+        [
+            p if _predicted(predictions, c) else None
+            for c, p in zip(class_ids, per_class, strict=True)
+        ],
         _per_class(recall.recall_per_class[:, 0], recall.matched_classes, class_ids),
     )
 
@@ -213,7 +231,7 @@ def pr_curve(
         precision, recall = _precision_recall(kept, targets, class_ids)
         for c, p, r in zip(class_ids, precision, recall, strict=True):
             curve[classes[c]].append(
-                PRPoint(threshold=_round(t), precision=_round(p), recall=_round(r))
+                PRPoint(threshold=_round(t), precision=_maybe_round(p), recall=_round(r))
             )
     return curve
 
@@ -279,7 +297,7 @@ def compute_metrics(
             instances=int(matrix[i].sum()),
             map50=_round(ap50[i]),
             map50_95=_round(ap50_95[i]),
-            precision=_round(precision[i]),
+            precision=_maybe_round(precision[i]),
             recall=_round(recall[i]),
             true_positives=int(matrix[i, i]),
             false_positives=int(matrix[:, i].sum() - matrix[i, i]),
@@ -293,17 +311,20 @@ def compute_metrics(
         iou=iou,
         map50=_round(mean_ap.map50),
         map50_95=_round(mean_ap.map50_95),
-        small_map50_95=_round(_size_map(mean_ap.small_objects)),
-        medium_map50_95=_round(_size_map(mean_ap.medium_objects)),
-        large_map50_95=_round(_size_map(mean_ap.large_objects)),
+        small_map50_95=_maybe_round(_size_map(mean_ap.small_objects)),
+        medium_map50_95=_maybe_round(_size_map(mean_ap.medium_objects)),
+        large_map50_95=_maybe_round(_size_map(mean_ap.large_objects)),
         classes=per_class,
         confusion=ConfusionTable(labels=[*scored_names, "background"], matrix=matrix.tolist()),
         pr_curve=pr_curve(preds, labels, classes, class_ids, thresholds),
     )
 
 
-def _size_map(result: MeanAveragePrecisionResult | None) -> float:
-    return 0.0 if result is None else result.map50_95
+def _size_map(result: MeanAveragePrecisionResult | None) -> float | None:
+    # COCO scores a size with no labeled boxes as -1.
+    if result is None or result.map50_95 < 0:
+        return None
+    return result.map50_95
 
 
 def _reindex(detections: sv.Detections, remap: dict[int, int]) -> sv.Detections:
