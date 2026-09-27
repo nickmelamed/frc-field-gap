@@ -264,3 +264,49 @@ def test_compare_export_refuses_a_name_shared_by_two_splits(
     write_export(tmp_path / "export", MATCHING)
     with pytest.raises(UploadCheckError, match="more than one harmonized split"):
         compare_export(tmp_path / "export", dataset, "alpha")
+
+
+def test_compare_export_matches_the_names_roboflow_rebuilds(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    # Universe files end in .rf.<hash>, which Roboflow drops on upload along
+    # with a _jpg before it, as seen in a real export of marswars.
+    monkeypatch.chdir(tmp_path)
+    dataset = tmp_path / "harmonized"
+    names = {
+        "train": ("cam_0192_png.rf." + "a" * 32 + ".jpg", 1),
+        "valid": ("field_mp4-0019_jpg.rf." + "b" * 32 + ".jpg", 0),
+        "test": ("cam_0193_png.rf." + "c" * 32 + ".jpg", 2),
+    }
+    for split, (name, boxes) in names.items():
+        record = ImageRecord(ImageRef("alpha", split, name), name, 64, 64, (FUEL,) * boxes)
+        write_split(dataset / split, to_coco([record], ["fuel", "robot"]))
+    write_export(
+        tmp_path / "export",
+        {
+            "train": [("cam_0192_png.jpg", 1)],
+            "valid": [("field_mp4-0019.jpg", 0)],
+            "test": [("cam_0193_png.jpg", 2)],
+        },
+    )
+    result = compare_export(tmp_path / "export", dataset, "alpha")
+    assert (result.missing, result.extra, result.moved, result.box_count_changed) == (
+        [],
+        [],
+        [],
+        [],
+    )
+
+
+def test_compare_export_refuses_names_that_differ_only_in_the_dropped_suffix(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    dataset = tmp_path / "harmonized"
+    for split, name in (("train", "x_jpg.rf." + "a" * 32), ("valid", "x_jpg.rf." + "b" * 32)):
+        record = ImageRecord(ImageRef("alpha", split, name + ".jpg"), name, 64, 64, ())
+        write_split(dataset / split, to_coco([record], ["fuel", "robot"]))
+    write_split(dataset / "test", to_coco([], ["fuel", "robot"]))
+    write_export(tmp_path / "export", {"train": [("x.jpg", 0)]})
+    with pytest.raises(UploadCheckError, match="differ only in the suffix"):
+        compare_export(tmp_path / "export", dataset, "alpha")
