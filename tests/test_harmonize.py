@@ -185,6 +185,18 @@ def test_main_writes_harmonized_splits_that_supervision_loads(
     assert (train / "a.png").samefile(raw_dir / "alpha" / "train" / "a.png")
 
 
+def test_main_writes_splits_the_roboflow_uploader_can_parse(
+    raw_dir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from roboflow.util import folderparser
+
+    run_cli(tmp_path, monkeypatch, CLASS_MAP)
+    parsed = folderparser.parsefolder(str(tmp_path / "data" / "harmonized" / "alpha" / "train"))
+    assert sorted(i["name"] for i in parsed["images"]) == ["a.png", "b.png", "c.png"]
+    # b.png has no boxes and still needs its annotation, or it arrives unannotated.
+    assert all("annotationfile" in i for i in parsed["images"])
+
+
 def test_main_writes_counts_and_coverage(
     raw_dir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

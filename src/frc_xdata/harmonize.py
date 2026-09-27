@@ -112,7 +112,9 @@ def to_coco(records: Sequence[ImageRecord], classes: Sequence[str]) -> dict[str,
 
     supervision orders classes by category id, so leaving out Roboflow's
     placeholder category keeps class ids the same in every dataset. Each
-    image keeps its source name and original split under ``extra``.
+    image keeps its source name and original split under ``extra``. The
+    empty ``info`` and ``licenses`` are there because the Roboflow SDK's
+    uploader reads both keys and fails without them.
     """
     category_ids = {name: n for n, name in enumerate(classes, start=1)}
     images: list[dict[str, Any]] = []
@@ -140,6 +142,8 @@ def to_coco(records: Sequence[ImageRecord], classes: Sequence[str]) -> dict[str,
                 }
             )
     return {
+        "info": {},
+        "licenses": [],
         "categories": [
             {"id": n, "name": name, "supercategory": "none"} for name, n in category_ids.items()
         ],
