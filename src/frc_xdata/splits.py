@@ -25,6 +25,7 @@ from frc_xdata.inspect_datasets import ImageRecord, ImageRef, near_duplicate_pai
 Split = Literal["train", "valid", "test"]
 SPLITS: tuple[Split, ...] = ("train", "valid", "test")
 DropReason = Literal["copy", "buffer", "near_test"]
+DROP_REASONS: tuple[DropReason, ...] = ("copy", "buffer", "near_test")
 
 
 @dataclass(frozen=True)

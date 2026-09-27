@@ -1,0 +1,147 @@
+{
+  "fractions": {
+    "train": 0.7,
+    "valid": 0.15,
+    "test": 0.15
+  },
+  "buffer_frames": 5,
+  "min_recording_images": 20,
+  "near_duplicate_max_distance": 4,
+  "cross_dataset_near_duplicates": 0,
+  "datasets": {
+    "marswars": {
+      "method": "temporal",
+      "unit": "recording",
+      "units": 13,
+      "largest_unit": 445,
+      "dropped": {
+        "copy": 0,
+        "buffer": 55,
+        "near_test": 2
+      },
+      "splits": {
+        "train": {
+          "images": 942,
+          "units": 13
+        },
+        "valid": {
+          "images": 140,
+          "units": 6
+        },
+        "test": {
+          "images": 171,
+          "units": 6
+        }
+      },
+      "from_source_split": {
+        "test": {
+          "dropped": 7,
+          "test": 21,
+          "train": 95,
+          "valid": 9
+        },
+        "train": {
+          "dropped": 42,
+          "test": 129,
+          "train": 700,
+          "valid": 108
+        },
+        "valid": {
+          "dropped": 8,
+          "test": 21,
+          "train": 147,
+          "valid": 23
+        }
+      }
+    },
+    "scorekeeper": {
+      "method": "grouped",
+      "unit": "group",
+      "units": 744,
+      "largest_unit": 227,
+      "dropped": {
+        "copy": 2988,
+        "buffer": 0,
+        "near_test": 0
+      },
+      "splits": {
+        "train": {
+          "images": 1466,
+          "units": 527
+        },
+        "valid": {
+          "images": 314,
+          "units": 108
+        },
+        "test": {
+          "images": 314,
+          "units": 109
+        }
+      },
+      "from_source_split": {
+        "test": {
+          "test": 29,
+          "train": 138,
+          "valid": 16
+        },
+        "train": {
+          "dropped": 2988,
+          "test": 216,
+          "train": 1005,
+          "valid": 240
+        },
+        "valid": {
+          "test": 69,
+          "train": 323,
+          "valid": 58
+        }
+      },
+      "copy_group_sizes": {
+        "1": 1,
+        "2": 1,
+        "3": 1437,
+        "6": 21,
+        "9": 1
+      }
+    },
+    "robotzftp2": {
+      "method": "temporal",
+      "unit": "recording",
+      "units": 7,
+      "largest_unit": 516,
+      "dropped": {
+        "copy": 0,
+        "buffer": 70,
+        "near_test": 0
+      },
+      "splits": {
+        "train": {
+          "images": 1293,
+          "units": 7
+        },
+        "valid": {
+          "images": 249,
+          "units": 7
+        },
+        "test": {
+          "images": 286,
+          "units": 7
+        }
+      },
+      "from_source_split": {
+        "train": {
+          "dropped": 42,
+          "test": 185,
+          "train": 873,
+          "valid": 172
+        },
+        "valid": {
+          "dropped": 28,
+          "test": 101,
+          "train": 420,
+          "valid": 77
+        }
+      }
+    }
+  }
+}
