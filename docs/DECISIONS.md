@@ -498,8 +498,9 @@ had fit, with up to 107 predictions on one image.
 Decision. Nick chose on 2026-09-27 to cache and score only the 25 most
 confident predictions per image (`max_predictions_per_image` in
 `configs/project.yaml`) on every dataset. Ties keep the model's order. A
-rescore of an older cache applies the same limit, and A-test and B-test
-were run again under it.
+rescore of an older cache applies the same limit. A-test and B-test were
+rescored under it from their earlier caches, which hold every box down to
+the floor, so the model was not called again.
 
 Why. No test image of A, B, or C has more than 16 labeled fuel boxes, so 25
 still lets every labeled box be found, and COCO's own evaluation keeps at
@@ -511,4 +512,5 @@ Consequences. Dropping the faintest boxes removes low-ranked false
 positives, so mAP can come out slightly higher than with no limit. Recall
 at the 0.5 threshold is unchanged unless an image has more than 25
 predictions above 0.5. The first A-test and B-test runs, made without the
-limit, stay under `reports/runs/` and are superseded by the newer ones.
+limit, stay under `reports/runs/`, since the rescores read their caches, and
+the report uses the newer rescores.
