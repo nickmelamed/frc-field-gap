@@ -1,6 +1,6 @@
 {
-  "run_id": "baseline-a__marswars-test__first10__20260927T211051Z",
-  "created": "2026-09-27T21:11:05+00:00",
+  "run_id": "baseline-a__marswars-test__first10__20260927T212327Z",
+  "created": "2026-09-27T21:23:41+00:00",
   "command": [
     "frc-evaluate",
     "baseline-a",
@@ -11,8 +11,8 @@
     "10"
   ],
   "git": {
-    "commit": "f53ea036578278df3e43945546651ea2e9895913",
-    "tree": "75efc5b78b4ac40e87457c2a8193d450e6e3cc98",
+    "commit": "d3ffbff2dca7bbb1e7d96c0095ae923cdb2d040a",
+    "tree": "d4a546cea29ea45a38db86849c33e00ffcb77bcc",
     "dirty": false
   },
   "seed": 2026,
@@ -89,6 +89,7 @@
     }
   },
   "predictions_from": "this run",
+  "source_dirty": false,
   "evaluate": {
     "api_url": "https://serverless.roboflow.com",
     "models_file": "reports/models.yaml",
