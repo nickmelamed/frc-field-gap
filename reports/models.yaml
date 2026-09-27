@@ -8,16 +8,26 @@ models:
     dataset: marswars
     split_report: reports/splits.json
     upload_report: reports/platform_upload_marswars.json
-    project: null
-    version: null
+    project: frc-rebuilt-fuel-a
+    # Version 1 had no resize. The training page recommended 384x384 for
+    # RF-DETR Nano, so version 2 adds it and version 1 is unused.
+    version: 2
+    version_name: harmonized-marswars-noaug-384
     model_id: null
-    architecture: null
+    architecture: RF-DETR (Nano)
     checkpoint: null
-    input_size: null
-    epochs: null
-    preprocessing: null
+    input_size: 384x384 (Stretch to)
+    preprocessing: auto-orient, resize 384x384 (Stretch to)
     augmentation: none
     train_time_augmentation: null
+    # As shown on the training page before the run started.
+    estimate:
+      credits: 1.31
+      training_time: 14 to 39 minutes
+      max_epochs: 100
+      early_stopping: true
+    credit_cap: null
+    epochs: null
     other_settings: {}
     trained: null
     credits_used: null
