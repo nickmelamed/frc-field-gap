@@ -18,6 +18,7 @@ from frc_xdata.inspect_datasets import (
     class_counts,
     encode_png,
     exact_duplicate_groups,
+    grid_order,
     group_pairs,
     is_invalid,
     load_split,
@@ -342,3 +343,34 @@ def test_main_skips_a_split_with_no_images(
     stats = read_csv(tmp_path / "reports" / "dataset_stats.csv")
     assert ("beta", "test") not in [(r["dataset"], r["split"]) for r in stats]
     assert ("beta", "train") in [(r["dataset"], r["split"]) for r in stats]
+
+
+def test_grid_order_matches_the_tiles_sample_grid_draws(
+    raw_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    records, dirs = alpha_records(raw_dir)
+    opened: list[str] = []
+    real_open = Image.open
+
+    def spy(path: Path) -> Image.Image:
+        opened.append(Path(path).name)
+        return real_open(path)
+
+    monkeypatch.setattr(inspect_datasets.Image, "open", spy)
+    config = grid_config(exclude={"alpha": ["b.png"]})
+    sample_grid(records, dirs, config, seed="1:alpha")
+    assert [r.ref.file_name for r in grid_order(records, config, "1:alpha")] == opened
+
+
+def test_main_list_grid_logs_each_tile_and_writes_nothing(
+    raw_dir: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    run_cli(tmp_path, monkeypatch, "--list-grid")
+    err = capsys.readouterr().err
+    assert "alpha r1c1 " in err
+    assert "beta r1c2 " in err
+    assert not (tmp_path / "reports").exists()
+    assert not (tmp_path / "docs").exists()
