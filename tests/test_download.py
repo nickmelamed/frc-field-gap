@@ -365,8 +365,7 @@ def test_real_download_of_first_pinned_dataset(tmp_path: Path) -> None:
     repo = Path(__file__).resolve().parents[1]
     specs = load_yaml(repo / "configs" / "datasets.yaml", DatasetsConfig).datasets
     pinned = {key: spec for key, spec in specs.items() if spec.pinned}
-    if not pinned:
-        pytest.skip("no dataset is pinned yet")
+    assert pinned, "pin a dataset version in configs/datasets.yaml first"
     key, spec = next(iter(pinned.items()))
     api_key = roboflow_api_key()
     failures = download_all(
