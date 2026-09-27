@@ -1,9 +1,10 @@
 """Download pinned Universe datasets in COCO format and record their hashes.
 
 Each dataset lands in ``data/raw/<key>/`` with a ``MANIFEST.json`` listing
-every file, its size, and its SHA256. A small ``<key>.sha256`` file in
-``reports/data_manifests/`` is committed so drift in the source data shows up
-in review. ``sha256sum -c`` accepts it when run from the dataset directory.
+every file, its size, and its SHA256. A short ``<key>.sha256`` digest in
+``reports/data_manifests/`` is committed and rewritten on every run, so drift
+in the source data shows up in ``git diff`` down to the annotation file or
+image directory that changed.
 
 With ``--resolve`` nothing is downloaded. Each candidate is looked up on
 Universe instead, and its versions, split sizes, and classes are written to
@@ -11,13 +12,14 @@ Universe instead, and its versions, split sizes, and classes are written to
 """
 
 import argparse
+import hashlib
 import json
 import logging
 import shutil
 import sys
 import zipfile
 from collections.abc import Callable, Iterable
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 import requests
@@ -34,6 +36,7 @@ from frc_xdata.logging_utils import add_log_level_argument, setup_logging
 from frc_xdata.provenance import sha256_file, utc_timestamp
 
 MANIFEST_NAME = "MANIFEST.json"
+IMAGE_SUFFIXES = frozenset({".jpg", ".jpeg", ".png", ".bmp", ".webp"})
 RESOLUTION_NAME = "dataset_resolution.json"
 FAILURES_NAME = "download_failures.json"
 PROJECT_CONFIG = Path("configs/project.yaml")
@@ -144,8 +147,27 @@ def verify_manifest(root: Path, manifest: Manifest) -> list[str]:
 
 
 def digest_lines(manifest: Manifest) -> str:
-    """Return the manifest as ``sha256sum`` output, one file per line."""
-    return "".join(f"{entry.sha256}  {entry.path}\n" for entry in manifest.files)
+    """Return a short digest of the manifest, small enough to commit.
+
+    Files other than images get one ``sha256sum`` line each, so annotation
+    files can be checked with ``sha256sum -c``. The images in each directory
+    collapse into one comment line holding their count and the SHA256 of
+    their ``sha256sum`` lines, sorted by path. A per-image list for the
+    larger datasets would run to megabytes.
+    """
+    lines = []
+    image_lines: dict[str, list[str]] = {}
+    for entry in manifest.files:
+        line = f"{entry.sha256}  {entry.path}\n"
+        path = PurePosixPath(entry.path)
+        if path.suffix.lower() in IMAGE_SUFFIXES:
+            image_lines.setdefault(f"{path.parent}/", []).append(line)
+        else:
+            lines.append(line)
+    for directory, group in sorted(image_lines.items()):
+        combined = hashlib.sha256("".join(group).encode()).hexdigest()
+        lines.append(f"# images {directory}: {len(group)} files, sha256 {combined}\n")
+    return "".join(lines)
 
 
 def read_manifest(root: Path) -> Manifest | None:

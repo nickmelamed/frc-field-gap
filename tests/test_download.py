@@ -111,13 +111,36 @@ def test_verify_manifest_reports_changed_missing_and_unlisted(tmp_path: Path) ->
     ]
 
 
-def test_digest_lines_use_sha256sum_format(tmp_path: Path) -> None:
+def test_digest_lines_list_other_files_and_one_line_per_image_directory(
+    tmp_path: Path,
+) -> None:
     make_dataset(tmp_path)
+    (tmp_path / "valid" / "c.PNG").write_bytes(b"ccc")
+    (tmp_path / "valid" / "_annotations.coco.json").write_text("{}", encoding="utf-8")
     lines = digest_lines(build_manifest(tmp_path, "key", PINNED)).splitlines()
+    b_line = f"{hashlib.sha256(b'bbb').hexdigest()}  valid/b.jpg\n"
+    c_line = f"{hashlib.sha256(b'ccc').hexdigest()}  valid/c.PNG\n"
+    combined = hashlib.sha256((b_line + c_line).encode()).hexdigest()
     assert lines == [
         f"{hashlib.sha256(b'a').hexdigest()}  a.txt",
-        f"{hashlib.sha256(b'bbb').hexdigest()}  valid/b.jpg",
+        f"{hashlib.sha256(b'{}').hexdigest()}  valid/_annotations.coco.json",
+        f"# images valid/: 2 files, sha256 {combined}",
     ]
+
+
+def test_digest_lines_change_when_one_image_changes(tmp_path: Path) -> None:
+    make_dataset(tmp_path)
+    before = digest_lines(build_manifest(tmp_path, "key", PINNED))
+    (tmp_path / "valid" / "b.jpg").write_bytes(b"BBB")
+    after = digest_lines(build_manifest(tmp_path, "key", PINNED))
+    assert before.splitlines()[0] == after.splitlines()[0]
+    assert before.splitlines()[1] != after.splitlines()[1]
+
+
+def test_digest_lines_images_at_the_root_group_under_dot(tmp_path: Path) -> None:
+    (tmp_path / "top.jpg").write_bytes(b"t")
+    lines = digest_lines(build_manifest(tmp_path, "key", PINNED)).splitlines()
+    assert lines[0].startswith("# images ./: 1 files, sha256 ")
 
 
 def test_read_manifest_missing_or_unreadable_is_none(tmp_path: Path) -> None:
