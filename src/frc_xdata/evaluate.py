@@ -87,12 +87,12 @@ class ClassMetrics(_Record):
 
     name: str
     instances: int
-    map50: float
-    map50_95: float
-    # None when the model made no prediction of this class, since precision
-    # is then undefined rather than zero.
+    # None when the split has no labeled box of this class, and precision is
+    # None when the model made no prediction of it. Neither is then defined.
+    map50: float | None
+    map50_95: float | None
     precision: float | None
-    recall: float
+    recall: float | None
     true_positives: int
     false_positives: int
     false_negatives: int
@@ -187,8 +187,8 @@ def _per_class(
     return [lookup.get(c, 0.0) for c in class_ids]
 
 
-def _predicted(predictions: list[sv.Detections], class_id: int) -> int:
-    return sum(int((p.class_id == class_id).sum()) for p in predictions if p.class_id is not None)
+def _count_class(detections: list[sv.Detections], class_id: int) -> int:
+    return sum(int((d.class_id == class_id).sum()) for d in detections if d.class_id is not None)
 
 
 def _precision_recall(
@@ -203,7 +203,7 @@ def _precision_recall(
     )
     return (
         [
-            p if _predicted(predictions, c) else None
+            p if _count_class(predictions, c) else None
             for c, p in zip(class_ids, per_class, strict=True)
         ],
         _per_class(recall.recall_per_class[:, 0], recall.matched_classes, class_ids),
@@ -292,14 +292,15 @@ def compute_metrics(
     ).matrix.astype(int)
     background = len(class_ids)
 
+    labeled = [_count_class(labels, c) for c in class_ids]
     per_class = [
         ClassMetrics(
             name=scored_names[i],
             instances=int(matrix[i].sum()),
-            map50=_round(ap50[i]),
-            map50_95=_round(ap50_95[i]),
+            map50=_round(ap50[i]) if labeled[i] else None,
+            map50_95=_round(ap50_95[i]) if labeled[i] else None,
             precision=_maybe_round(precision[i]),
-            recall=_round(recall[i]),
+            recall=_round(recall[i]) if labeled[i] else None,
             true_positives=int(matrix[i, i]),
             false_positives=int(matrix[:, i].sum() - matrix[i, i]),
             false_negatives=int(matrix[i].sum() - matrix[i, i]),
@@ -477,8 +478,9 @@ class ClassInterval(_Record):
     """Bootstrap intervals for one class."""
 
     name: str
-    map50: Interval
-    recall: Interval
+    # None when no resample holds a labeled box of this class.
+    map50: Interval | None
+    recall: Interval | None
 
 
 class BootstrapResult(_Record):
@@ -591,22 +593,23 @@ def bootstrap(
     groups = [members[u] for u in sorted(members)]
 
     rng = np.random.default_rng(seed)
-    ap50 = np.zeros((resamples, len(class_ids)))
-    recall = np.zeros((resamples, len(class_ids)))
+    # A resample with no labeled box of a class says nothing about it, so its
+    # score is left out (NaN) rather than counted as zero.
+    ap50 = np.full((resamples, len(class_ids)), np.nan)
+    recall = np.full((resamples, len(class_ids)), np.nan)
     for n in range(resamples):
         picked = [i for g in rng.integers(0, len(groups), len(groups)) for i in groups[g]]
         sample_preds = [preds[i] for i in picked]
         sample_labels = [labels[i] for i in picked]
+        present = np.array([_count_class(sample_labels, c) > 0 for c in class_ids])
         mean_ap = MeanAveragePrecision().update(sample_preds, sample_labels).compute()
-        ap50[n] = _per_class(mean_ap.ap_per_class[:, 0], mean_ap.matched_classes, class_ids)
-        _, recall[n] = _precision_recall(
+        ap = _per_class(mean_ap.ap_per_class[:, 0], mean_ap.matched_classes, class_ids)
+        _, rec = _precision_recall(
             [above(p, confidence) for p in sample_preds], sample_labels, class_ids
         )
+        ap50[n, present] = np.array(ap)[present]
+        recall[n, present] = np.array(rec, dtype=float)[present]
 
-    tail = (1 - level) / 2 * 100
-    bounds = [tail, 100 - tail]
-    ap_low, ap_high = np.percentile(ap50, bounds, axis=0)
-    rec_low, rec_high = np.percentile(recall, bounds, axis=0)
     return BootstrapResult(
         units=len(groups),
         resamples=resamples,
@@ -615,12 +618,21 @@ def bootstrap(
         classes=[
             ClassInterval(
                 name=classes[c],
-                map50=Interval(low=_round(ap_low[i]), high=_round(ap_high[i])),
-                recall=Interval(low=_round(rec_low[i]), high=_round(rec_high[i])),
+                map50=_percentile_interval(ap50[:, i], level),
+                recall=_percentile_interval(recall[:, i], level),
             )
             for i, c in enumerate(class_ids)
         ],
     )
+
+
+def _percentile_interval(values: npt.NDArray[np.float64], level: float) -> Interval | None:
+    kept = values[~np.isnan(values)]
+    if kept.size == 0:
+        return None
+    tail = (1 - level) / 2 * 100
+    low, high = np.percentile(kept, [tail, 100 - tail])
+    return Interval(low=_round(low), high=_round(high))
 
 
 class Predictor(Protocol):
@@ -681,8 +693,8 @@ def inference_errors() -> tuple[type[Exception], ...]:
     try:
         from inference_sdk.http.errors import HTTPClientError
     except ImportError:
-        return (requests.RequestException, OSError)
-    return (HTTPClientError, requests.RequestException, OSError)
+        return (requests.RequestException,)
+    return (HTTPClientError, requests.RequestException)
 
 
 class HostedPredictor:
@@ -888,6 +900,8 @@ def run_evaluation(
     )
     records = sorted(load_split(split_dir, dataset), key=lambda r: r.ref.file_name)[:limit]
     names = [r.ref.file_name for r in records]
+    if not names:
+        raise ConfigError(f"{split_dir} has no images")
     targets = [ds.annotations[str(split_dir / name)] for name in names]
     scored = scored_classes(cfg.coverage_file, dataset)
     run_id = _run_id(model, dataset, split, limit)

@@ -84,7 +84,7 @@ def _interval(run: PublishedRun, name: str, field: str) -> str:
     for c in run.result.bootstrap.classes:
         if c.name == name:
             interval = getattr(c, field)
-            return f"{interval.low} to {interval.high}"
+            return MISSING if interval is None else f"{interval.low} to {interval.high}"
     return MISSING
 
 
@@ -101,8 +101,9 @@ def results_table(runs: Sequence[PublishedRun]) -> str:
         r, m = run.result, run.result.metrics
         for c in m.classes:
             lines.append(
-                f"| {r.model} | {r.dataset} | {r.split} | {m.images} | {c.name} | {c.map50} | "
-                f"{c.map50_95} | {m.confidence} | {_value(c.precision)} | {c.recall} | "
+                f"| {r.model} | {r.dataset} | {r.split} | {m.images} | {c.name} | "
+                f"{_value(c.map50)} | {_value(c.map50_95)} | {m.confidence} | "
+                f"{_value(c.precision)} | {_value(c.recall)} | "
                 f"{_interval(run, c.name, 'recall')} |"
             )
     return "\n".join(lines)
@@ -116,8 +117,8 @@ def _class_table(classes: Sequence[ClassMetrics], run: PublishedRun) -> list[str
     ]
     for c in classes:
         lines.append(
-            f"| {c.name} | {c.instances} | {c.map50} | {_interval(run, c.name, 'map50')} | "
-            f"{c.map50_95} | {_value(c.precision)} | {c.recall} | "
+            f"| {c.name} | {c.instances} | {_value(c.map50)} | {_interval(run, c.name, 'map50')} | "
+            f"{_value(c.map50_95)} | {_value(c.precision)} | {_value(c.recall)} | "
             f"{_interval(run, c.name, 'recall')} | {c.true_positives} | {c.false_positives} | "
             f"{c.false_negatives} |"
         )
