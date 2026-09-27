@@ -155,8 +155,9 @@ def _limit_note(r: RunResult) -> list[str]:
         return []
     lines = [
         "",
-        f"{limit.images_at_limit} of {r.metrics.images} images hold the most predictions "
-        f"kept per image, {limit.per_image}, so fainter boxes may have been dropped there.",
+        f"{limit.images_at_limit} of {r.metrics.images} images reached the limit of "
+        f"{limit.per_image} predictions per image (D-020), so fainter boxes may have been "
+        "dropped there.",
     ]
     if limit.images_above_threshold:
         lines[-1] += (
