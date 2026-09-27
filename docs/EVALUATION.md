@@ -100,5 +100,183 @@ The field test set has not been scored yet.
 ## Results
 
 <!-- EVALUATION:START -->
-No model has been scored on a whole split yet.
+### baseline-a on marswars test
+
+Run `baseline-a__marswars-test__20260927T215138Z`, scored on 171 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
+Intervals come from 1000 resamples of the split's 6 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
+
+| Class | Labeled boxes | mAP50 | mAP50 interval | mAP50-95 | Precision | Recall | Recall interval | Hits | False positives | Misses |
+|---|---|---|---|---|---|---|---|---|---|---|
+| fuel | 455 | 0.936 | 0.923 to 1.0 | 0.623 | 0.963 | 0.927 | 0.908 to 1.0 | 422 | 16 | 33 |
+
+mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
+
+| Small | Medium | Large |
+|---|---|---|
+| 0.295 | 0.648 | 0.77 |
+
+Confusion matrix. Rows are labeled boxes and columns are predictions. The background row holds predictions that matched no labeled box, and the background column holds labeled boxes the model missed.
+
+| | fuel | background |
+|---|---|---|
+| fuel | 422 | 33 |
+| background | 16 | 0 |
+
+Precision and recall for fuel at each confidence threshold:
+
+| Confidence | Precision | Recall |
+|---|---|---|
+| 0.05 | 0.585 | 0.949 |
+| 0.1 | 0.784 | 0.949 |
+| 0.15 | 0.867 | 0.947 |
+| 0.2 | 0.915 | 0.945 |
+| 0.25 | 0.931 | 0.945 |
+| 0.3 | 0.939 | 0.943 |
+| 0.35 | 0.945 | 0.943 |
+| 0.4 | 0.953 | 0.936 |
+| 0.45 | 0.957 | 0.932 |
+| 0.5 | 0.963 | 0.927 |
+| 0.55 | 0.967 | 0.914 |
+| 0.6 | 0.979 | 0.901 |
+| 0.65 | 0.981 | 0.895 |
+| 0.7 | 0.988 | 0.879 |
+| 0.75 | 0.992 | 0.837 |
+| 0.8 | 0.994 | 0.749 |
+| 0.85 | 0.996 | 0.488 |
+| 0.9 | 1.0 | 0.088 |
+| 0.95 | n/a | 0.0 |
+
+Recordings or groups with the most labeled boxes:
+
+| Recording or group | Images | fuel boxes |
+|---|---|---|
+| `Basler_daA1280-54uc__24770352__20260112_181311364` | 69 | 335 |
+| `Basler_daA1280-54uc__24770352__20260112_180938780` | 22 | 39 |
+| `Basler_daA1280-54uc__24770352__20260112_180745507` | 26 | 33 |
+| `Basler_daA1280-54uc__24770352__20260112_180633579` | 21 | 32 |
+| `Basler_daA1280-54uc__24770352__20260112_180305685` | 23 | 16 |
+| `Basler_daA1280-54uc__24770352__20260112_180602871` | 10 | 0 |
+
+### baseline-a on robotzftp2 test
+
+Run `baseline-a__robotzftp2-test__20260927T215447Z`, scored on 286 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
+Intervals come from 1000 resamples of the split's 7 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
+
+| Class | Labeled boxes | mAP50 | mAP50 interval | mAP50-95 | Precision | Recall | Recall interval | Hits | False positives | Misses |
+|---|---|---|---|---|---|---|---|---|---|---|
+| fuel | 376 | 0.994 | 0.985 to 1.0 | 0.864 | 0.966 | 0.973 | 0.94 to 1.0 | 366 | 13 | 10 |
+
+mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
+
+| Small | Medium | Large |
+|---|---|---|
+| n/a | 0.795 | 0.897 |
+
+Confusion matrix. Rows are labeled boxes and columns are predictions. The background row holds predictions that matched no labeled box, and the background column holds labeled boxes the model missed.
+
+| | fuel | background |
+|---|---|---|
+| fuel | 366 | 10 |
+| background | 13 | 0 |
+
+Precision and recall for fuel at each confidence threshold:
+
+| Confidence | Precision | Recall |
+|---|---|---|
+| 0.05 | 0.239 | 1.0 |
+| 0.1 | 0.451 | 1.0 |
+| 0.15 | 0.605 | 1.0 |
+| 0.2 | 0.693 | 0.997 |
+| 0.25 | 0.783 | 0.997 |
+| 0.3 | 0.842 | 0.995 |
+| 0.35 | 0.871 | 0.989 |
+| 0.4 | 0.909 | 0.984 |
+| 0.45 | 0.931 | 0.976 |
+| 0.5 | 0.966 | 0.973 |
+| 0.55 | 0.973 | 0.968 |
+| 0.6 | 0.981 | 0.965 |
+| 0.65 | 1.0 | 0.957 |
+| 0.7 | 1.0 | 0.952 |
+| 0.75 | 1.0 | 0.947 |
+| 0.8 | 1.0 | 0.936 |
+| 0.85 | 1.0 | 0.896 |
+| 0.9 | 1.0 | 0.532 |
+| 0.95 | 1.0 | 0.035 |
+
+Recordings or groups with the most labeled boxes:
+
+| Recording or group | Images | fuel boxes |
+|---|---|---|
+| `IMG_5833_MOV` | 79 | 129 |
+| `IMG_5835_MOV` | 65 | 117 |
+| `IMG_5839_MOV` | 44 | 36 |
+| `IMG_5836_MOV` | 35 | 35 |
+| `IMG_5838_MOV` | 29 | 25 |
+| `IMG_5837_MOV` | 20 | 20 |
+| `IMG_5834_MOV` | 14 | 14 |
+
+### baseline-a on scorekeeper test
+
+Run `baseline-a__scorekeeper-test__20260927T215915Z`, scored on 314 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
+Intervals come from 1000 resamples of the split's 109 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
+
+| Class | Labeled boxes | mAP50 | mAP50 interval | mAP50-95 | Precision | Recall | Recall interval | Hits | False positives | Misses |
+|---|---|---|---|---|---|---|---|---|---|---|
+| fuel | 375 | 0.836 | 0.773 to 0.895 | 0.725 | 0.257 | 1.0 | 1.0 to 1.0 | 375 | 1083 | 0 |
+
+The robot boxes in scorekeeper are not scored, since baseline-a was not trained on robot.
+
+mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
+
+| Small | Medium | Large |
+|---|---|---|
+| 0.73 | 0.751 | n/a |
+
+Confusion matrix. Rows are labeled boxes and columns are predictions. The background row holds predictions that matched no labeled box, and the background column holds labeled boxes the model missed.
+
+| | fuel | background |
+|---|---|---|
+| fuel | 375 | 0 |
+| background | 1083 | 0 |
+
+Precision and recall for fuel at each confidence threshold:
+
+| Confidence | Precision | Recall |
+|---|---|---|
+| 0.05 | 0.059 | 1.0 |
+| 0.1 | 0.063 | 1.0 |
+| 0.15 | 0.066 | 1.0 |
+| 0.2 | 0.07 | 1.0 |
+| 0.25 | 0.077 | 1.0 |
+| 0.3 | 0.091 | 1.0 |
+| 0.35 | 0.114 | 1.0 |
+| 0.4 | 0.148 | 1.0 |
+| 0.45 | 0.195 | 1.0 |
+| 0.5 | 0.257 | 1.0 |
+| 0.55 | 0.319 | 1.0 |
+| 0.6 | 0.389 | 1.0 |
+| 0.65 | 0.466 | 1.0 |
+| 0.7 | 0.573 | 1.0 |
+| 0.75 | 0.671 | 1.0 |
+| 0.8 | 0.724 | 0.981 |
+| 0.85 | 0.809 | 0.845 |
+| 0.9 | 0.814 | 0.128 |
+| 0.95 | n/a | 0.0 |
+
+Recordings or groups with the most labeled boxes:
+
+| Recording or group | Images | fuel boxes |
+|---|---|---|
+| `frame_0233_jpg.rf.938d117831ebb49b9ab34bcfbed3ec2a.jpg` | 6 | 78 |
+| `frame_0458_jpg.rf.355f6f2192332ea6dc865a496062d5ea.jpg` | 4 | 50 |
+| `frame_0183_jpg.rf.90656b7c2eeed698cc936b06545ad856.jpg` | 4 | 40 |
+| `frame_0228_jpg.rf.6f4f73dec0d529dcec5b7db7f4915935.jpg` | 3 | 39 |
+| `frame_0294_jpg.rf.97adfc4a534b7a91f4d3d40faaa82941.jpg` | 2 | 28 |
+| `frame_0051_jpg.rf.13768b3a1df8e51d2f8f8a07a9ba5ca7.jpg` | 2 | 19 |
+| `frame_0250_jpg.rf.57cf4d97294a93e290917337b047ce07.jpg` | 1 | 14 |
+| `frame_0316_jpg.rf.8024aa0b0627ddc2854338d7db10edb7.jpg` | 1 | 14 |
+| `frame_0371_jpg.rf.2e1beb63eb6df2a82462512864bbcb7a.jpg` | 1 | 14 |
+| `frame_0384_jpg.rf.7bf14483bb17c298466b8f860c5370ad.jpg` | 1 | 13 |
+
+The other 99 hold 289 images and 66 fuel boxes.
 <!-- EVALUATION:END -->
