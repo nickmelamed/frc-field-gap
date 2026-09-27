@@ -272,3 +272,19 @@ def test_committed_recording_patterns(key: str, name: str, recording: str | None
     cfg = load_yaml(REPO_ROOT / "configs" / "project.yaml", ProjectConfig)
     match = re.match(cfg.splits.datasets[key].recording_pattern, name)
     assert (match["recording"] if match else None) == recording
+
+
+@pytest.mark.parametrize(
+    ("method", "train_only", "message"),
+    [("grouped", "^x", "only applies to the temporal"), ("temporal", "^(x", "does not compile")],
+    ids=["grouped", "bad-regex"],
+)
+def test_split_method_checks_train_only_pattern(method: str, train_only: str, message: str) -> None:
+    with pytest.raises(ValidationError, match=message):
+        SplitMethod.model_validate(
+            {
+                "method": method,
+                "recording_pattern": r"^(?P<recording>.+)_(?P<frame>\d+)$",
+                "train_only_pattern": train_only,
+            }
+        )

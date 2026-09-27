@@ -112,23 +112,29 @@ class SplitMethod(_Frozen):
     """How one dataset is re-split.
 
     ``temporal`` cuts each recording in frame order, so the pattern needs a
-    ``frame`` group. ``grouped`` assigns whole groups of related images, and a
-    name the pattern does not match is its own recording.
+    ``frame`` group, and recordings whose name matches ``train_only_pattern``
+    go whole to train. ``grouped`` assigns whole groups of related images,
+    and a name the pattern does not match is its own recording.
     """
 
     method: Literal["temporal", "grouped"]
     recording_pattern: str
+    train_only_pattern: str | None = None
     dedupe_copies: bool = False
 
     @model_validator(mode="after")
     def _pattern_groups(self) -> "SplitMethod":
         try:
             groups = re.compile(self.recording_pattern).groupindex
+            if self.train_only_pattern is not None:
+                re.compile(self.train_only_pattern)
         except re.error as e:
-            raise ValueError(f"recording_pattern does not compile: {e}") from e
+            raise ValueError(f"pattern does not compile: {e}") from e
         needed = {"recording", "frame"} if self.method == "temporal" else {"recording"}
         if missing := needed - set(groups):
             raise ValueError(f"recording_pattern needs named groups {sorted(missing)}")
+        if self.train_only_pattern is not None and self.method != "temporal":
+            raise ValueError("train_only_pattern only applies to the temporal method")
         return self
 
 
