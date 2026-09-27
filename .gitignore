@@ -1,6 +1,7 @@
 # Data and training outputs
 data/
-runs/
+# Only the top-level runs/, since reports/runs/ holds committed eval records.
+/runs/
 checkpoints/
 *.ckpt
 

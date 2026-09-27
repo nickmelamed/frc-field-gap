@@ -1,10 +1,14 @@
-.PHONY: help setup lint typecheck test check requirements agent-check download inspect harmonize upload verify-upload
+.PHONY: help setup setup-infer lint typecheck test check requirements agent-check download inspect harmonize upload verify-upload
 
 help:  ## List targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
 
 setup:  ## Install the locked environment and the git hooks
 	uv sync --locked
+	uv run pre-commit install
+
+setup-infer:  ## Like setup, plus inference, which frc-evaluate needs to call a model
+	uv sync --locked --extra infer
 	uv run pre-commit install
 
 lint:  ## Lint and check formatting

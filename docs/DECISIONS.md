@@ -385,3 +385,34 @@ which Task 8's box-size slices should measure. The numbers on Roboflow's
 model page use a confidence threshold that the platform picked on the
 test split, so they are recorded for reference only and are not quoted as
 results.
+
+## D-017: Evaluate hosted models through inference-sdk, installed on request (2026-09-27)
+
+Context. Task 6 scores models on harmonized splits. The baseline is a
+Roboflow platform model, and SPEC section 7 also allows local weights
+through `inference`. The `infer` extra pulls in CPU-only torch, so it is kept
+out of `make setup` and CI (D-001).
+
+Decision. `frc-evaluate` calls the hosted model with `inference_sdk`'s
+`InferenceHTTPClient` against `https://serverless.roboflow.com`, imported only
+when a model is actually called. `make setup-infer` installs the extra, and
+tests that need a real model are marked `integration`. The model is named as
+`<project>/<version>` from `reports/models.yaml`. Local weights are left for
+Task 12, behind the same predictor interface. The API key travels in both the
+query string and an `Authorization` header (`api_key_transport="both"`), and is
+redacted from logs either way.
+
+Why. With inference-sdk 1.7.2, a probe on one A-test image showed
+`frc-rebuilt-fuel-a/2` resolving to the trained model
+`frc-rebuilt-fuel-a-2-rfdetr-nano-t1`, the same model as the
+workspace-qualified name, so the workspace never has to be looked up. The
+hosted endpoint applies the version's own 384x384 stretch and returns boxes in
+the original image's pixels. Its response also names the workspace, so raw
+responses are never stored. The evaluator keeps only boxes, class names, and
+confidences, and checks that the resolved model name (the part after the
+slash) matches `model_id`.
+
+Consequences. Every evaluation needs the network and an API key, and hosted
+calls count toward the account's usage. CI stays offline and never installs
+torch. The server may change backends (TensorRT fp16 on the probe), so the
+backend and quantization it reports are recorded in each run's `meta.json`.
