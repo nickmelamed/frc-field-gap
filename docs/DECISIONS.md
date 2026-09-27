@@ -201,24 +201,25 @@ Anyone regenerating the grids with new data has to check the faces again.
 ## D-011: Use marswars as Dataset A, with robotzftp2 and scorekeeper (2026-09-26)
 
 Context. SPEC section 5 asks for 2 to 3 datasets and a baseline Dataset A
-chosen from Task 2's inspection. `docs/DATASETS.md` describes all five.
-No dataset labels REBUILT robots, and only `scorekeeper` and `testingfrfr`
-label robots at all.
+chosen from Task 2's inspection. `docs/DATASETS.md` describes all five. No
+dataset labels REBUILT robots, and only `scorekeeper` and `testingfrfr` label
+robots at all.
 
 Decision. Dataset A is `marswars` version 5, B is `robotzftp2` version 1, and
 C is `scorekeeper` version 1 reduced to one image per source photo.
-`testingfrfr` and `robotzftp2_fuel` are not used for evaluation.
-`testingfrfr` may be used as training data for the merged model only after
-every image matching a test image is removed.
+`testingfrfr` and `robotzftp2_fuel` are not used for evaluation. `testingfrfr`
+may be used as training data for the merged model only after every image
+matching a test image is removed.
 
 Why. `marswars` is the only robot-camera dataset, matching where the detector
 runs, and it shares no near duplicates with any other dataset. `robotzftp2`
-differs from it in viewpoint, venue, lighting, and resolution without
+differs from it in viewpoint, venue, lighting, and resolution, and has no
 augmented copies. `scorekeeper` adds robot labels and a tabletop label style.
 `testingfrfr` overlaps heavily with B and C, and `robotzftp2_fuel` is one
-large ball per image. Nick approved the choice after reviewing DATASETS.md.
+large ball per image.
 
 Consequences. The baseline is trained and scored on fuel only, so robot
 results start with the merged model and cover robots from past games only.
-Task 4 has to group every split by recording and, for `scorekeeper`, by
-photo, since source names alone undercount photos.
+Task 4 has to group every split by recording and, for `scorekeeper`, by photo,
+since source names alone undercount photos. Removing `testingfrfr` matches to
+test images needs a hash check that also covers flipped and rotated copies.
