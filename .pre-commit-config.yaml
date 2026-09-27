@@ -37,8 +37,8 @@ repos:
         name: mypy
         entry: uv run mypy
         language: system
-        types: [python]
-        files: ^src/
+        # pyproject.toml holds the mypy settings, so a change there re-runs it.
+        files: ^(src/.*\.py|pyproject\.toml)$
         pass_filenames: false
       - id: check-style
         name: comment and doc style
