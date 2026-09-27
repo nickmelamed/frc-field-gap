@@ -224,7 +224,7 @@ def grouped_split(
 
 
 def near_test_images(
-    split: Mapping[ImageRef, Split], hashes: Mapping[ImageRef, int], max_distance: int
+    split: Mapping[ImageRef, str], hashes: Mapping[ImageRef, int], max_distance: int
 ) -> list[ImageRef]:
     """Return train and valid images within ``max_distance`` bits of a test image."""
     test = np.array([hashes[ref] for ref, s in split.items() if s == "test"], dtype=np.uint64)
@@ -238,12 +238,13 @@ def near_test_images(
 
 
 def check_no_leak(
-    split: Mapping[ImageRef, Split], hashes: Mapping[ImageRef, int], max_distance: int
+    split: Mapping[ImageRef, str], hashes: Mapping[ImageRef, int], max_distance: int
 ) -> None:
     """Raise if any train or valid image is a near duplicate of a test image.
 
     Raises:
-        SplitLeakError: Naming how many images leak and the first of them.
+        SplitLeakError: If one is found. The message gives the count and the
+            first leaking image.
     """
     if leaks := near_test_images(split, hashes, max_distance):
         raise SplitLeakError(f"{len(leaks)} images near a test image, first {leaks[0]}")
@@ -257,7 +258,7 @@ def split_dataset(
     max_distance: int,
     seed: str,
 ) -> SplitResult:
-    """Split one dataset with its configured method, then drop test neighbours."""
+    """Split one dataset with its configured method, then drop images near test."""
     if method.method == "temporal":
         result = temporal_split(records, method, cfg)
     else:

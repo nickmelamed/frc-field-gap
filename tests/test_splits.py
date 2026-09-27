@@ -265,3 +265,8 @@ def test_committed_train_only_pattern_covers_the_official_videos() -> None:
         ("IMG_8069_MOV", False),
     ]:
         assert bool(re.match(pattern, recording)) is official
+
+
+def test_temporal_split_cuts_a_recording_of_exactly_the_minimum() -> None:
+    result = temporal_split(frames("run", range(5)), TEMPORAL, cfg(buffer_frames=0))
+    assert set(result.split.values()) == {"train", "valid", "test"}
