@@ -50,6 +50,7 @@ class Paths(_Frozen):
     manifests_dir: RelativePath
     assets_dir: RelativePath
     field_test_dir: RelativePath
+    contact_sheet_dir: RelativePath
 
 
 class AreaBuckets(_Frozen):
@@ -65,12 +66,17 @@ class AreaBuckets(_Frozen):
         return self
 
 
-class GridConfig(_Frozen):
-    """Layout of the per-dataset sample grid."""
+class TileLayout(_Frozen):
+    """Rows and columns of square cells, each ``tile_px`` on a side."""
 
     rows: PositiveInt
     cols: PositiveInt
     tile_px: PositiveInt
+
+
+class GridConfig(TileLayout):
+    """Layout of the per-dataset sample grid."""
+
     max_bytes: PositiveInt
     exclude: dict[DatasetKey, list[str]] = {}
 
@@ -83,6 +89,7 @@ class InspectConfig(_Frozen):
     near_duplicate_max_distance: Annotated[int, Field(ge=0, le=64)]
     max_examples: PositiveInt
     grid: GridConfig
+    contact_sheet: TileLayout
 
 
 class ProjectConfig(_Frozen):

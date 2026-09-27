@@ -2,7 +2,9 @@
 
 Writes per-split stats and class counts to ``reports/``, exact and
 perceptual-hash duplicates to ``reports/duplicates.json``, and one sample
-grid per dataset to ``docs/assets/samples_<key>.png``.
+grid per dataset to ``docs/assets/samples_<key>.png``. With
+``--contact-sheet``, writes only larger annotated sheets to
+``data/contact_sheets/`` for checking labels by eye.
 """
 
 import argparse
@@ -11,6 +13,7 @@ import io
 import json
 import logging
 import random
+import re
 import statistics
 import sys
 from collections import Counter, defaultdict
@@ -32,6 +35,7 @@ from frc_xdata.config import (
     GridConfig,
     InspectConfig,
     ProjectConfig,
+    TileLayout,
     load_yaml,
 )
 from frc_xdata.download import (
@@ -378,18 +382,62 @@ def sample_grid(
 ) -> Image.Image:
     """Draw the images from ``grid_order`` with their boxes and labels."""
     chosen = grid_order(records, grid, seed)
+    return tile(_annotate(chosen, split_dirs, grid.tile_px), [r.ref.split for r in chosen], grid)
+
+
+def _annotate(
+    records: Sequence[ImageRecord], split_dirs: dict[str, Path], tile_px: int
+) -> list[Image.Image]:
     box_annotator = sv.BoxAnnotator(thickness=2)
     label_annotator = sv.LabelAnnotator(text_scale=0.35, text_padding=2)
     tiles = []
-    for r in chosen:
+    for r in records:
         with Image.open(split_dirs[r.ref.split] / r.ref.file_name) as opened:
-            image, detections, labels = _fit(opened.convert("RGB"), r.boxes, grid.tile_px)
+            image, detections, labels = _fit(opened.convert("RGB"), r.boxes, tile_px)
         image = box_annotator.annotate(image, detections)
         tiles.append(label_annotator.annotate(image, detections, labels=labels))
-    return tile(tiles, [r.ref.split for r in chosen], grid)
+    return tiles
 
 
-def tile(images: Sequence[Image.Image], captions: Sequence[str], grid: GridConfig) -> Image.Image:
+def _one_per_source(records: Iterable[ImageRecord], limit: int) -> list[ImageRecord]:
+    # Augmented copies share a source name. Otherwise one scene can fill a sheet.
+    seen: set[str] = set()
+    kept = []
+    for r in records:
+        if r.source_name not in seen:
+            seen.add(r.source_name)
+            kept.append(r)
+    return kept[:limit]
+
+
+def contact_sheet_picks(
+    records: Sequence[ImageRecord], layout: TileLayout, seed: str
+) -> dict[str, list[ImageRecord]]:
+    """Return the images for each of one dataset's contact sheets, by sheet name.
+
+    ``dense`` holds the images with the most boxes, ``zero`` a seeded sample
+    of images with no boxes, and ``label_<name>`` a seeded sample of images
+    containing that label. Sheets with no images are left out.
+    """
+    limit = layout.rows * layout.cols
+    ordered = sorted(records, key=lambda r: str(r.ref))
+    shuffled = list(ordered)
+    random.Random(seed).shuffle(shuffled)
+    sheets = {
+        "dense": _one_per_source(
+            sorted((r for r in ordered if r.boxes), key=lambda r: -len(r.boxes)), limit
+        ),
+        "zero": _one_per_source((r for r in shuffled if not r.boxes), limit),
+    }
+    for label in sorted({b.label for r in records for b in r.boxes}):
+        name = "label_" + re.sub(r"[^A-Za-z0-9_-]", "_", label)
+        sheets[name] = _one_per_source(
+            (r for r in shuffled if any(b.label == label for b in r.boxes)), limit
+        )
+    return {name: picks for name, picks in sheets.items() if picks}
+
+
+def tile(images: Sequence[Image.Image], captions: Sequence[str], grid: TileLayout) -> Image.Image:
     """Lay images out row by row, each centered in a square cell with a caption.
 
     The grid always has ``rows * cols`` cells, so every dataset's grid has the
@@ -549,6 +597,35 @@ def list_grids(keys: Sequence[str], project: ProjectConfig) -> None:
             logger.info("%s r%dc%d %s/%s", key, row + 1, col + 1, r.ref.split, r.ref.file_name)
 
 
+def write_contact_sheets(keys: Sequence[str], project: ProjectConfig) -> None:
+    """Write each dataset's contact sheets and log the file behind every tile.
+
+    Positions read ``r<row>c<col>``, counted from 1 at the top left. Sheets are
+    not face-checked, so they stay out of ``docs/``.
+    """
+    layout = project.inspect.contact_sheet
+    out_dir = project.paths.contact_sheet_dir
+    for key in keys:
+        dataset_dir = project.paths.raw_dir / key
+        if read_manifest(dataset_dir) is None:
+            logger.warning("%s: no manifest, run frc-download first", key)
+            continue
+        split_dirs = _split_dirs(dataset_dir)
+        records = [r for d in split_dirs.values() for r in load_split(d, key)]
+        for name, picks in contact_sheet_picks(records, layout, _grid_seed(project, key)).items():
+            sheet = tile(
+                _annotate(picks, split_dirs, layout.tile_px), [r.ref.split for r in picks], layout
+            )
+            out_dir.mkdir(parents=True, exist_ok=True)
+            sheet.save(out_dir / f"{key}_{name}.jpg")
+            for n, r in enumerate(picks):
+                row, col = divmod(n, layout.cols)
+                logger.info(
+                    "%s %s r%dc%d %s/%s", key, name, row + 1, col + 1, r.ref.split, r.ref.file_name
+                )
+    logger.info("contact sheets in %s are not face-checked, keep them out of docs/", out_dir)
+
+
 def main(argv: list[str] | None = None) -> int:
     """Run the inspection command line and return the exit code."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
@@ -558,6 +635,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--list-grid", action="store_true", help="log the file behind each grid tile, write nothing"
     )
+    parser.add_argument(
+        "--contact-sheet",
+        nargs="+",
+        metavar="KEY",
+        help="write label-checking sheets for these datasets instead of the reports",
+    )
     add_log_level_argument(parser)
     args = parser.parse_args(argv)
     setup_logging(args.log_level)
@@ -566,6 +649,12 @@ def main(argv: list[str] | None = None) -> int:
     datasets = load_yaml(args.datasets_config, DatasetsConfig)
     if args.list_grid:
         list_grids(list(datasets.datasets), project)
+        return 0
+    if args.contact_sheet:
+        unknown = sorted(set(args.contact_sheet) - set(datasets.datasets))
+        if unknown:
+            parser.error(f"unknown dataset keys: {', '.join(unknown)}")
+        write_contact_sheets(args.contact_sheet, project)
         return 0
     run_inspection(list(datasets.datasets), project, grids=not args.no_grids)
     return 0

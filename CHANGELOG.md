@@ -21,5 +21,8 @@ uses [Semantic Versioning](https://semver.org/).
   `--resolve` looks candidates up so versions can be pinned.
 - `frc-inspect` (`make inspect`) writes per-split stats, class counts, a
   duplicate report, and face-checked sample grids.
+  `--contact-sheet KEY` writes annotated sheets (most boxes, no boxes, one
+  per label) to the gitignored `data/contact_sheets/` for checking label
+  style by eye.
 - Five candidate datasets pinned in `configs/datasets.yaml`, with
   attribution in the README.

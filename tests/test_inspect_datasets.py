@@ -10,12 +10,14 @@ from conftest import coco, image_entry, smooth_image
 from PIL import Image
 
 from frc_xdata import inspect_datasets
-from frc_xdata.config import GridConfig, ProjectConfig, load_yaml
+from frc_xdata.config import GridConfig, ProjectConfig, TileLayout, load_yaml
 from frc_xdata.inspect_datasets import (
     Box,
+    ImageRecord,
     ImageRef,
     area_bucket,
     class_counts,
+    contact_sheet_picks,
     encode_png,
     exact_duplicate_groups,
     grid_order,
@@ -374,3 +376,73 @@ def test_main_list_grid_logs_each_tile_and_writes_nothing(
     assert "beta r1c2 " in err
     assert not (tmp_path / "reports").exists()
     assert not (tmp_path / "docs").exists()
+
+
+def test_contact_sheets_keep_one_image_per_source(raw_dir: Path) -> None:
+    records, _ = alpha_records(raw_dir)
+    sheets = contact_sheet_picks(records, TileLayout(rows=2, cols=2, tile_px=32), "1:alpha")
+    assert sorted(sheets) == ["dense", "label_fuel", "label_robot", "zero"]
+    # a, c, and d share a source name, so only the densest of them is kept.
+    assert [r.ref.file_name for r in sheets["dense"]] == ["a.png"]
+    assert [r.ref.file_name for r in sheets["zero"]] == ["b.png"]
+    assert [r.source_name for r in sheets["label_fuel"]] == ["a.png"]
+
+
+def test_contact_sheets_drop_empty_sheets(raw_dir: Path) -> None:
+    valid = load_split(raw_dir / "alpha" / "valid", "alpha")
+    sheets = contact_sheet_picks(valid, TileLayout(rows=1, cols=1, tile_px=32), "1:alpha")
+    assert sorted(sheets) == ["dense", "label_fuel"]
+
+
+def test_contact_sheets_order_dense_by_box_count_and_fit_the_layout() -> None:
+    def record(name: str, labels: list[str]) -> ImageRecord:
+        boxes = tuple(Box(label, 0, 0, 1, 1) for label in labels)
+        return ImageRecord(ImageRef("x", "train", name), name, 8, 8, boxes)
+
+    records = [
+        record("one", ["fuel"]),
+        record("three", ["fuel"] * 3),
+        record("two", ["2026 FRC/Fuel"] * 2),
+    ]
+    sheets = contact_sheet_picks(records, TileLayout(rows=1, cols=2, tile_px=32), "1:x")
+    assert [r.ref.file_name for r in sheets["dense"]] == ["three", "two"]
+    assert "label_2026_FRC_Fuel" in sheets
+    assert all(len(picks) <= 2 for picks in sheets.values())
+
+
+def test_main_contact_sheet_writes_sheets_only_under_data(
+    raw_dir: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    run_cli(tmp_path, monkeypatch, "--contact-sheet", "alpha")
+    sheets = tmp_path / "data" / "contact_sheets"
+    assert sorted(p.name for p in sheets.iterdir()) == [
+        "alpha_dense.jpg",
+        "alpha_label_fuel.jpg",
+        "alpha_label_robot.jpg",
+        "alpha_zero.jpg",
+    ]
+    assert "alpha zero r1c1 train/b.png" in capsys.readouterr().err
+    assert not (tmp_path / "reports").exists()
+    assert not (tmp_path / "docs").exists()
+
+
+def test_main_contact_sheet_rejects_an_unknown_key(
+    raw_dir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    with pytest.raises(SystemExit) as exit_info:
+        run_cli(tmp_path, monkeypatch, "--contact-sheet", "gamma")
+    assert exit_info.value.code == 2
+
+
+def test_main_contact_sheet_skips_a_dataset_that_is_not_downloaded(
+    raw_dir: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    run_cli(tmp_path, monkeypatch, "--contact-sheet", "missing")
+    assert "missing: no manifest" in capsys.readouterr().err
+    assert not (tmp_path / "data" / "contact_sheets").exists()

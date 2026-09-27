@@ -10,6 +10,9 @@ paths:
   manifests_dir: reports/data_manifests
   assets_dir: docs/assets
   field_test_dir: data/field_test
+  # Contact sheets can show faces and are never published, so they stay
+  # under the gitignored data/ directory.
+  contact_sheet_dir: data/contact_sheets
 
 inspect:
   # COCO's small and medium limits (32 and 96 pixels square) scaled to a
@@ -25,6 +28,12 @@ inspect:
   near_duplicate_max_distance: 4
   # Example pairs kept per kind in reports/duplicates.json.
   max_examples: 20
+  # Larger cells than the grid so small boxes stay visible
+  # (frc-inspect --contact-sheet).
+  contact_sheet:
+    rows: 3
+    cols: 4
+    tile_px: 480
   grid:
     rows: 4
     cols: 4
