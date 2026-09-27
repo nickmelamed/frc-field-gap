@@ -145,3 +145,22 @@ missing `red_active`. `testingfrfr` and `scorekeeper` versions hold far
 more images than their source projects (see the resolution file), which
 suggests augmented copies in the train split. Task 3 has to check this before
 either is used for evaluation.
+
+## D-009: Commit per-directory image digests instead of a per-file list (2026-09-26)
+
+Context. SPEC section 3.5 asks for a small committed hash file per dataset.
+A `sha256sum` line for every image came to megabytes for the larger
+datasets, over the 500 KB large-file hook.
+
+Decision. `reports/data_manifests/<key>.sha256` lists each annotation and
+README file with its own `sha256sum` line, plus one comment line per image
+directory with the file count and one hash over that directory's image
+hashes. The full per-file list stays in the gitignored
+`data/raw/<key>/MANIFEST.json`.
+
+Why. Each file stays under a kilobyte, and a re-download still shows in
+`git diff` which annotation file or split changed. `sha256sum -c` checks
+the annotation lines and skips the comments.
+
+Consequences. A changed image shows up as a changed directory hash, and
+finding the exact image needs the local manifest.

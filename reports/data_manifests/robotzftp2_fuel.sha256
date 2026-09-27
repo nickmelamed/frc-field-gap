@@ -1,0 +1,8 @@
+8fce7b938ccab18519095d7b6aab4fc5cbace75955856d163c4ae7574df164ce  README.dataset.txt
+187102fddbc76f0206c74eb952b98e4ecacc039afae2bda80a282369a4079d93  README.roboflow.txt
+764fd86240c28a51f6e98caa590140505573323072a4242eefc75ae65a4c7e11  test/_annotations.coco.json
+ebdf4a8b6fffed0a385b35a2baf8020a61e35c4cb3b1c45c87fe494e65cd877b  train/_annotations.coco.json
+30f6457a7f0cbd7a8c7c2a0552cf48a81e5485541b29bd49e5626e082a644013  valid/_annotations.coco.json
+# images test/: 48 files, sha256 82d082ee059ff3b13dcfa4944b4e2bb8fa6726e399b64a4b6262bb538db5ff82
+# images train/: 320 files, sha256 659547110e871c05cc5478a608a6c2d114f1fee3d5eb7763cfcc709078ac9de4
+# images valid/: 96 files, sha256 7da6a5de8fcd3bf6bd6a09074b26f2e1597a54020efbeb3c2c023883d139bf10
