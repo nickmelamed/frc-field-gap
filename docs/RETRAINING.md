@@ -100,7 +100,8 @@ make verify-upload KEY=marswars VERSION=1
 ```
 
 This downloads the version in COCO format to `data/platform/`, matches every
-image to its harmonized file by the file name recorded at upload, and writes
+image to its harmonized file by the name Roboflow recorded at upload (which
+drops the `.rf.<hash>` suffix of the uploaded file name), and writes
 `reports/platform_upload_marswars.json`. It fails if an image is missing,
 appears twice, sits in a different split, or has a different number of
 boxes. The report also holds the preprocessing and augmentation Roboflow
