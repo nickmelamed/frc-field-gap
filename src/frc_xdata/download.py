@@ -117,6 +117,18 @@ class RedactFilter(logging.Filter):
         return True
 
 
+def redacted_api_key() -> str:
+    """Return the Roboflow API key after hiding it from every current log handler.
+
+    Raises:
+        ConfigError: If the key is not set.
+    """
+    api_key = roboflow_api_key()
+    for handler in logging.getLogger().handlers:
+        handler.addFilter(RedactFilter(api_key))
+    return api_key
+
+
 def build_manifest(root: Path, key: str, spec: DatasetSpec) -> Manifest:
     """Hash every file under ``root`` except an existing manifest.
 
@@ -498,9 +510,7 @@ def main(argv: list[str] | None = None) -> int:
 
     project = load_yaml(args.project_config, ProjectConfig)
     datasets = _select(load_yaml(args.datasets_config, DatasetsConfig), args.only)
-    api_key = roboflow_api_key()
-    for handler in logging.getLogger().handlers:
-        handler.addFilter(RedactFilter(api_key))
+    api_key = redacted_api_key()
     errors = sdk_errors()
     reports = project.paths.reports_dir
 

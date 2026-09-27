@@ -30,8 +30,8 @@ from typing import Any
 
 import supervision as sv
 
-from frc_xdata.config import ProjectConfig, load_yaml, roboflow_api_key
-from frc_xdata.download import PROJECT_CONFIG, RedactFilter, redact, sdk_errors
+from frc_xdata.config import ProjectConfig, load_yaml
+from frc_xdata.download import PROJECT_CONFIG, redact, redacted_api_key, sdk_errors
 from frc_xdata.errors import ConfigError, DataLeakError, DirtyTreeError, UploadCheckError
 from frc_xdata.harmonize import SPLITS_NAME
 from frc_xdata.inspect_datasets import (
@@ -361,13 +361,6 @@ def _parser(description: str) -> argparse.ArgumentParser:
     return parser
 
 
-def _redacted_key() -> str:
-    api_key = roboflow_api_key()
-    for handler in logging.getLogger().handlers:
-        handler.addFilter(RedactFilter(api_key))
-    return api_key
-
-
 def upload_main(argv: list[str] | None = None) -> int:
     """Run the upload command line and return the exit code."""
     parser = _parser("Check a harmonized dataset and upload it to Roboflow split by split.")
@@ -382,7 +375,7 @@ def upload_main(argv: list[str] | None = None) -> int:
     if args.dry_run:
         return 0
 
-    api_key = _redacted_key()
+    api_key = redacted_api_key()
     slug = project.platform.project
     try:
         upload_splits(
@@ -411,7 +404,7 @@ def verify_main(argv: list[str] | None = None) -> int:
         raise DirtyTreeError("commit or stash changes first, or pass --allow-dirty")
     project = load_yaml(args.project_config, ProjectConfig)
     slug = project.platform.project
-    api_key = _redacted_key()
+    api_key = redacted_api_key()
     export_dir = project.paths.platform_dir / f"{slug}-v{args.version}"
     try:
         info = _roboflow_export(api_key, slug, args.version)(export_dir)
