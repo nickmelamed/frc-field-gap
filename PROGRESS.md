@@ -129,7 +129,10 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     trained on, so C is scored on fuel only (D-019). C's prediction cache
     was far over the size limit at the 0.01 floor, so every image keeps its
     25 most confident predictions (D-020). A and B were rescored from their
-    first caches under that limit, and the first runs stay committed.
+    first caches under that limit, and the first runs stay committed. On C
+    the limit dropped confident false positives, so C's mAP50 is an upper
+    bound and its false positive count a lower bound. Each run now records
+    how often it reached the limit.
     The field test set was not scored, since it is not confirmed.
   - For Task 8. Most of C's false positives appear to land on robot and
     broadcast photos from earlier games, which have no fuel labels, and one
@@ -161,4 +164,4 @@ Field test set: pending confirmation
 
 ## Open questions for Nick
 
-None open. The robot scoring question was settled as D-019.
+None. The robot scoring question is D-019.
