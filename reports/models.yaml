@@ -29,7 +29,7 @@ models:
       max_epochs: 100
       early_stopping: true
     credit_cap: 5
-    epochs: null
+    epochs: 100
     other_settings: {}
     trained: 2026-09-27
     credits_used: 0.71

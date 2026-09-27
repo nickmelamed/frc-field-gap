@@ -348,7 +348,10 @@ one, and has no augmentation and no null filter.
 Why. Parsed one folder at a time, the SDK put every harmonized image in
 train. Checking counts in the web app would miss an image that moved from
 test to train while another moved back. Matching by name works after
-Roboflow re-encodes the images, and the box count check catches an image
+Roboflow re-encodes the images. The export does not keep the uploaded file
+name, since Roboflow drops the `.rf.<hash>` suffix and a `_jpg` before it,
+so both sides are compared without them. On the first real export this
+matched every image exactly once, and the box count check catches an image
 whose annotations failed to upload. Filtering nulls would drop the
 background images that D-012 keeps.
 
