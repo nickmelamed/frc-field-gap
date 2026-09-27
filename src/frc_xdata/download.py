@@ -97,6 +97,27 @@ def redact(text: str, secret: str) -> str:
     return text.replace(secret, REDACTED) if secret else text
 
 
+class RedactFilter(logging.Filter):
+    """Remove a secret from every log record that passes through a handler.
+
+    Installed on the root handlers, so it also covers records from other
+    libraries, such as urllib3 logging request URLs at DEBUG.
+    """
+
+    def __init__(self, secret: str) -> None:
+        """Keep the secret to remove."""
+        super().__init__()
+        self.secret = secret
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        """Rewrite the record's message without the secret, and keep it."""
+        message = record.getMessage()
+        if self.secret and self.secret in message:
+            record.msg = redact(message, self.secret)
+            record.args = None
+        return True
+
+
 def build_manifest(root: Path, key: str, spec: DatasetSpec) -> Manifest:
     """Hash every file under ``root`` except an existing manifest.
 
@@ -476,6 +497,8 @@ def main(argv: list[str] | None = None) -> int:
     project = load_yaml(args.project_config, ProjectConfig)
     datasets = _select(load_yaml(args.datasets_config, DatasetsConfig), args.only)
     api_key = roboflow_api_key()
+    for handler in logging.getLogger().handlers:
+        handler.addFilter(RedactFilter(api_key))
     errors = _sdk_errors()
     reports = project.paths.reports_dir
 

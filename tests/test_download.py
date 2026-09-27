@@ -399,3 +399,23 @@ def test_real_download_of_first_pinned_dataset(tmp_path: Path) -> None:
     )
     assert failures == []
     assert verified_manifest(tmp_path / "raw" / key, spec) is not None
+
+
+def test_main_redacts_the_key_from_debug_logs_of_other_libraries(
+    cli: list[str], monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # The SDK puts the key in request URLs, and urllib3 logs every URL at DEBUG.
+    import logging
+
+    def fetch(key: str) -> Any:
+        def run(spec: DatasetSpec, dest: Path) -> None:
+            logging.getLogger("urllib3.connectionpool").debug('"GET /p?api_key=%s" 200', key)
+            FakeFetch()(spec, dest)
+
+        return run
+
+    monkeypatch.setattr(download, "_roboflow_fetch", fetch)
+    download.main([*cli, "--only", "a", "--log-level", "DEBUG"])
+    err = capsys.readouterr().err
+    assert "urllib3.connectionpool" in err
+    assert SECRET not in err
