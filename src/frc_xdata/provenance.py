@@ -30,9 +30,8 @@ def git_commit(repo: Path) -> str:
 def git_tree(repo: Path) -> str:
     """Return the SHA of the tree checked out in ``repo``.
 
-    A rebase merge gives a commit a new SHA but keeps its tree when the
-    content is unchanged, so the tree still finds the code behind a result
-    after the commit SHA no longer exists on the main branch.
+    A rebase merge changes the commit SHA but keeps the tree SHA when the
+    content is unchanged, so the tree still identifies the code on main.
     """
     return _git(repo, "rev-parse", "HEAD^{tree}")
 
