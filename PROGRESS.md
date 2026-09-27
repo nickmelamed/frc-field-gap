@@ -49,7 +49,7 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
 - [ ] Task 3: Document datasets, review checkpoint (Sat Sept 26)
   - `docs/DATASETS.md` describes all five datasets and proposes `marswars`
     as Dataset A, `robotzftp2` as B, and deduplicated `scorekeeper` as C.
-    Waiting for Nick's review before the choice goes into DECISIONS.md.
+    Nick approved the choice on 2026-09-26 (D-011).
   - The data differs from SPEC sections 4 and 5 in three ways. Every robot
     label comes from earlier seasons (2019 to 2024 broadcasts and pits), so
     no dataset has REBUILT robots. The `marswars` state classes mark whether

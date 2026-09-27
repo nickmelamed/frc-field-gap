@@ -5,6 +5,8 @@
 # reports/dataset_resolution.json, and pin the version here by hand.
 # Every change to a pinned version needs a line in docs/DECISIONS.md.
 # Versions below were pinned on 2026-09-26, see D-008.
+# The experiment uses marswars as the baseline Dataset A, robotzftp2 as B,
+# and scorekeeper as C (D-011). The other keys stay for inspection only.
 
 datasets:
   marswars:

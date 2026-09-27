@@ -7,10 +7,9 @@ each one is labeled, and what is wrong with each. Counts come from
 inspect` and `make download ARGS=--resolve` regenerate. Versions are pinned in
 `configs/datasets.yaml` and attributed in the README.
 
-## Recommendation
+## Choice
 
-This is a proposal for review. It becomes a decision in `docs/DECISIONS.md`
-once it is approved.
+Chosen on 2026-09-26 and recorded as D-011 in `docs/DECISIONS.md`.
 
 Dataset A, the baseline, is `marswars`. It is the only dataset shot from a
 camera mounted on a robot, which is where our detector will run. None of its
@@ -37,9 +36,9 @@ matches a test image.
 
 The main trade-off is the robot class. With `marswars` as A, the baseline
 never sees a robot, so robot results start with the merged model, and only on
-robots from past games. The alternative is to make `scorekeeper` Dataset A,
+robots from past games. The alternative was to make `scorekeeper` Dataset A,
 which adds robots to the baseline but builds it on augmented, leaky data whose
-robots are not REBUILT robots. We recommend `marswars`, because the fuel
+robots are not REBUILT robots. We chose `marswars`, because the fuel
 detector on the robot camera is the use case and the dataset that shares no
 images with the others should anchor the comparison. Its own test split still
 leaks from train until it is regrouped by recording.
