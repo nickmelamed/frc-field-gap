@@ -480,7 +480,8 @@ def _grid_seed(project: ProjectConfig, key: str) -> str:
     return f"{project.seed}:{key}"
 
 
-def _split_dirs(dataset_dir: Path) -> dict[str, Path]:
+def find_splits(dataset_dir: Path) -> dict[str, Path]:
+    """Return each split directory that holds a COCO file, by split name."""
     return {
         d.name: d
         for d in sorted(dataset_dir.iterdir())
@@ -498,7 +499,8 @@ def _field_test_digests(field_test_dir: Path) -> list[tuple[ImageRef, Path]]:
     ]
 
 
-def _write_csv(path: Path, rows: Sequence[Any]) -> None:
+def write_csv(path: Path, rows: Sequence[Any]) -> None:
+    """Write dataclass rows to a CSV file with a header from their fields."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f, lineterminator="\n")
@@ -529,7 +531,7 @@ def run_inspection(
             logger.warning("%s: no manifest, run frc-download first", key)
             continue
         sha = {entry.path: entry.sha256 for entry in manifest.files}
-        split_dirs = _split_dirs(dataset_dir)
+        split_dirs = find_splits(dataset_dir)
         dataset_records = []
         for split, split_dir in split_dirs.items():
             split_records = load_split(split_dir, key)
@@ -573,8 +575,8 @@ def run_inspection(
             for dataset, names in source_name_overlap(records).items()
         },
     }
-    _write_csv(paths.reports_dir / STATS_NAME, stats)
-    _write_csv(paths.reports_dir / CLASS_COUNTS_NAME, class_counts(records))
+    write_csv(paths.reports_dir / STATS_NAME, stats)
+    write_csv(paths.reports_dir / CLASS_COUNTS_NAME, class_counts(records))
     (paths.reports_dir / DUPLICATES_NAME).write_text(
         json.dumps(report, indent=2) + "\n", encoding="utf-8"
     )
@@ -591,7 +593,7 @@ def list_grids(keys: Sequence[str], project: ProjectConfig) -> None:
         dataset_dir = project.paths.raw_dir / key
         if read_manifest(dataset_dir) is None:
             continue
-        records = [r for d in _split_dirs(dataset_dir).values() for r in load_split(d, key)]
+        records = [r for d in find_splits(dataset_dir).values() for r in load_split(d, key)]
         for n, r in enumerate(grid_order(records, grid, _grid_seed(project, key))):
             row, col = divmod(n, grid.cols)
             logger.info("%s r%dc%d %s/%s", key, row + 1, col + 1, r.ref.split, r.ref.file_name)
@@ -610,7 +612,7 @@ def write_contact_sheets(keys: Sequence[str], project: ProjectConfig) -> None:
         if read_manifest(dataset_dir) is None:
             logger.warning("%s: no manifest, run frc-download first", key)
             continue
-        split_dirs = _split_dirs(dataset_dir)
+        split_dirs = find_splits(dataset_dir)
         records = [r for d in split_dirs.values() for r in load_split(d, key)]
         for name, picks in contact_sheet_picks(records, layout, _grid_seed(project, key)).items():
             sheet = tile(
