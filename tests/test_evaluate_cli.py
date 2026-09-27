@@ -397,3 +397,20 @@ def test_classes_the_model_never_learned_are_not_scored(
     assert metrics["unscored_classes"] == ["robot"]
     assert [c["name"] for c in metrics["metrics"]["classes"]] == ["fuel"]
     assert [c["name"] for c in metrics["bootstrap"]["classes"]] == ["fuel"]
+
+
+def test_rescoring_an_older_cache_applies_the_per_image_limit(
+    workspace: Path, fake: FakePredictor
+) -> None:
+    assert evaluate.main(ARGS) == 0
+    config = workspace / "configs/project.yaml"
+    project = yaml.safe_load(config.read_text(encoding="utf-8"))
+    project["evaluate"]["max_predictions_per_image"] = 1
+    config.write_text(yaml.safe_dump(project), encoding="utf-8")
+    assert evaluate.main([*ARGS, "--from-cache", "run1"]) == 0
+    assert evaluate.main(ARGS) == 0
+    rescored, live = read("run2", "metrics.json"), read("run3", "metrics.json")
+    assert rescored["metrics"]["classes"][0]["recall"] == 0.667
+    assert rescored["metrics"] == live["metrics"]
+    cached = read("run3", "predictions.json")["images"]
+    assert max(len(rows) for rows in cached.values()) == 1

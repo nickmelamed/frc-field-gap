@@ -124,6 +124,10 @@ evaluate:
   # Mean average precision needs the low-confidence tail, so predictions are
   # requested and cached down to this.
   confidence_floor: 0.01
+  # Only the most confident boxes per image are cached and scored, so an
+  # unfamiliar scene's hundreds of faint boxes fit under the size limit. No
+  # test image has more than 16 labeled boxes (D-020).
+  max_predictions_per_image: 25
   pr_thresholds:
     start: 0.05
     stop: 0.95
