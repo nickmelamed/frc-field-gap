@@ -405,7 +405,12 @@ def save_predictions(
 
 def load_predictions(path: Path) -> dict[str, list[Prediction]]:
     """Read predictions written by :func:`save_predictions`, keyed by image file name."""
-    data = json.loads(path.read_text(encoding="utf-8"))
+    return parse_predictions(path.read_text(encoding="utf-8"))
+
+
+def parse_predictions(text: str) -> dict[str, list[Prediction]]:
+    """Parse cache text from :func:`predictions_text`, keyed by image file name."""
+    data = json.loads(text)
     return {
         name: [
             Prediction(class_name=row[0], confidence=row[1], xyxy=(row[2], row[3], row[4], row[5]))
@@ -892,9 +897,17 @@ def run_evaluation(
     _check_units(units, project, dataset, split, limit)
 
     server: dict[str, str] = {}
+    cache_text = None
     if from_cache is None:
         predictor = make_predictor(entries[model])
-        predictions = _predict_all(predictor, split_dir, names)
+        cache_text = predictions_text(
+            _predict_all(predictor, split_dir, names),
+            cfg.confidence_floor,
+            cfg.max_prediction_bytes,
+        )
+        # Score the rounded predictions the cache keeps, so rescoring the
+        # cache reproduces this run exactly.
+        predictions = parse_predictions(cache_text)
         server = predictor.server
         source = "this run"
     else:
@@ -954,10 +967,8 @@ def run_evaluation(
     )
     # Every file is rendered first, so a failure leaves no partial run behind.
     files = {METRICS_NAME: _json_text(result.model_dump(mode="json")), META_NAME: _json_text(meta)}
-    if from_cache is None:
-        files[PREDICTIONS_NAME] = predictions_text(
-            predictions, cfg.confidence_floor, cfg.max_prediction_bytes
-        )
+    if cache_text is not None:
+        files[PREDICTIONS_NAME] = cache_text
     run_dir.mkdir(parents=True)
     for name, text in files.items():
         (run_dir / name).write_text(text, encoding="utf-8")

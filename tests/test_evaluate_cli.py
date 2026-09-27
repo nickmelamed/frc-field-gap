@@ -322,3 +322,20 @@ def test_a_failed_run_leaves_no_partial_directory(
     with pytest.raises(ConfigError, match="meta failed"):
         evaluate.main(ARGS)
     assert not (workspace / "reports/runs/run1").exists()
+
+
+def test_a_live_run_scores_what_the_cache_stores(
+    workspace: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class Borderline(FakePredictor):
+        """Hit every box with a confidence that rounds up to the 0.5 threshold."""
+
+        def predict(self, image: Path) -> list[Prediction]:
+            return [p.model_copy(update={"confidence": 0.49996}) for p in super().predict(image)]
+
+    monkeypatch.setattr(evaluate, "HostedPredictor", lambda *a: Borderline())
+    assert evaluate.main(ARGS) == 0
+    assert evaluate.main([*ARGS, "--from-cache", "run1"]) == 0
+    live, cached = read("run1", "metrics.json"), read("run2", "metrics.json")
+    assert live["metrics"] == cached["metrics"]
+    assert live["metrics"]["classes"][0]["recall"] == 1.0
