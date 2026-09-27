@@ -1,0 +1,177 @@
+{
+  "run_id": "baseline-a__marswars-test__first10__20260927T211051Z",
+  "model": "baseline-a",
+  "dataset": "marswars",
+  "split": "test",
+  "limit": 10,
+  "predictions_from": "this run",
+  "scored_classes": [
+    "fuel"
+  ],
+  "metrics": {
+    "images": 10,
+    "confidence": 0.5,
+    "iou": 0.5,
+    "map50": 1.0,
+    "map50_95": 0.708,
+    "small_map50_95": null,
+    "medium_map50_95": 0.602,
+    "large_map50_95": 0.766,
+    "classes": [
+      {
+        "name": "fuel",
+        "instances": 16,
+        "map50": 1.0,
+        "map50_95": 0.708,
+        "precision": 1.0,
+        "recall": 0.938,
+        "true_positives": 15,
+        "false_positives": 0,
+        "false_negatives": 1
+      }
+    ],
+    "confusion": {
+      "labels": [
+        "fuel",
+        "background"
+      ],
+      "matrix": [
+        [
+          15,
+          1
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    "pr_curve": {
+      "fuel": [
+        {
+          "threshold": 0.05,
+          "precision": 0.615,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.1,
+          "precision": 0.941,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.15,
+          "precision": 0.941,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.2,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.25,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.3,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.35,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.4,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.45,
+          "precision": 1.0,
+          "recall": 0.938
+        },
+        {
+          "threshold": 0.5,
+          "precision": 1.0,
+          "recall": 0.938
+        },
+        {
+          "threshold": 0.55,
+          "precision": 1.0,
+          "recall": 0.938
+        },
+        {
+          "threshold": 0.6,
+          "precision": 1.0,
+          "recall": 0.938
+        },
+        {
+          "threshold": 0.65,
+          "precision": 1.0,
+          "recall": 0.938
+        },
+        {
+          "threshold": 0.7,
+          "precision": 1.0,
+          "recall": 0.938
+        },
+        {
+          "threshold": 0.75,
+          "precision": 1.0,
+          "recall": 0.938
+        },
+        {
+          "threshold": 0.8,
+          "precision": 1.0,
+          "recall": 0.938
+        },
+        {
+          "threshold": 0.85,
+          "precision": 1.0,
+          "recall": 0.688
+        },
+        {
+          "threshold": 0.9,
+          "precision": 1.0,
+          "recall": 0.125
+        },
+        {
+          "threshold": 0.95,
+          "precision": null,
+          "recall": 0.0
+        }
+      ]
+    }
+  },
+  "units": [
+    {
+      "unit": "Basler_daA1280-54uc__24770352__20260112_180305685",
+      "images": 10,
+      "boxes": {
+        "fuel": 16
+      }
+    }
+  ],
+  "bootstrap": {
+    "units": 1,
+    "resamples": 1000,
+    "level": 0.95,
+    "seed": 2026,
+    "classes": [
+      {
+        "name": "fuel",
+        "map50": {
+          "low": 1.0,
+          "high": 1.0
+        },
+        "recall": {
+          "low": 0.938,
+          "high": 0.938
+        }
+      }
+    ]
+  }
+}
