@@ -419,3 +419,43 @@ def test_main_redacts_the_key_from_debug_logs_of_other_libraries(
     err = capsys.readouterr().err
     assert "urllib3.connectionpool" in err
     assert SECRET not in err
+
+
+def test_a_failure_after_the_fetch_is_recorded_and_others_continue(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    real_build = download.build_manifest
+
+    def build(root: Path, key: str, spec: DatasetSpec) -> Manifest:
+        if key == "bad":
+            raise OSError(f"disk full at {root}")
+        return real_build(root, key, spec)
+
+    monkeypatch.setattr(download, "build_manifest", build)
+    failures = download_all(
+        {"bad": PINNED, "good": PINNED},
+        raw_dir=tmp_path / "raw",
+        manifests_dir=tmp_path / "manifests",
+        fetch=FakeFetch(),
+        errors=(FetchError, OSError),
+    )
+    assert [f.key for f in failures] == ["bad"]
+    assert "disk full" in failures[0].reason
+    assert not (tmp_path / "raw" / ".bad.partial").exists()
+    assert verified_manifest(tmp_path / "raw" / "good", PINNED) is not None
+
+
+def test_main_writes_the_failure_report_when_the_sdk_fails_early(
+    cli: list[str], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    stale = tmp_path / "reports" / "download_failures.json"
+    stale.parent.mkdir(parents=True)
+    stale.write_text("[]", encoding="utf-8")
+
+    def failing_login(key: str) -> Any:
+        raise RuntimeError("login failed")
+
+    monkeypatch.setattr(download, "_roboflow_fetch", failing_login)
+    assert download.main(cli) == 1
+    reasons = json.loads(stale.read_text())
+    assert reasons == [{"key": "*", "reason": "RuntimeError: login failed"}]

@@ -266,17 +266,19 @@ def download_all(
         logger.info("%s: downloading %s version %s", key, spec.url, spec.version)
         try:
             fetch(spec, staging)
+            manifest = build_manifest(staging, key, spec)
+            (staging / MANIFEST_NAME).write_text(
+                manifest.model_dump_json(indent=2), encoding="utf-8"
+            )
+            shutil.rmtree(dest, ignore_errors=True)
+            staging.rename(dest)
+            _write_digest(manifests_dir, manifest)
         except errors as e:
             reason = redact(f"{type(e).__name__}: {e}", secret)
             failures.append(Failure(key=key, reason=reason))
             logger.error("%s: download failed: %s", key, reason)
             shutil.rmtree(staging, ignore_errors=True)
             continue
-        manifest = build_manifest(staging, key, spec)
-        (staging / MANIFEST_NAME).write_text(manifest.model_dump_json(indent=2), encoding="utf-8")
-        shutil.rmtree(dest, ignore_errors=True)
-        staging.rename(dest)
-        _write_digest(manifests_dir, manifest)
         logger.info("%s: %d files", key, len(manifest.files))
     return failures
 
@@ -530,7 +532,11 @@ def main(argv: list[str] | None = None) -> int:
         # Reached when the SDK fails before any dataset is tried, such as
         # while checking the key. Log it redacted instead of a traceback,
         # which could print the key inside a request URL.
-        logger.error("roboflow failed: %s", redact(f"{type(e).__name__}: {e}", api_key))
+        reason = redact(f"{type(e).__name__}: {e}", api_key)
+        logger.error("roboflow failed: %s", reason)
+        if not args.resolve:
+            # Replace the last run's report, which would otherwise look current.
+            _write_json(reports / FAILURES_NAME, [Failure(key="*", reason=reason)])
         return 1
 
     for failure in failures:
