@@ -7,14 +7,14 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
 ## Tasks
 
 - [ ] Task 1: Foundation (Sat Sept 26)
-  - [ ] Extend `make agent-check` to the full version once ruff, mypy, and
+  - [x] Extend `make agent-check` to the full version once ruff, mypy, and
         pytest are installed:
 
         agent-check: check  ## Fast checks the Claude Code Stop hook runs
         	python3 scripts/agent/check_style.py .
         	python3 scripts/agent/check_numbers.py README.md docs/DATASETS.md docs/EVALUATION.md docs/MODEL_CARD.md docs/DEPLOYMENT.md --sources reports
 
-  - [ ] Add the local check-style hook to `.pre-commit-config.yaml`:
+  - [x] Add the local check-style hook to `.pre-commit-config.yaml`:
 
         - repo: local
           hooks:
@@ -44,5 +44,8 @@ Field test set: pending confirmation
   split logic, and run `mutmut` on `harmonize.py`, `splits.py`, and
   `merge.py`.
 - Add a Claude review of every PR in CI.
+- `requirements.txt` holds core deps only. The `infer` extra pulls CPU-only
+  torch through `inference-models`, which would replace Colab's CUDA build.
+  Decide how the notebook installs `inference` when it lands (Task 5 or 6).
 
 ## Open questions for Nick

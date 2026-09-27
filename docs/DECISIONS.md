@@ -4,11 +4,10 @@ One entry per decision that someone might later question. Newest last.
 Write these yourself or edit Claude's drafts into your own words, since
 reviewers read this file to see how you think.
 
-## Carried over from a previous attempt, re-verify during Task 1
+## Carried over from a previous attempt
 
-These came from an earlier setup of this project. Library versions may have
-moved since, so check each one against what is installed before relying on it
-(rule 5).
+D-001 to D-004 came from an earlier setup of this project. All four were
+re-checked on 2026-09-26 during Task 1 and still apply.
 
 ## D-001: Use supervision 0.29.x and make inference optional (2026-09-26)
 
@@ -26,6 +25,10 @@ offline.
 
 Consequences. Anything written against supervision has to use the 0.29 API.
 Code that needs `inference` only works after `uv sync --extra infer`.
+
+Re-verified 2026-09-26. `inference` 1.7.2 still pins supervision below 0.30
+and pydantic below 2.12, while supervision 0.30.5 is out. `uv.lock` resolves
+the `infer` extra with supervision 0.29.1 and pydantic 2.11.10.
 
 ## D-002: Add console scripts with their modules (2026-09-26)
 
@@ -68,3 +71,30 @@ repo, so protection has to wait for the first CI run.
 
 Consequences. Between the first PR and enabling protection, CI green is
 enforced by habit only.
+
+## D-005: Support Python 3.11 to 3.13 only (2026-09-26)
+
+Context. The project targets Python 3.11. `inference` 1.7.2 and its
+`inference-models` dependency require Python below 3.14.
+
+Decision. Set `requires-python = ">=3.11,<3.14"` and pin 3.11 in
+`.python-version`.
+
+Why. uv resolves one lock for every Python version the project allows, and
+`inference` has no release that installs on 3.14.
+
+Consequences. The project will not install on 3.14 until `inference`
+supports it. Check the Colab Python version when the notebook lands.
+
+## D-006: Exclude uv.lock from the large-file hook (2026-09-26)
+
+Context. pre-commit rejects files over 500 KB so data and weights never get
+committed. With the `infer` extra resolved, `uv.lock` is about 780 KB.
+
+Decision. Exclude `uv.lock` from `check-added-large-files` by exact path.
+Every other file keeps the limit.
+
+Why. The lock is generated text that has to be committed (SPEC section 3.1).
+It is not what the limit protects against.
+
+Consequences. A large lock diff shows up in review instead of being blocked.
