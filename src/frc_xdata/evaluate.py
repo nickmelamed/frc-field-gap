@@ -19,7 +19,7 @@ import logging
 import platform
 import sys
 from collections.abc import Callable, Mapping, Sequence
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -333,21 +333,17 @@ def _row(p: Prediction) -> list[str | float]:
     ]
 
 
-def save_predictions(
-    path: Path,
-    predictions: Mapping[str, Sequence[Prediction]],
-    floor: float,
-    max_bytes: int,
-) -> int:
-    """Write predictions at or above ``floor`` to ``path`` and return its size in bytes.
+def predictions_text(
+    predictions: Mapping[str, Sequence[Prediction]], floor: float, max_bytes: int
+) -> str:
+    """Return the cache file text for predictions at or above ``floor``.
 
     Each image is one line keyed by file name, so a diff shows which images
     changed. An image with no predictions is kept with an empty list, which
     tells it apart from an image that was never run.
 
     Raises:
-        PredictionCacheTooLargeError: If the file would exceed ``max_bytes``.
-            Nothing is written in that case.
+        PredictionCacheTooLargeError: If the text would exceed ``max_bytes``.
     """
     lines = [
         f"{json.dumps(name)}: {json.dumps([_row(p) for p in preds if p.confidence >= floor])}"
@@ -361,12 +357,28 @@ def save_predictions(
     size = len(text.encode("utf-8"))
     if size > max_bytes:
         raise PredictionCacheTooLargeError(
-            f"{path} would be {size} bytes, over the {max_bytes} byte limit. "
+            f"cached predictions would be {size} bytes, over the {max_bytes} byte limit. "
             "Raise the confidence floor or evaluate a smaller split"
         )
+    return text
+
+
+def save_predictions(
+    path: Path,
+    predictions: Mapping[str, Sequence[Prediction]],
+    floor: float,
+    max_bytes: int,
+) -> int:
+    """Write predictions at or above ``floor`` to ``path`` and return its size in bytes.
+
+    Raises:
+        PredictionCacheTooLargeError: If the file would exceed ``max_bytes``.
+            Nothing is written in that case.
+    """
+    text = predictions_text(predictions, floor, max_bytes)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
-    return size
+    return len(text.encode("utf-8"))
 
 
 def load_predictions(path: Path) -> dict[str, list[Prediction]]:
@@ -699,8 +711,15 @@ def _run_id(model: str, dataset: str, split: str, limit: int | None) -> str:
     return f"{model}__{dataset}-{split}{slice_tag}__{stamp}"
 
 
-def _dump(path: Path, data: Any) -> None:
-    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+def _iso_dates(value: object) -> str:
+    # YAML reads a bare date such as 2026-09-27 as a date object.
+    if isinstance(value, date):
+        return value.isoformat()
+    raise TypeError(f"{type(value).__name__} is not JSON serializable")
+
+
+def _json_text(data: Any) -> str:
+    return json.dumps(data, indent=2, default=_iso_dates) + "\n"
 
 
 def _predict_all(
@@ -864,13 +883,6 @@ def run_evaluation(
         source = from_cache
     detections = align(predictions, names, ds.classes)
 
-    if from_cache is None:
-        size = save_predictions(
-            run_dir / PREDICTIONS_NAME, predictions, cfg.confidence_floor, cfg.max_prediction_bytes
-        )
-        logger.info("cached predictions: %d bytes", size)
-    run_dir.mkdir(parents=True, exist_ok=from_cache is None)
-
     result = RunResult(
         run_id=run_id,
         model=model,
@@ -901,7 +913,6 @@ def run_evaluation(
             seed=project.seed,
         ),
     )
-    _dump(run_dir / METRICS_NAME, result.model_dump(mode="json"))
     meta = run_meta(
         repo=repo,
         project=project,
@@ -919,7 +930,18 @@ def run_evaluation(
         argv=argv,
         dirty=dirty,
     )
-    _dump(run_dir / META_NAME, meta)
+    # Every file is rendered first, so a failure leaves no partial run behind.
+    files = {METRICS_NAME: _json_text(result.model_dump(mode="json")), META_NAME: _json_text(meta)}
+    if from_cache is None:
+        files[PREDICTIONS_NAME] = predictions_text(
+            predictions, cfg.confidence_floor, cfg.max_prediction_bytes
+        )
+    run_dir.mkdir(parents=True)
+    for name, text in files.items():
+        (run_dir / name).write_text(text, encoding="utf-8")
+    logger.info(
+        "wrote %s (%s)", run_dir, ", ".join(f"{n} {len(t)} bytes" for n, t in files.items())
+    )
     return run_dir
 
 
@@ -984,7 +1006,7 @@ def main(argv: list[str] | None = None) -> int:
         return HostedPredictor(cfg.api_url, api_key, entry, cfg.confidence_floor)
 
     try:
-        run_dir = run_evaluation(
+        run_evaluation(
             repo=repo,
             project=project,
             datasets_config=args.datasets_config,
@@ -1002,5 +1024,4 @@ def main(argv: list[str] | None = None) -> int:
         # These can carry the key in a request URL.
         logger.error("inference failed: %s", redact(f"{type(e).__name__}: {e}", api_key))
         return 1
-    logger.info("wrote %s", run_dir)
     return 0
