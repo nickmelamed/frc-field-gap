@@ -1,8 +1,4 @@
-"""Exceptions raised by the pipeline.
-
-Each stage fails with a specific error so a bad input stops the run with a
-message that says what to fix.
-"""
+"""Exceptions raised by the pipeline."""
 
 
 class FrcXdataError(Exception):

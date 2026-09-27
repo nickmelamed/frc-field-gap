@@ -30,7 +30,7 @@ def git_is_dirty(repo: Path) -> bool:
 
 
 def sha256_file(path: Path) -> str:
-    """Return the hex SHA256 of a file, read in chunks so large images fit in memory."""
+    """Return the hex SHA256 of a file."""
     digest = hashlib.sha256()
     with path.open("rb") as f:
         while chunk := f.read(CHUNK_BYTES):
