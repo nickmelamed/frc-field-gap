@@ -29,8 +29,8 @@ paths:
   targets. Add a console script and its Make target in the same commit as the
   module it runs, never as a stub.
 - Notebooks are thin and call the package. Outputs are stripped by
-  nbstripout. A rendered copy with outputs may be published outside the repo
-  (a gist or release asset) if needed, after the same face check as any
-  published image.
+  nbstripout. A rendered copy with outputs may be published outside the repo,
+  as a gist or release asset, after the same face check as any published
+  image.
 - Run metadata, manifests, and seeds follow SPEC section 3.5. Refuse to write
   results from a dirty tree unless `--allow-dirty` is passed, and flag it.
