@@ -117,3 +117,31 @@ it.
 Consequences. `uv.lock` resolves roboflow 1.5.1, supervision 0.29.1, and
 imagehash 4.3.2. `requirements.txt` grows, since Colab needs the same
 packages to download data.
+
+## D-008: Pin the candidate dataset versions (2026-09-26)
+
+Context. SPEC section 5 lists five candidates with unverified slugs,
+versions, and classes. `make download ARGS=--resolve` looked each one up on
+2026-09-26 and wrote `reports/dataset_resolution.json`.
+
+Decision. Pin the latest published version of each project:
+`marswars` version 5, `testingfrfr` version 1, `scorekeeper` version 1,
+`robotzftp2` (`rebuilt-dataset-hcmwl`) version 1, and a sixth key,
+`robotzftp2_fuel` (`frc-2026-fuel-ndrbj`) version 1. Leave `lava`
+unpinned.
+
+Why. The `robot-zftp2` workspace holds three REBUILT projects.
+`rebuilt-dataset-hcmwl` is the largest one with a published version.
+`frc-2026-fuel-ndrbj` is the only other one with a version, so it is kept
+as a separate key and inspection decides whether it is worth using.
+`2026-rebuilt-ezy58` has no version, and its classes and image count match
+`marswars` version 3, so it looks like a copy. The rest of the workspace is
+unrelated to FRC. `lava` has no published version, and Roboflow only
+exports versions.
+
+Consequences. `make download` reports `lava` as a failure with the reason
+"project or version not pinned". The spec's class list for `marswars` was
+missing `red_active`. `testingfrfr` and `scorekeeper` versions hold far
+more images than their source projects (see the resolution file), which
+suggests augmented copies in the train split. Task 3 has to check this before
+either is used for evaluation.
