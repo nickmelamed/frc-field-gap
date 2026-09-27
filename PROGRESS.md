@@ -47,6 +47,14 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     `robotzftp2_fuel`. See `reports/dataset_stats.csv` (images against
     source_images) and `reports/duplicates.json`.
 - [ ] Task 3: Document datasets, review checkpoint (Sat Sept 26)
+  - `docs/DATASETS.md` describes all five datasets and proposes `marswars`
+    as Dataset A, `robotzftp2` as B, and deduplicated `scorekeeper` as C.
+    Waiting for Nick's review before the choice goes into DECISIONS.md.
+  - The data differs from SPEC sections 4 and 5 in three ways. Every robot
+    label comes from earlier seasons (2019 to 2024 broadcasts and pits), so
+    no dataset has REBUILT robots. The `marswars` state classes mark whether
+    the hub is lit and are proposed as DROP. `testingfrfr` is an aggregate
+    of the others and is left out of evaluation.
 - [ ] Task 4: Harmonize + splits (Sat Sept 26)
 - [ ] Task 5: Baseline training (start Sat night, Nick runs on platform)
 - [ ] Task 6: Eval harness + report generation (Sat Sept 26)

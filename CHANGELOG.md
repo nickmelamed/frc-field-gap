@@ -23,3 +23,5 @@ uses [Semantic Versioning](https://semver.org/).
   duplicate report, and face-checked sample grids.
 - Five candidate datasets pinned in `configs/datasets.yaml`, with
   attribution in the README.
+- `docs/DATASETS.md` describing each dataset's viewpoint, labels, and
+  problems, with a proposed dataset choice and class mapping.
