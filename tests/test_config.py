@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, ValidationError
 
 from frc_xdata.config import (
     API_KEY_VAR,
+    AreaBuckets,
     DatasetsConfig,
     DatasetSpec,
     ProjectConfig,
@@ -189,3 +190,9 @@ def test_committed_datasets_config_loads() -> None:
     cfg = load_yaml(REPO_ROOT / "configs" / "datasets.yaml", DatasetsConfig)
     assert cfg.datasets
     assert all(spec.license == "CC BY 4.0" for spec in cfg.datasets.values())
+
+
+@pytest.mark.parametrize(("small", "medium"), [(0.02, 0.01), (0.01, 0.01)])
+def test_area_buckets_must_increase(small: float, medium: float) -> None:
+    with pytest.raises(ValidationError, match="small_max must be below medium_max"):
+        AreaBuckets.model_validate({"small_max": small, "medium_max": medium})
