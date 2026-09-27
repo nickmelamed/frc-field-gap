@@ -17,6 +17,7 @@ from frc_xdata.evaluate import (
     save_predictions,
     shared_classes,
     to_detections,
+    top_k,
     unit_counts,
 )
 from frc_xdata.inspect_datasets import Box, ImageRecord, ImageRef
@@ -41,7 +42,7 @@ def test_cache_round_trip_rounds_and_applies_the_floor(tmp_path: Path) -> None:
         "a.jpg": [pred(0.912345, box=(1.26, 2.0, 11.04, 12.55)), pred(0.004)],
         "b.jpg": [],
     }
-    save_predictions(path, predictions, floor=0.01, max_bytes=LIMIT)
+    save_predictions(path, predictions, floor=0.01, per_image=100, max_bytes=LIMIT)
     loaded = load_predictions(path)
     assert list(loaded) == ["a.jpg", "b.jpg"]
     assert loaded["b.jpg"] == []
@@ -52,7 +53,8 @@ def test_cache_round_trip_rounds_and_applies_the_floor(tmp_path: Path) -> None:
 
 def test_cache_is_one_image_per_line(tmp_path: Path) -> None:
     path = tmp_path / "predictions.json"
-    save_predictions(path, {"a.jpg": [pred(0.5)], "b.jpg": []}, floor=0.01, max_bytes=LIMIT)
+    predictions = {"a.jpg": [pred(0.5)], "b.jpg": []}
+    save_predictions(path, predictions, floor=0.01, per_image=100, max_bytes=LIMIT)
     text = path.read_text(encoding="utf-8")
     assert json.loads(text)["confidence_floor"] == 0.01
     assert [line for line in text.splitlines() if line.startswith('"a.jpg"')]
@@ -63,7 +65,7 @@ def test_cache_over_the_size_limit_raises_and_writes_nothing(tmp_path: Path) -> 
     path = tmp_path / "predictions.json"
     predictions = {f"{i}.jpg": [pred(0.5)] * 5 for i in range(20)}
     with pytest.raises(PredictionCacheTooLargeError, match="floor"):
-        save_predictions(path, predictions, floor=0.01, max_bytes=500)
+        save_predictions(path, predictions, floor=0.01, per_image=100, max_bytes=500)
     assert not path.exists()
 
 
@@ -216,3 +218,16 @@ def test_shared_classes_keep_the_dataset_order() -> None:
 def test_shared_classes_refuse_a_model_that_knows_none_of_them() -> None:
     with pytest.raises(ConfigError, match="knows"):
         shared_classes(["robot"], ["fuel"])
+
+
+def test_top_k_keeps_the_most_confident_and_breaks_ties_by_order() -> None:
+    first, second = pred(0.5, box=(0, 0, 1, 1)), pred(0.5, box=(2, 2, 3, 3))
+    assert top_k([pred(0.1), first, pred(0.9), second], 3) == [pred(0.9), first, second]
+
+
+def test_cache_keeps_only_the_most_confident_boxes_per_image(tmp_path: Path) -> None:
+    path = tmp_path / "predictions.json"
+    predictions = {"a.jpg": [pred(c / 10) for c in range(1, 10)]}
+    save_predictions(path, predictions, floor=0.01, per_image=3, max_bytes=LIMIT)
+    assert [p.confidence for p in load_predictions(path)["a.jpg"]] == [0.9, 0.8, 0.7]
+    assert json.loads(path.read_text(encoding="utf-8"))["max_predictions_per_image"] == 3

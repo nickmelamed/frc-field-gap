@@ -20,7 +20,8 @@ Each labeled box can be matched by one prediction at most.
 - mAP50 (mean average precision at IoU 0.5) sorts the predictions by
   confidence and measures how precise the model stays as it finds more of
   the labeled boxes. It is 1 when every labeled box is found before any
-  false positive. It uses every prediction down to a confidence of 0.01.
+  false positive. It uses up to 25 predictions per image, the most
+  confident ones, down to a confidence of 0.01.
 - mAP50-95 averages the same score over stricter overlap requirements, from
   IoU 0.5 up to 0.95, so it also rewards boxes that sit tightly on the
   object.
@@ -57,8 +58,9 @@ make report
 ```
 
 Each run writes `reports/runs/<run_id>/` with three files.
-`predictions.json` holds every predicted box down to the confidence floor in
-`configs/project.yaml`, rounded as described in D-018. The run is scored
+`predictions.json` holds the 25 most confident boxes per image down to the
+confidence floor in `configs/project.yaml` (D-020), rounded as described in
+D-018. The run is scored
 from those rounded values, so `--from-cache <run_id>` reproduces its scores
 exactly without calling the model again, and can rescore them at another
 threshold. A rescore must name the same model, dataset, and split as the run

@@ -486,3 +486,29 @@ Consequences. The baseline's cross-dataset results are about fuel only.
 `scorekeeper`'s robot boxes are first scored by a model trained on robots in
 Task 10. A model's training dataset needs an entry in the coverage report,
 so a merged dataset must write one.
+
+## D-020: Keep the 25 most confident predictions per image (2026-09-27)
+
+Context. At the 0.01 confidence floor, baseline-a returned so many faint
+boxes on `scorekeeper` test that its prediction cache would have been
+2922540 bytes, over the 450000 byte limit that keeps it under the 500 KB
+large-file hook. The run stopped before writing anything. A-test and B-test
+had fit, with up to 107 predictions on one image.
+
+Decision. Nick chose on 2026-09-27 to cache and score only the 25 most
+confident predictions per image (`max_predictions_per_image` in
+`configs/project.yaml`) on every dataset. Ties keep the model's order. A
+rescore of an older cache applies the same limit, and A-test and B-test
+were run again under it.
+
+Why. No test image of A, B, or C has more than 16 labeled fuel boxes, so 25
+still lets every labeled box be found, and COCO's own evaluation keeps at
+most 100 per image. The cache stays in git, so `--from-cache` works from a
+fresh clone. Raising the floor instead would cut the low-confidence tail on
+every image, including sparse ones.
+
+Consequences. Dropping the faintest boxes removes low-ranked false
+positives, so mAP can come out slightly higher than with no limit. Recall
+at the 0.5 threshold is unchanged unless an image has more than 25
+predictions above 0.5. The first A-test and B-test runs, made without the
+limit, stay under `reports/runs/` and are superseded by the newer ones.

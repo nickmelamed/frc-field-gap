@@ -369,32 +369,45 @@ def _row(p: Prediction) -> list[str | float]:
     ]
 
 
+def top_k(predictions: Sequence[Prediction], k: int) -> list[Prediction]:
+    """Return the ``k`` most confident predictions, keeping the given order among equals."""
+    return sorted(predictions, key=lambda p: -p.confidence)[:k]
+
+
 def predictions_text(
-    predictions: Mapping[str, Sequence[Prediction]], floor: float, max_bytes: int
+    predictions: Mapping[str, Sequence[Prediction]], floor: float, per_image: int, max_bytes: int
 ) -> str:
-    """Return the cache file text for predictions at or above ``floor``.
+    """Return the cache file text for each image's most confident predictions.
 
     Each image is one line keyed by file name, so a diff shows which images
     changed. An image with no predictions is kept with an empty list, which
     tells it apart from an image that was never run.
 
+    Args:
+        predictions: Predictions keyed by image file name.
+        floor: Predictions below this confidence are left out.
+        per_image: At most this many predictions are kept per image.
+        max_bytes: Size limit for the text.
+
     Raises:
         PredictionCacheTooLargeError: If the text would exceed ``max_bytes``.
     """
-    lines = [
-        f"{json.dumps(name)}: {json.dumps([_row(p) for p in preds if p.confidence >= floor])}"
-        for name, preds in predictions.items()
-    ]
+    lines = []
+    for name, preds in predictions.items():
+        kept = top_k([p for p in preds if p.confidence >= floor], per_image)
+        lines.append(f"{json.dumps(name)}: {json.dumps([_row(p) for p in kept])}")
     text = (
         "{\n"
         f'"confidence_floor": {json.dumps(floor)},\n'
+        f'"max_predictions_per_image": {json.dumps(per_image)},\n'
         '"images": {\n' + ",\n".join(lines) + "\n}\n}\n"
     )
     size = len(text.encode("utf-8"))
     if size > max_bytes:
         raise PredictionCacheTooLargeError(
             f"cached predictions would be {size} bytes, over the {max_bytes} byte limit. "
-            "Raise the confidence floor or evaluate a smaller split"
+            "Raise the confidence floor, lower max_predictions_per_image, "
+            "or evaluate a smaller split"
         )
     return text
 
@@ -403,15 +416,16 @@ def save_predictions(
     path: Path,
     predictions: Mapping[str, Sequence[Prediction]],
     floor: float,
+    per_image: int,
     max_bytes: int,
 ) -> int:
-    """Write predictions at or above ``floor`` to ``path`` and return its size in bytes.
+    """Write the cache for :func:`predictions_text` to ``path`` and return its size in bytes.
 
     Raises:
         PredictionCacheTooLargeError: If the file would exceed ``max_bytes``.
             Nothing is written in that case.
     """
-    text = predictions_text(predictions, floor, max_bytes)
+    text = predictions_text(predictions, floor, per_image, max_bytes)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
     return len(text.encode("utf-8"))
@@ -940,6 +954,7 @@ def run_evaluation(
         cache_text = predictions_text(
             _predict_all(predictor, split_dir, names),
             cfg.confidence_floor,
+            cfg.max_predictions_per_image,
             cfg.max_prediction_bytes,
         )
         # Score the rounded predictions the cache keeps, so rescoring the
@@ -950,6 +965,9 @@ def run_evaluation(
     else:
         predictions, source_dirty = _cached_run(cfg.runs_dir / from_cache, model, dataset, split)
         source = from_cache
+    # A cache written before the per-image limit is held to it here, so a
+    # rescore follows the same rule as a live run.
+    predictions = {n: top_k(p, cfg.max_predictions_per_image) for n, p in predictions.items()}
     detections = align(predictions, names, ds.classes)
 
     result = RunResult(

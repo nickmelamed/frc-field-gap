@@ -196,6 +196,7 @@ class EvaluateConfig(_Frozen):
     confidence: Probability
     iou: Probability
     confidence_floor: Probability
+    max_predictions_per_image: PositiveInt
     pr_thresholds: ThresholdRange
     max_prediction_bytes: PositiveInt
     bootstrap: BootstrapConfig
