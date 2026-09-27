@@ -38,5 +38,14 @@ uses [Semantic Versioning](https://semver.org/).
   one split at a time with the split named. `frc-verify-upload`
   (`make verify-upload`) downloads the generated version and checks every
   image's split and box count (D-015).
+- `frc-evaluate` (`make eval`) scores a hosted Roboflow model on a
+  harmonized split and writes cached predictions, per-class scores, a
+  confusion matrix, a precision-recall sweep, per-recording box counts,
+  bootstrap intervals over recordings, and run metadata to
+  `reports/runs/<run_id>/`. `--from-cache` rescores a run without calling
+  the model. `make setup-infer` installs the optional `inference` extra it
+  needs (D-017, D-018).
+- `frc-report` (`make report`) rebuilds the README results table and the
+  results in `docs/EVALUATION.md` from `reports/runs/`.
 - `docs/RETRAINING.md` gives the platform training steps, and
   `reports/models.yaml` records each run.
