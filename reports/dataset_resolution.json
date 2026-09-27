@@ -5,6 +5,7 @@
       {
         "workspace": "marswars-robotics-program",
         "project": "2026-rebuilt",
+        "name": "2026 Rebuilt",
         "images": 1310,
         "classes": {
           "blue_active": 195,
@@ -69,6 +70,7 @@
       {
         "workspace": "lava",
         "project": "frc-2026-aagvs",
+        "name": "FRC 2026",
         "images": 442,
         "classes": {
           "2026-FRC-Fuel-V2": 2349,
@@ -86,6 +88,7 @@
       {
         "workspace": "testing-frfr",
         "project": "frc-2026-mldc0",
+        "name": "frc 2026",
         "images": 4917,
         "classes": {
           "fuel": 2594,
@@ -112,6 +115,7 @@
       {
         "workspace": "blind-assistant-model",
         "project": "frc-scorekeeper-2026",
+        "name": "FRC Scorekeeper 2026",
         "images": 1916,
         "classes": {
           "FUEL": 5743,
@@ -137,168 +141,8 @@
     "projects": [
       {
         "workspace": "robot-zftp2",
-        "project": "2026-rebuilt-ezy58",
-        "images": 1390,
-        "classes": {
-          "blue_active": 205,
-          "game_piece": 10997,
-          "inactive": 129,
-          "red_active": 180
-        },
-        "latest_version": null,
-        "versions": []
-      },
-      {
-        "workspace": "robot-zftp2",
-        "project": "ball-rcae2-exjdv",
-        "images": 2555,
-        "classes": {
-          "Green_ball": 989,
-          "Red_ball": 1026,
-          "Yellow_ball": 1598
-        },
-        "latest_version": 1,
-        "versions": [
-          {
-            "version": 1,
-            "images": 2555,
-            "splits": {
-              "valid": 767,
-              "test": 521,
-              "train": 1267
-            }
-          }
-        ]
-      },
-      {
-        "workspace": "robot-zftp2",
-        "project": "drone-detection-jbrk3",
-        "images": 987,
-        "classes": {
-          "a": 0,
-          "drone": 1002,
-          "qq": 0
-        },
-        "latest_version": 3,
-        "versions": [
-          {
-            "version": 1,
-            "images": 772,
-            "splits": {
-              "valid": 65,
-              "test": 32,
-              "train": 675
-            }
-          },
-          {
-            "version": 2,
-            "images": 1447,
-            "splits": {
-              "valid": 121,
-              "test": 60,
-              "train": 1266
-            }
-          },
-          {
-            "version": 3,
-            "images": 2369,
-            "splits": {
-              "valid": 198,
-              "test": 98,
-              "train": 2073
-            }
-          }
-        ]
-      },
-      {
-        "workspace": "robot-zftp2",
-        "project": "find-balls-2-ug7jx",
-        "images": 10,
-        "classes": {
-          "ball": 54
-        },
-        "latest_version": 2,
-        "versions": [
-          {
-            "version": 1,
-            "images": 20,
-            "splits": {
-              "valid": 3,
-              "test": 2,
-              "train": 15
-            }
-          },
-          {
-            "version": 2,
-            "images": 20,
-            "splits": {
-              "valid": 3,
-              "test": 2,
-              "train": 15
-            }
-          }
-        ]
-      },
-      {
-        "workspace": "robot-zftp2",
-        "project": "find-balls-jjmwd",
-        "images": 10,
-        "classes": {
-          "ball": 54
-        },
-        "latest_version": 2,
-        "versions": [
-          {
-            "version": 1,
-            "images": 20,
-            "splits": {
-              "valid": 3,
-              "test": 2,
-              "train": 15
-            }
-          },
-          {
-            "version": 2,
-            "images": 20,
-            "splits": {
-              "valid": 3,
-              "test": 2,
-              "train": 15
-            }
-          }
-        ]
-      },
-      {
-        "workspace": "robot-zftp2",
-        "project": "frc-2026-fuel-ndrbj",
-        "images": 464,
-        "classes": {
-          "Fuels": 465
-        },
-        "latest_version": 1,
-        "versions": [
-          {
-            "version": 1,
-            "images": 464,
-            "splits": {
-              "valid": 96,
-              "test": 48,
-              "train": 320
-            }
-          }
-        ]
-      },
-      {
-        "workspace": "robot-zftp2",
-        "project": "night-drone-detection-b22vg",
-        "images": 0,
-        "classes": {},
-        "latest_version": null,
-        "versions": []
-      },
-      {
-        "workspace": "robot-zftp2",
         "project": "rebuilt-dataset-hcmwl",
+        "name": "Rebuilt Dataset",
         "images": 1898,
         "classes": {
           "fuel": 2397
@@ -314,214 +158,29 @@
             }
           }
         ]
-      },
+      }
+    ]
+  },
+  {
+    "key": "robotzftp2_fuel",
+    "projects": [
       {
         "workspace": "robot-zftp2",
-        "project": "shahed-rgmop",
-        "images": 2370,
+        "project": "frc-2026-fuel-ndrbj",
+        "name": "FRC 2026 Fuel",
+        "images": 464,
         "classes": {
-          "shahed": 2370
+          "Fuels": 465
         },
-        "latest_version": 17,
+        "latest_version": 1,
         "versions": [
           {
             "version": 1,
-            "images": 156,
+            "images": 464,
             "splits": {
-              "valid": 36,
-              "test": 16,
-              "train": 104
-            }
-          },
-          {
-            "version": 2,
-            "images": 243,
-            "splits": {
-              "valid": 54,
-              "test": 24,
-              "train": 165
-            }
-          },
-          {
-            "version": 3,
-            "images": 352,
-            "splits": {
-              "valid": 76,
-              "test": 35,
-              "train": 241
-            }
-          },
-          {
-            "version": 4,
-            "images": 488,
-            "splits": {
-              "valid": 105,
-              "test": 46,
-              "train": 337
-            }
-          },
-          {
-            "version": 5,
-            "images": 579,
-            "splits": {
-              "valid": 124,
-              "test": 55,
-              "train": 400
-            }
-          },
-          {
-            "version": 6,
-            "images": 683,
-            "splits": {
-              "valid": 146,
-              "test": 66,
-              "train": 471
-            }
-          },
-          {
-            "version": 7,
-            "images": 880,
-            "splits": {
-              "valid": 189,
-              "test": 86,
-              "train": 605
-            }
-          },
-          {
-            "version": 8,
-            "images": 1007,
-            "splits": {
-              "valid": 214,
-              "test": 99,
-              "train": 694
-            }
-          },
-          {
-            "version": 9,
-            "images": 1114,
-            "splits": {
-              "valid": 236,
-              "test": 110,
-              "train": 768
-            }
-          },
-          {
-            "version": 10,
-            "images": 1208,
-            "splits": {
-              "valid": 257,
-              "test": 118,
-              "train": 833
-            }
-          },
-          {
-            "version": 11,
-            "images": 1335,
-            "splits": {
-              "valid": 282,
-              "test": 131,
-              "train": 922
-            }
-          },
-          {
-            "version": 12,
-            "images": 1502,
-            "splits": {
-              "valid": 312,
-              "test": 150,
-              "train": 1040
-            }
-          },
-          {
-            "version": 13,
-            "images": 3913,
-            "splits": {
-              "valid": 338,
-              "test": 164,
-              "train": 3411
-            }
-          },
-          {
-            "version": 14,
-            "images": 4516,
-            "splits": {
-              "valid": 388,
-              "test": 186,
-              "train": 3942
-            }
-          },
-          {
-            "version": 15,
-            "images": 4898,
-            "splits": {
-              "valid": 418,
-              "test": 202,
-              "train": 4278
-            }
-          },
-          {
-            "version": 16,
-            "images": 5321,
-            "splits": {
-              "valid": 454,
-              "test": 220,
-              "train": 4647
-            }
-          },
-          {
-            "version": 17,
-            "images": 5672,
-            "splits": {
-              "valid": 484,
-              "test": 235,
-              "train": 4953
-            }
-          }
-        ]
-      },
-      {
-        "workspace": "robot-zftp2",
-        "project": "turret-4njd3",
-        "images": 1027,
-        "classes": {
-          "shahed": 1027
-        },
-        "latest_version": 4,
-        "versions": [
-          {
-            "version": 1,
-            "images": 724,
-            "splits": {
-              "valid": 61,
-              "test": 30,
-              "train": 633
-            }
-          },
-          {
-            "version": 2,
-            "images": 1087,
-            "splits": {
-              "valid": 91,
-              "test": 45,
-              "train": 951
-            }
-          },
-          {
-            "version": 3,
-            "images": 1759,
-            "splits": {
-              "valid": 147,
-              "test": 73,
-              "train": 1539
-            }
-          },
-          {
-            "version": 4,
-            "images": 2465,
-            "splits": {
-              "valid": 206,
-              "test": 102,
-              "train": 2157
+              "valid": 96,
+              "test": 48,
+              "train": 320
             }
           }
         ]

@@ -229,7 +229,12 @@ def test_unexpected_errors_stop_the_run(tmp_path: Path) -> None:
 
 
 PROJECT_RESPONSE = {
-    "project": {"images": 30, "classes": {"robot": 5, "fuel": 40}, "splits": {"train": 20}},
+    "project": {
+        "name": "Rebuilt Fuel",
+        "images": 30,
+        "classes": {"robot": 5, "fuel": 40},
+        "splits": {"train": 20},
+    },
     "versions": [
         {"id": "team/rebuilt/10", "images": 30, "splits": {"train": 20, "valid": 10}},
         {"id": "team/rebuilt/2", "images": 12, "splits": {"train": 12}},
@@ -245,6 +250,7 @@ def test_summarize_project_sorts_versions_numerically() -> None:
     summary = summarize_project("team", "rebuilt", PROJECT_RESPONSE)
     assert [v.version for v in summary.versions] == [2, 10]
     assert summary.latest_version == 10
+    assert summary.name == "Rebuilt Fuel"
     assert list(summary.classes) == ["fuel", "robot"]
     assert summary.versions[1].splits == {"train": 20, "valid": 10}
 
