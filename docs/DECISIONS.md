@@ -257,41 +257,46 @@ Adjacent video frames sit on both sides, `robotzftp2` has no test split, and
 `scorekeeper` spreads copies of one photo across splits. `marswars` has only
 13 recordings, and a few of them hold most of its fuel boxes, so holding out
 whole recordings made test depend on which two or three recordings landed
-there. It could also put all the official-field frames in one split.
+there. Holding out whole recordings could also put every official-field
+frame in one split.
 
 Decision. `marswars` and `robotzftp2` are cut by frame order within each
-recording: the first 70 percent of images go to train, the next 15 percent
-to valid, and the last 15 percent to test. Valid therefore sits between train
-and test in time. An image is dropped when the first frame of the next split
-is at most 5 frames after it. Recordings under 20 images go whole to train,
-and so do FIRST's official videos in `marswars`. `scorekeeper` joins images
-that share a video recording, a source name, or a pHash within 4 bits, and
+recording. The first 70 percent of images go to train, the next 15 percent
+to valid, and the last 15 percent to test, so valid sits between train and
+test in time. An image is dropped when the first frame of the next split is
+at most 5 frames after it. Recordings under 20 images go whole to train, and
+so do FIRST's official videos in `marswars`. `scorekeeper` joins images that
+share a video recording, a source name, or a pHash within 4 bits, and
 assigns whole groups, largest first, to the split furthest below its target,
 with ties ordered by a seeded hash. A final pass drops any train or valid
-image within 4 bits of a test image, and the run fails if one remains.
-Settings are under `splits` in `configs/project.yaml`.
+image within 4 bits of a test image. The run fails if one remains, or if two
+re-split datasets share a near duplicate. Settings are under `splits` in
+`configs/project.yaml`.
 
-Why. Before choosing, we measured how alike each test frame is to its
-nearest train frame under several candidate splits. With random blocks of
-consecutive frames, a large share of `marswars` test frames had a near
-duplicate in train even with a buffer, because the robot often sits still or
-comes back to the same spot. Cutting each recording in frame order gave test
-frames about as far from train as holding out whole recordings did, while
-keeping every Basler run in test. Frames 5 apart were rarely near
-duplicates. The official videos are edited from many shots, so their last
-frames are a different scene, not later in one run. Cut in frame order, a
-few dense full-field frames held most of A-test's fuel boxes and would have
-set the in-domain score. `scorekeeper` has hundreds of groups, so grouped
-assignment is not lumpy there.
+Why. An exploratory check during planning, which `make harmonize` does not
+reproduce, compared how alike each test frame is to its nearest train frame
+under several candidate splits. With random blocks of consecutive frames,
+many `marswars` test frames had a near duplicate in train even with a
+buffer, because the robot often sits still or comes back to the same spot.
+Cutting each recording in frame order left test frames about as far from
+train as holding out whole recordings did, while keeping every Basler run
+long enough to cut in test. In the same check, frames 5 apart were rarely
+near duplicates. The official videos are edited from many shots, so the end
+of a video shows a different scene, not a later moment of the same run. Cut
+in frame order, a few dense full-field frames held most of A-test's fuel
+boxes and would have set the in-domain score. `scorekeeper` has hundreds of
+groups, so grouped assignment is not lumpy there.
 
-Consequences. Test holds 0 near duplicates of train or valid by
-construction (see `reports/splits.json`). A-test and B-test measure "later
-in the same runs", not "a new run". They share each run's lighting, balls,
-and background with train, which a pixel-similarity check cannot rule out.
-A-test has no official-field frames. Each test split rests on few
-independent scenes (6 recordings for A and 7 for B), so Task 6 should report
-that count and consider a bootstrap over recordings for confidence
-intervals.
+Consequences. By construction, no test image has a near duplicate in train
+or valid. A-test and B-test hold later frames of runs seen in training. They
+share each run's lighting, balls, and background with train, and the pHash
+check cannot detect that kind of similarity. A-test has no official-field
+frames. Each test split rests on few independent scenes (6 recordings for A
+and 7 for B, see `units` in `reports/splits.json`). A-test is thinner than
+that count suggests. One of its recordings has no fuel, and the densest
+Basler run holds most of its fuel boxes. Task 6 should report fuel boxes per
+recording in each test split, and consider error bars from resampling whole
+recordings (a bootstrap).
 
 ## D-014: Keep one augmented copy per scorekeeper photo (2026-09-27)
 
@@ -305,13 +310,13 @@ of each class. From each group the copy with the smallest total box area is
 kept, with ties going to the first file name. Valid and test are not
 augmented and are left alone.
 
-Why. pHash cannot find these copies. During planning, copies of one photo
-were usually as far apart in pHash bits as unrelated images, because
-rotation moves the whole picture. Rotation and exposure changes keep the
-number of boxes of each class, so the name and those counts separate photos
-that share a name. Rotating a box and taking its axis-aligned hull only
-makes it larger, so the smallest total area picks the least rotated copy. A
-contact sheet of copy groups confirmed this.
+Why. pHash cannot find these copies. Rotation moves the whole picture, so
+copies of one photo are often as many bits apart as unrelated images.
+Rotation and exposure changes keep the number of boxes of each class, so the
+name and those counts separate photos that share a name. Rotating a box and
+taking its axis-aligned hull only makes it larger, so the smallest total
+area picks the least rotated copy. We checked this by eye on a few copy
+groups. The contact sheet is not published, since such sheets can show faces.
 
 Consequences. `reports/splits.json` lists the copy group sizes. Most groups
 hold exactly three copies. A few groups of six or nine are different photos
