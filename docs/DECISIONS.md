@@ -164,3 +164,31 @@ the annotation lines and skips the comments.
 
 Consequences. A changed image shows up as a changed directory hash, and
 finding the exact image needs the local manifest.
+
+## D-010: Inspection thresholds and the face policy for sample grids (2026-09-26)
+
+Context. `inspect_datasets.py` needs box-size buckets, a perceptual-hash
+distance for near duplicates, and a rule for which images may appear in the
+published sample grids.
+
+Decision. Box sizes are bucketed by their share of the image area, with
+edges at COCO's small and medium limits (32 and 96 pixels square) scaled to
+a 640 pixel square image. Two images are near duplicates when their 64-bit
+pHashes differ in at most 4 bits. Grid images in which a person's face can
+be made out are listed by file name under `inspect.grid.exclude` in
+`configs/project.yaml`, and distant crowds in overhead broadcast shots are
+kept.
+
+Why. Fractions keep the buckets comparable across datasets whose images
+range from 512 pixels square to 1920 by 1080. For the distance, pHash sets
+exactly half of its bits, so distances are always even. Contact sheets of
+pairs at distance 2 and 4 whose file names came from different videos
+showed the same scene each time, mostly frames of one fixed-camera
+broadcast seconds apart, which is the kind of match that leaks between
+train and test. Faces follow the rule that when unsure, the image is left
+out. Grid sampling shuffles once and skips excluded files, so each
+exclusion swaps in one new image to check instead of a new grid.
+
+Consequences. The near-duplicate counts in `reports/duplicates.json`
+include adjacent video frames, not only re-uploads of the same photo.
+Anyone regenerating the grids with new data has to check the faces again.
