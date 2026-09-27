@@ -276,10 +276,10 @@ def with_limit(at_limit: int, above: int) -> RunResult:
 
 
 def test_run_section_says_when_the_per_image_limit_was_reached() -> None:
-    assert "most predictions kept" not in run_section(clean(result("r1")))
-    assert "most predictions kept" not in run_section(clean(with_limit(0, 0)))
+    assert "reached the limit" not in run_section(clean(result("r1")))
+    assert "reached the limit" not in run_section(clean(with_limit(0, 0)))
     reached = run_section(clean(with_limit(3, 0)))
-    assert "3 of 5 images hold the most predictions kept per image, 25" in reached
+    assert "3 of 5 images reached the limit of 25 predictions per image" in reached
     assert "lower bound" not in reached
     assert "In 2 of them every kept box" in run_section(clean(with_limit(3, 2)))
 
