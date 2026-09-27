@@ -11,7 +11,7 @@ predictions at or above a confidence threshold. A dataset is scored only on
 the classes it labels (``labeled`` in ``reports/class_coverage.json``) that
 the model's training dataset labels too. A robot prediction on a fuel-only
 dataset is neither a hit nor a false positive, and a fuel-only model is not
-scored on robot boxes it was never taught to find.
+scored on robot boxes.
 """
 
 import argparse
@@ -377,17 +377,12 @@ def top_k(predictions: Sequence[Prediction], k: int) -> list[Prediction]:
 def predictions_text(
     predictions: Mapping[str, Sequence[Prediction]], floor: float, per_image: int, max_bytes: int
 ) -> str:
-    """Return the cache file text for each image's most confident predictions.
+    """Return the cache file text for each image's ``per_image`` most confident predictions.
 
-    Each image is one line keyed by file name, so a diff shows which images
-    changed. An image with no predictions is kept with an empty list, which
-    tells it apart from an image that was never run.
-
-    Args:
-        predictions: Predictions keyed by image file name.
-        floor: Predictions below this confidence are left out.
-        per_image: At most this many predictions are kept per image.
-        max_bytes: Size limit for the text.
+    Predictions below ``floor`` are left out. Each image is one line keyed by
+    file name, so a diff shows which images changed. An image with no
+    predictions is kept with an empty list, which tells it apart from an image
+    that was never run.
 
     Raises:
         PredictionCacheTooLargeError: If the text would exceed ``max_bytes``.
@@ -756,6 +751,30 @@ class HostedPredictor:
         return parse_response(response, self._model_name, self._server)
 
 
+class PerImageLimit(_Record):
+    """How often the per-image prediction limit was reached in one run."""
+
+    per_image: int
+    # Images holding exactly ``per_image`` predictions. The cache cannot tell
+    # whether more were dropped, so these are the images that may have lost some.
+    images_at_limit: int
+    # Images at the limit whose least confident kept box is at or above the
+    # threshold, so boxes that would have counted at the threshold were dropped.
+    images_above_threshold: int
+
+
+def per_image_limit(
+    predictions: Sequence[Sequence[Prediction]], per_image: int, confidence: float
+) -> PerImageLimit:
+    """Count the images whose predictions reach ``per_image`` after the limit."""
+    full = [p for p in predictions if len(p) >= per_image]
+    return PerImageLimit(
+        per_image=per_image,
+        images_at_limit=len(full),
+        images_above_threshold=sum(min(x.confidence for x in p) >= confidence for p in full),
+    )
+
+
 class RunResult(_Record):
     """Everything ``metrics.json`` holds for one run."""
 
@@ -768,6 +787,8 @@ class RunResult(_Record):
     scored_classes: list[str]
     # Labeled in the dataset but missing from the model's training data.
     unscored_classes: list[str] = []
+    # None in runs scored before the limit was recorded.
+    per_image_limit: PerImageLimit | None = None
     metrics: EvalMetrics
     units: list[UnitCount]
     bootstrap: BootstrapResult
@@ -965,8 +986,7 @@ def run_evaluation(
     else:
         predictions, source_dirty = _cached_run(cfg.runs_dir / from_cache, model, dataset, split)
         source = from_cache
-    # A cache written before the per-image limit is held to it here, so a
-    # rescore follows the same rule as a live run.
+    # Older caches predate the limit, so rescores apply it too.
     predictions = {n: top_k(p, cfg.max_predictions_per_image) for n, p in predictions.items()}
     detections = align(predictions, names, ds.classes)
 
@@ -987,6 +1007,9 @@ def run_evaluation(
             confidence=cfg.confidence,
             iou=cfg.iou,
             thresholds=cfg.pr_thresholds.values,
+        ),
+        per_image_limit=per_image_limit(
+            [predictions[n] for n in names], cfg.max_predictions_per_image, cfg.confidence
         ),
         units=unit_counts(records, units, scored),
         bootstrap=bootstrap(

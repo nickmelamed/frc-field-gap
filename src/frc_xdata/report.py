@@ -144,9 +144,27 @@ def _unscored_note(r: RunResult) -> list[str]:
     names = " and ".join(r.unscored_classes)
     return [
         "",
-        f"The {names} boxes in {r.dataset} are not scored, since {r.model} was not "
-        f"trained on {names}.",
+        f"The {names} boxes in {r.dataset} are not scored, since {r.model} was never "
+        "trained to find them.",
     ]
+
+
+def _limit_note(r: RunResult) -> list[str]:
+    limit = r.per_image_limit
+    if limit is None or not limit.images_at_limit:
+        return []
+    lines = [
+        "",
+        f"{limit.images_at_limit} of {r.metrics.images} images hold the most predictions "
+        f"kept per image, {limit.per_image}, so fainter boxes may have been dropped there.",
+    ]
+    if limit.images_above_threshold:
+        lines[-1] += (
+            f" In {limit.images_above_threshold} of them every kept box is at or above the "
+            "threshold, so boxes that would have counted at it were dropped, and the "
+            "false positive count at the threshold is a lower bound."
+        )
+    return lines
 
 
 def run_section(run: PublishedRun) -> str:
@@ -165,6 +183,7 @@ def run_section(run: PublishedRun) -> str:
         "",
         *_class_table(m.classes, run),
         *_unscored_note(r),
+        *_limit_note(r),
         "",
         "mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels "
         "and large when it is over 96x96, measured on the original image.",

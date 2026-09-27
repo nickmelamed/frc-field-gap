@@ -14,6 +14,7 @@ from frc_xdata.evaluate import (
     bootstrap,
     image_units,
     load_predictions,
+    per_image_limit,
     save_predictions,
     shared_classes,
     to_detections,
@@ -231,3 +232,10 @@ def test_cache_keeps_only_the_most_confident_boxes_per_image(tmp_path: Path) -> 
     save_predictions(path, predictions, floor=0.01, per_image=3, max_bytes=LIMIT)
     assert [p.confidence for p in load_predictions(path)["a.jpg"]] == [0.9, 0.8, 0.7]
     assert json.loads(path.read_text(encoding="utf-8"))["max_predictions_per_image"] == 3
+
+
+def test_per_image_limit_counts_full_images_and_those_full_above_the_threshold() -> None:
+    faint = [pred(0.9), pred(0.3)]
+    confident = [pred(0.9), pred(0.6)]
+    limit = per_image_limit([faint, confident, [pred(0.9)], []], per_image=2, confidence=0.5)
+    assert (limit.per_image, limit.images_at_limit, limit.images_above_threshold) == (2, 2, 1)
