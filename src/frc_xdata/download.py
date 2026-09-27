@@ -284,6 +284,7 @@ def download_all(
 class _ApiProject(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
+    name: str = ""
     images: int = 0
     classes: dict[str, int] = {}
     splits: dict[str, int] = {}
@@ -338,6 +339,7 @@ class ProjectSummary(_Record):
 
     workspace: str
     project: str
+    name: str
     images: int
     classes: dict[str, int]
     latest_version: int | None
@@ -372,6 +374,7 @@ def summarize_project(workspace: str, project: str, response: Any) -> ProjectSum
     return ProjectSummary(
         workspace=workspace,
         project=project,
+        name=parsed.project.name,
         images=parsed.project.images,
         classes=dict(sorted(parsed.project.classes.items())),
         latest_version=versions[-1].version if versions else None,

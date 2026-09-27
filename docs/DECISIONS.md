@@ -121,7 +121,9 @@ packages to download data.
 
 Context. SPEC section 5 lists five candidates with unverified slugs,
 versions, and classes. `make download ARGS=--resolve` looked each one up on
-2026-09-26 and wrote `reports/dataset_resolution.json`.
+2026-09-26 and wrote `reports/dataset_resolution.json`. The listing of every
+`robot-zftp2` project is in the version of that file committed with the
+pins. Later lookups only cover the pinned projects.
 
 Decision. Pin the latest published version of each project:
 `marswars` version 5, `testingfrfr` version 1, `scorekeeper` version 1,
