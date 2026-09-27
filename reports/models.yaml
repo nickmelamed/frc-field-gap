@@ -9,8 +9,7 @@ models:
     split_report: reports/splits.json
     upload_report: reports/platform_upload_marswars.json
     project: frc-rebuilt-fuel-a
-    # Version 1 had no resize. The training page recommended 384x384 for
-    # RF-DETR Nano, so version 2 adds it and version 1 is unused.
+    # Version 2 adds the 384x384 resize, and version 1 is unused (D-016).
     version: 2
     version_name: harmonized-marswars-noaug-384
     # The workspace part of the model URL is left out, since it is derived

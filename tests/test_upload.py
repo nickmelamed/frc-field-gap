@@ -50,7 +50,7 @@ def write_splits_report(project: ProjectConfig, sizes: dict[str, int]) -> None:
 
 
 def write_export(root: Path, images: dict[str, list[tuple[str, int]]]) -> None:
-    """Write the COCO files of a Roboflow-style export, renamed but keeping the upload name."""
+    """Write a Roboflow-style export whose file names differ from the upload names it records."""
     for split, entries in images.items():
         split_dir = root / split
         records, anns = [], []
@@ -269,8 +269,7 @@ def test_compare_export_refuses_a_name_shared_by_two_splits(
 def test_compare_export_matches_the_names_roboflow_rebuilds(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    # Universe files end in .rf.<hash>, which Roboflow drops on upload along
-    # with a _jpg before it, as seen in a real export of marswars.
+    # Suffixes seen in a real marswars export.
     monkeypatch.chdir(tmp_path)
     dataset = tmp_path / "harmonized"
     names = {

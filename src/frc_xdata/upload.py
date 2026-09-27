@@ -144,10 +144,7 @@ def check_sizes(found: Mapping[str, int], expected: Mapping[str, int]) -> None:
 def field_test_leaks(
     images: Sequence[Path], field_test_dir: Path, max_distance: int
 ) -> list[tuple[Path, Path]]:
-    """Return each ``(image, field-test image)`` pair within ``max_distance`` pHash bits.
-
-    Byte-identical copies hash the same, so they are found too.
-    """
+    """Return each ``(image, field-test image)`` pair within ``max_distance`` pHash bits."""
     field = [path for _, path in field_test_images(field_test_dir)]
     if not field:
         return []
@@ -227,9 +224,8 @@ def _by_key(records: Sequence[ImageRecord]) -> dict[str, ImageRecord]:
 def compare_export(export_dir: Path, dataset_dir: Path, key: str) -> UploadComparison:
     """Match every image in a downloaded version to its harmonized file.
 
-    Exported images are matched by the name Roboflow recorded at upload,
-    through ``match_key``. Missing, moved, and changed images are listed by
-    their harmonized file name, and extra ones by their exported name.
+    Missing, moved, and changed images are listed by their harmonized file
+    name, and extra ones by their exported name.
 
     Raises:
         UploadCheckError: If two harmonized images share a match key, which

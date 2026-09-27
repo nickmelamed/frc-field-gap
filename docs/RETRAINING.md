@@ -1,7 +1,7 @@
 # Training on Roboflow
 
-This page is the procedure for training a model on the Roboflow platform
-from a harmonized dataset, and for recording what the run used. The baseline
+How to train a model on Roboflow from a harmonized dataset and record what
+the run used. The baseline
 (Task 5) is the first run. Later runs, such as the merged model in Task 10,
 follow the same steps with a different dataset key.
 
@@ -29,8 +29,8 @@ training starts.
 
 Open the workspace's billing or usage page in the Roboflow web app and check
 that there are enough training credits for one run of the architecture you
-plan to use. If there are not, pick a smaller architecture (see step 6) and
-note the reason in `reports/models.yaml`.
+plan to use. If there are not, use the fallback for short credits in step 6
+and note the reason in `reports/models.yaml`.
 
 ### 2. Create the project
 
@@ -96,12 +96,12 @@ Generating takes a minute or two. The version number shown on its page is the
 `VERSION` below. Then download the version and check it:
 
 ```bash
-make verify-upload KEY=marswars VERSION=1
+make verify-upload KEY=marswars VERSION=<n>
 ```
 
 This downloads the version in COCO format to `data/platform/`, matches every
-image to its harmonized file by the name Roboflow recorded at upload (which
-drops the `.rf.<hash>` suffix of the uploaded file name), and writes
+image to its harmonized file by file name, ignoring the `.rf.<hash>` suffix
+and `_jpg` tag that Roboflow drops, and writes
 `reports/platform_upload_marswars.json`. It fails if an image is missing,
 appears twice, sits in a different split, or has a different number of
 boxes. The report also holds the preprocessing and augmentation Roboflow
@@ -112,8 +112,9 @@ since the report records the commit it was made from.
 ### 6. Train
 
 Start training from the version page. For the baseline, use RF-DETR Nano,
-which is small enough for the Raspberry Pi in Task 12. RF-DETR Small, or a
-small YOLO model if credits are short, are the fallbacks. Start from the
+which is small enough for the Raspberry Pi in Task 12. If Nano is not
+offered, use RF-DETR Small. If credits are short, use a small YOLO model.
+Start from the
 default pretrained (COCO) checkpoint. Leave any train-time augmentation the
 platform offers switched off for the baseline.
 
@@ -124,7 +125,9 @@ Screenshots are fine as notes, but do not commit them.
 ### 7. Record the run
 
 When training finishes, fill in the model's entry in `reports/models.yaml`:
-the model ID, the version, and every setting from step 6. Commit it together
+the model ID, the version, and every setting from step 6. If the workspace
+part of the model URL is made from an email address, leave it out, since this
+repo is public. Commit it together
 with `reports/platform_upload_<key>.json`. The evaluation in Task 6 reads the
 model ID from there.
 
@@ -141,8 +144,8 @@ differ from run to run, for these reasons.
   generated, so the pixels the model trains on differ slightly from the
   harmonized files. That is why the check matches images by name rather than
   by hash.
-- Uploads are not transactional. A retry can succeed on a second attempt,
-  and the order images arrive in is not fixed.
+- Uploads can partly fail and be retried, and images arrive in no fixed
+  order.
 - The trained weights stay on Roboflow's servers and are not committed. If
   the model is deleted there, the baseline can be retrained with these
   steps, but it will not be the same model.
