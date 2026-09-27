@@ -25,6 +25,9 @@ EVALUATION = Path("docs/EVALUATION.md")
 RESULTS_MARKERS = ("<!-- RESULTS:START -->", "<!-- RESULTS:END -->")
 EVALUATION_MARKERS = ("<!-- EVALUATION:START -->", "<!-- EVALUATION:END -->")
 MISSING = "n/a"
+# The interval level is a setting, not a result, so its line is exempt from
+# the check that every number in the docs appears under reports/.
+NOT_A_RESULT = " <!-- numbers: ok -->"
 # scorekeeper's test split has over a hundred groups, so only the largest are listed.
 MAX_UNITS = 10
 
@@ -93,20 +96,30 @@ def results_table(runs: Sequence[PublishedRun]) -> str:
     if not runs:
         return "TBD. Results appear here once a model has been scored on a whole split."
     lines = [
-        "| Model | Dataset | Split | Images | Class | mAP50 | mAP50-95 | Confidence | "
-        "Precision | Recall | Recall interval |",
-        "|---|---|---|---|---|---|---|---|---|---|---|",
+        "| Model | Dataset | Split | Images | Class | mAP50 | mAP50 interval | mAP50-95 | "
+        "Threshold | Precision | Recall | Recall interval |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for run in runs:
         r, m = run.result, run.result.metrics
         for c in m.classes:
             lines.append(
                 f"| {r.model} | {r.dataset} | {r.split} | {m.images} | {c.name} | "
-                f"{_value(c.map50)} | {_value(c.map50_95)} | {m.confidence} | "
-                f"{_value(c.precision)} | {_value(c.recall)} | "
-                f"{_interval(run, c.name, 'recall')} |"
+                f"{_value(c.map50)} | {_interval(run, c.name, 'map50')} | "
+                f"{_value(c.map50_95)} | {m.confidence} | {_value(c.precision)} | "
+                f"{_value(c.recall)} | {_interval(run, c.name, 'recall')} |"
             )
+    levels = sorted({_percent(run.result.bootstrap.level) for run in runs})
+    lines += [
+        "",
+        f"Intervals hold the middle {' or '.join(levels)} of scores from resampling whole "
+        f"recordings or photo groups, as `docs/EVALUATION.md` explains.{NOT_A_RESULT}",
+    ]
     return "\n".join(lines)
+
+
+def _percent(share: float) -> str:
+    return f"{share:.0%}"
 
 
 def _class_table(classes: Sequence[ClassMetrics], run: PublishedRun) -> list[str]:
@@ -134,20 +147,24 @@ def run_section(run: PublishedRun) -> str:
         "",
         f"Run `{r.run_id}`, scored on {m.images} images. Precision, "
         f"recall, and the confusion matrix count predictions with confidence of at least "
-        f"{m.confidence}. Intervals come from {boot.resamples} resamples of the split's "
-        f"{boot.units} recordings or groups, and hold a {boot.level} share of the resampled "
-        "scores.",
+        f"{m.confidence}.",
+        f"Intervals come from {boot.resamples} resamples of the split's {boot.units} "
+        f"recordings or groups, and hold the middle {_percent(boot.level)} of the resampled "
+        f"scores.{NOT_A_RESULT}",
         "",
         *_class_table(m.classes, run),
         "",
-        "mAP50-95 by labeled box size, in COCO's pixel areas on the original image:",
+        "mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels "
+        "and large when it is over 96x96, measured on the original image.",
         "",
         "| Small | Medium | Large |",
         "|---|---|---|",
         f"| {_value(m.small_map50_95)} | {_value(m.medium_map50_95)} | "
         f"{_value(m.large_map50_95)} |",
         "",
-        "Confusion matrix. Rows are labeled boxes, columns are predictions.",
+        "Confusion matrix. Rows are labeled boxes and columns are predictions. The "
+        "background row holds predictions that matched no labeled box, and the background "
+        "column holds labeled boxes the model missed.",
         "",
         "| | " + " | ".join(m.confusion.labels) + " |",
         "|---" * (len(m.confusion.labels) + 1) + "|",

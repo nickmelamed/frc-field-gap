@@ -33,8 +33,10 @@ from frc_xdata.report import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-# The same pattern scripts/agent/check_numbers.py uses to find reported numbers.
+# The same pattern and exemption scripts/agent/check_numbers.py uses to find
+# reported numbers.
 NUMBER = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?%|\d+\.\d+)(?![\w.]*\d)")
+NOT_A_RESULT = "numbers: ok"
 
 
 def result(
@@ -156,15 +158,17 @@ def published(r: RunResult) -> list[PublishedRun]:
 
 def test_results_table_has_one_row_per_scored_class() -> None:
     table = results_table(published(result("r1")))
-    header, rule, row = table.splitlines()
+    header, rule, row, _, note = table.splitlines()
     assert header.count("|") == rule.count("|") == row.count("|")
     assert row == (
-        "| m | alpha | test | 5 | fuel | 0.912 | 0.604 | 0.5 | 0.933 | 0.875 | 0.714 to 1.0 |"
+        "| m | alpha | test | 5 | fuel | 0.912 | 0.801 to 0.977 | 0.604 | 0.5 | 0.933 | "
+        "0.875 | 0.714 to 1.0 |"
     )
+    assert note.startswith("Intervals hold the middle 95% of scores")
 
 
 def test_undefined_precision_is_shown_as_not_available() -> None:
-    row = results_table(published(result("r1", recall=0.0))).splitlines()[-1]
+    row = results_table(published(result("r1", recall=0.0))).splitlines()[2]
     assert "| n/a |" in row
 
 
@@ -175,9 +179,20 @@ def test_tables_are_placeholders_without_runs() -> None:
 
 def test_every_reported_number_is_stored_in_the_run() -> None:
     r = result("r1")
-    text = results_table(published(r)) + evaluation_sections(published(r))
-    stored = set(NUMBER.findall(r.model_dump_json()))
-    assert set(NUMBER.findall(text)) <= stored
+    text = results_table(published(r)) + "\n" + evaluation_sections(published(r))
+    reported = {
+        n for line in text.splitlines() if NOT_A_RESULT not in line for n in NUMBER.findall(line)
+    }
+    assert reported
+    assert reported <= set(NUMBER.findall(r.model_dump_json()))
+
+
+def test_only_the_interval_level_is_exempt_from_the_numbers_check() -> None:
+    r = result("r1")
+    text = results_table(published(r)) + "\n" + evaluation_sections(published(r))
+    exempt = [line for line in text.splitlines() if NOT_A_RESULT in line]
+    assert len(exempt) == 2
+    assert all(set(NUMBER.findall(line)) == {"95%"} for line in exempt)
 
 
 def test_run_section_lists_the_largest_units_and_sums_the_rest() -> None:
