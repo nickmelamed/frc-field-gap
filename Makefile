@@ -1,4 +1,4 @@
-.PHONY: help setup setup-infer lint typecheck test check requirements agent-check download inspect harmonize upload verify-upload eval
+.PHONY: help setup setup-infer lint typecheck test check requirements agent-check download inspect harmonize upload verify-upload eval report
 
 help:  ## List targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -47,3 +47,6 @@ verify-upload:  ## Download Roboflow VERSION of KEY and check it image by image
 
 eval:  ## Score MODEL on DATASET's SPLIT (default test) into reports/runs/ (ARGS=--limit 10)
 	uv run frc-evaluate $(MODEL) $(DATASET) --split $(or $(SPLIT),test) $(ARGS)
+
+report:  ## Rebuild the README results table and docs/EVALUATION.md from reports/runs/
+	uv run frc-report $(ARGS)
