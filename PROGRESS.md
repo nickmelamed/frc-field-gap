@@ -56,7 +56,27 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     and are proposed as DROP. `testingfrfr` is an aggregate of the others and
     is left out of evaluation. The duplicate counts miss flipped and rotated
     copies, so they are lower bounds.
-- [ ] Task 4: Harmonize + splits (Sat Sept 26)
+- [x] Task 4: Harmonize + splits (Sat Sept 26)
+  - `make harmonize` maps labels to fuel and robot (D-012), re-splits A, B,
+    and C, and writes `data/harmonized/<key>/<split>/`, which loads with
+    `sv.DetectionDataset.from_coco`. `marswars` and `robotzftp2` are cut by
+    frame order within each recording, and `scorekeeper` keeps one copy per
+    photo and is split by related-image groups (D-013, D-014). Reports are
+    `reports/splits.json`, `reports/class_coverage.json`, and
+    `reports/harmonize_counts.csv`.
+  - Differences from SPEC section 7. None of the Roboflow splits was worth
+    keeping, so all three chosen datasets are re-split. `splits.py` is a
+    library that `frc-harmonize` calls, so there is one command. A
+    test/train near duplicate raises the new `SplitLeakError`, since
+    `DataLeakError` means a field-test image. FIRST's official videos in
+    `marswars` go whole to train. `testingfrfr` and `robotzftp2_fuel` are
+    harmonized but keep their own splits. Flip- and rotation-aware hashing
+    waits for `merge.py`, because none of A, B, or C has such copies.
+  - For Task 5 and 6. Nick uploads `data/harmonized/marswars/` with its
+    splits as they are. Evaluation reads `labeled` in
+    `reports/class_coverage.json` to skip robot on fuel-only datasets, and
+    should report the recordings or groups behind each test split (`units`
+    in `reports/splits.json`).
 - [ ] Task 5: Baseline training (start Sat night, Nick runs on platform)
 - [ ] Task 6: Eval harness + report generation (Sat Sept 26)
 - [ ] Task 7: Cross-dataset results (Sun Sept 27)
