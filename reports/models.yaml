@@ -20,7 +20,7 @@ models:
     input_size: 384x384 (Stretch to)
     preprocessing: auto-orient, resize 384x384 (Stretch to)
     augmentation: none
-    train_time_augmentation: null
+    train_time_augmentation: none
     # As shown on the training page before the run started.
     estimate:
       credits: 1.31
