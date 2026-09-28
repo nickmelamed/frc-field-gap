@@ -1,9 +1,10 @@
 """Build the README results table and the tables in docs/EVALUATION.md.
 
-``frc-report`` reads every run under ``reports/runs/`` and rewrites only the
-text between each document's start and end markers. A run is published when
-it scored a whole split from a clean working tree. For each model, dataset,
-and split, the newest such run is used. Values are printed exactly as the run
+``frc-report`` reads every run under ``reports/runs/`` and every diagnosis
+under ``reports/diagnosis/``, and rewrites only the text between each
+document's start and end markers. A run is published when it scored a whole
+split from a clean working tree. For each model, dataset, and split, the
+newest such run is used. Values are printed exactly as the run or diagnosis
 stored them, so every number in the docs can be found under ``reports/``.
 """
 
@@ -13,6 +14,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from frc_xdata.config import ProjectConfig, load_yaml
+from frc_xdata.diagnose import DIAGNOSIS_NAME, FALSE_POSITIVE_KINDS, Diagnosis, load_diagnosis
 from frc_xdata.download import PROJECT_CONFIG
 from frc_xdata.errors import ConfigError
 from frc_xdata.evaluate import ClassMetrics, RunResult
@@ -23,6 +25,14 @@ README = Path("README.md")
 EVALUATION = Path("docs/EVALUATION.md")
 RESULTS_MARKERS = ("<!-- RESULTS:START -->", "<!-- RESULTS:END -->")
 EVALUATION_MARKERS = ("<!-- EVALUATION:START -->", "<!-- EVALUATION:END -->")
+DIAGNOSIS_MARKERS = ("<!-- DIAGNOSIS:START -->", "<!-- DIAGNOSIS:END -->")
+ERROR_PLURALS = {"false positive": "false positives", "miss": "misses"}
+FALSE_POSITIVE_KIND_NAMES = {
+    "duplicate": "Duplicate",
+    "localization": "Localization",
+    "inside_unscored": "Inside an unscored label",
+    "background": "Background",
+}
 MISSING = "n/a"
 # The interval level is a setting, not a result, so its line is exempt from
 # the check that every number in the docs appears under reports/.
@@ -198,6 +208,232 @@ def evaluation_sections(runs: Sequence[PublishedRun]) -> str:
     return "\n\n".join(run_section(run) for run in runs)
 
 
+def load_diagnoses(diagnosis_dir: Path) -> list[Diagnosis]:
+    """Read every model's diagnosis, in model order."""
+    if not diagnosis_dir.is_dir():
+        return []
+    return [load_diagnosis(p) for p in sorted(diagnosis_dir.glob(f"*/{DIAGNOSIS_NAME}"))]
+
+
+def _row(cells: Sequence[object]) -> str:
+    return "| " + " | ".join(str(c) for c in cells) + " |"
+
+
+def _header(cells: Sequence[str]) -> list[str]:
+    return [_row(cells), "|" + "---|" * len(cells)]
+
+
+def _split_label(d: Diagnosis, dataset: str, class_name: str) -> str:
+    """Name a split's rows by dataset, and by class when more than one is scored."""
+    several = any(len(s.classes) > 1 for s in d.splits)
+    return f"{dataset} {class_name}" if several else dataset
+
+
+def _slice_tables(d: Diagnosis) -> list[str]:
+    order: list[str] = []
+    for s in d.splits:
+        for c in s.classes:
+            order += [x.by for x in c.slicings if x.by not in order]
+    lines = []
+    for by in order:
+        title = by[0].upper() + by[1:]
+        lines += [
+            "",
+            f"{title}:",
+            "",
+            *_header(
+                [
+                    "Dataset",
+                    title,
+                    "Images",
+                    "Labeled boxes",
+                    "Hits",
+                    "False positives",
+                    "Misses",
+                    "Precision",
+                    "Recall",
+                    "mAP50",
+                    "False positives per image",
+                ]
+            ),
+        ]
+        for s in d.splits:
+            for c in s.classes:
+                for sl in (x for x in c.slicings if x.by == by):
+                    for x in sl.slices:
+                        lines.append(
+                            _row(
+                                [
+                                    _split_label(d, s.dataset, c.name),
+                                    x.name,
+                                    x.images,
+                                    x.labeled,
+                                    x.hits,
+                                    x.false_positives,
+                                    x.misses,
+                                    _value(x.precision),
+                                    _value(x.recall),
+                                    _value(x.map50),
+                                    x.false_positives_per_image,
+                                ]
+                            )
+                        )
+    return lines
+
+
+def _size_table(d: Diagnosis) -> list[str]:
+    b = d.area_buckets
+    lines = [
+        "",
+        f"By relative box size. A box is small when it covers less than {b.small_max} of "
+        f"the image area, medium below {b.medium_max}, and large otherwise. Labeled boxes "
+        "are sized by their label and false positives by their own box.",
+        "",
+        *_header(["Dataset", "Size", "Labeled boxes", "Hits", "Recall", "False positives"]),
+    ]
+    for s in d.splits:
+        for c in s.classes:
+            for r in c.sizes:
+                lines.append(
+                    _row(
+                        [
+                            _split_label(d, s.dataset, c.name),
+                            r.bucket,
+                            r.labeled,
+                            r.hits,
+                            _value(r.recall),
+                            r.false_positives,
+                        ]
+                    )
+                )
+    return lines
+
+
+def _kind_table(d: Diagnosis) -> list[str]:
+    lines = [
+        "",
+        "False positives by why they matched no label. A duplicate overlaps a label that "
+        "another prediction already took. A localization error overlaps a label by more than "
+        f"{d.localization_floor} IoU, but not enough to count. One inside an unscored label "
+        "has its center inside a box of a class the model is not scored on, such as a robot. "
+        "The rest are background.",
+        "",
+        *_header(["Dataset", *(FALSE_POSITIVE_KIND_NAMES[k] for k in FALSE_POSITIVE_KINDS)]),
+    ]
+    for s in d.splits:
+        for c in s.classes:
+            kinds = c.overall.false_positive_kinds
+            lines.append(
+                _row(
+                    [_split_label(d, s.dataset, c.name), *(kinds[k] for k in FALSE_POSITIVE_KINDS)]
+                )
+            )
+    return lines
+
+
+def _quantiles(values: Sequence[float]) -> str:
+    return " / ".join(str(v) for v in values) if values else MISSING
+
+
+def _domain_table(d: Diagnosis) -> list[str]:
+    qs = ", ".join(str(q) for q in d.quantiles)
+    lines = [
+        "",
+        f"The model's training split next to each test split. Each cell gives the quantiles "
+        f"{qs}. Box side is the side of a square with the box's share of the image area, as "
+        "a fraction of the image side.",
+        "",
+        *_header(
+            [
+                "Split",
+                "Role",
+                "Images",
+                "Labeled boxes",
+                "Brightness",
+                "Sharpness",
+                "Box side",
+                "Boxes per image",
+            ]
+        ),
+    ]
+    for f in d.domain:
+        lines.append(
+            _row(
+                [
+                    f"{f.dataset} {f.split}",
+                    f.role,
+                    f.images,
+                    f.boxes,
+                    _quantiles(f.brightness),
+                    _quantiles(f.sharpness),
+                    _quantiles(f.box_side),
+                    _quantiles(f.boxes_per_image),
+                ]
+            )
+        )
+    return lines
+
+
+def _review_table(d: Diagnosis) -> list[str]:
+    if not d.review:
+        return ["", "No errors have been reviewed by eye yet."]
+    verdicts: list[str] = []
+    for r in d.review:
+        verdicts += [v for v in r.verdicts if v not in verdicts]
+    groups = [f"{r.dataset} {ERROR_PLURALS.get(r.kind, r.kind)}" for r in d.review]
+    lines = [
+        "",
+        "Errors judged by eye. Where a split has more errors than were reviewed, the reviewed "
+        "ones are a seeded random sample.",
+        "",
+        *_header(["Verdict", *groups]),
+        _row(["Errors", *(r.total for r in d.review)]),
+        _row(["Reviewed", *(r.sampled for r in d.review)]),
+    ]
+    lines += [_row([v, *(r.verdicts.get(v, 0) for r in d.review)]) for v in verdicts]
+    return lines
+
+
+def _gallery_table(d: Diagnosis) -> list[str]:
+    if not d.gallery:
+        return []
+    return [
+        "",
+        "The failure gallery, tile by tile from the top left:",
+        "",
+        *_header(["Tile", "Dataset", "Error", "Source"]),
+        *(_row([n, t.dataset, t.kind, f"`{t.source}`"]) for n, t in enumerate(d.gallery, start=1)),
+    ]
+
+
+def diagnosis_section(d: Diagnosis) -> str:
+    """Return the EVALUATION.md section for one model's diagnosis."""
+    lines = [
+        f"### Where {d.model}'s errors fall",
+        "",
+        f"Hits, false positives, and misses count predictions with confidence of at least "
+        f"{d.confidence}, matched to labels as the confusion matrix matches them. Brightness "
+        "is the mean gray level from 0 to 255 and sharpness the variance of the Laplacian, "
+        f"both measured on the image stretched to {d.feature_px} pixels square, as the model "
+        "sees it. Their bins hold equal numbers of images, pooled over every test split, so a "
+        "bin can hold few images of one dataset.",
+        *_slice_tables(d),
+        *_size_table(d),
+        *_kind_table(d),
+        *_domain_table(d),
+        *_review_table(d),
+        *_gallery_table(d),
+    ]
+    return "\n".join(lines)
+
+
+def diagnosis_sections(diagnoses: Sequence[Diagnosis]) -> str:
+    """Return the generated diagnosis part of EVALUATION.md."""
+    if not diagnoses:
+        return "No model has been diagnosed yet."
+    return "\n\n".join(diagnosis_section(d) for d in diagnoses)
+
+
 def replace_between(text: str, markers: tuple[str, str], body: str) -> str:
     """Return ``text`` with everything between the two markers replaced by ``body``.
 
@@ -216,19 +452,30 @@ def replace_between(text: str, markers: tuple[str, str], body: str) -> str:
     return f"{head}{start}\n{body}\n{end}{tail}"
 
 
-def write_report(runs_dir: Path, readme: Path, evaluation: Path) -> list[Path]:
-    """Rewrite the generated parts of both documents and return the ones that changed."""
+def write_report(
+    runs_dir: Path, readme: Path, evaluation: Path, diagnosis_dir: Path | None = None
+) -> list[Path]:
+    """Rewrite the generated parts of both documents and return the ones that changed.
+
+    The diagnosis part is written only once a diagnosis exists under
+    ``diagnosis_dir``.
+    """
     runs = select_runs(load_runs(runs_dir))
-    changed = []
-    for path, markers, body in (
+    diagnoses = [] if diagnosis_dir is None else load_diagnoses(diagnosis_dir)
+    parts = [
         (readme, RESULTS_MARKERS, results_table(runs)),
         (evaluation, EVALUATION_MARKERS, evaluation_sections(runs)),
-    ):
+    ]
+    if diagnoses:
+        parts.append((evaluation, DIAGNOSIS_MARKERS, diagnosis_sections(diagnoses)))
+    changed: list[Path] = []
+    for path, markers, body in parts:
         old = path.read_text(encoding="utf-8")
         new = replace_between(old, markers, body)
         if new != old:
             path.write_text(new, encoding="utf-8")
-            changed.append(path)
+            if path not in changed:
+                changed.append(path)
     logger.info("%d runs published, changed: %s", len(runs), [str(p) for p in changed] or "none")
     return changed
 
@@ -241,5 +488,5 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     setup_logging(args.log_level)
     project = load_yaml(args.project_config, ProjectConfig)
-    write_report(project.evaluate.runs_dir, README, EVALUATION)
+    write_report(project.evaluate.runs_dir, README, EVALUATION, project.diagnose.output_dir)
     return 0
