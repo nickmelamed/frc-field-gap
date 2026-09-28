@@ -608,13 +608,15 @@ new run folder, so the next rescore starts from a clean tree without
 `--allow-dirty`. A live call is left as an optional, commented-out cell
 that installs `inference-sdk` alone.
 
-Why. A rescore needs no API key and no inference client, and it
+Why. A rescore needs no model access and no inference client, and it
 reproduces the published scores exactly (D-018), so anyone can check them.
 The notebook's name differs from SPEC section 6's `train_and_eval.ipynb`,
 since training runs on the platform and isn't in the notebook.
 
 Consequences. The notebook checks the data pipeline and the scoring, not
 the model's predictions, which only the training workspace can make again.
-Run on this branch from a fresh clone and a new Python 3.11 environment,
-all three published runs matched. The Colab-only cells (secrets and the
-Colab runtime) were not run before the release.
+From a fresh clone in a new Python 3.11 environment, all three published
+runs matched. The Colab-only cells (secrets and the Colab runtime) have not
+been run on Colab. `frc-download` exits with a failure for `lava`, which
+has no published version, so the notebook and the write-up say to carry on
+after it.
