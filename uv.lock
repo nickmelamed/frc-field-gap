@@ -1230,6 +1230,7 @@ version = "0.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "imagehash" },
+    { name = "matplotlib" },
     { name = "numpy" },
     { name = "pillow" },
     { name = "pydantic" },
@@ -1258,6 +1259,7 @@ dev = [
 requires-dist = [
     { name = "imagehash", specifier = ">=4.3,<5" },
     { name = "inference", marker = "extra == 'infer'", specifier = ">=1.7,<1.8" },
+    { name = "matplotlib", specifier = ">=3.10,<3.12" },
     { name = "numpy", specifier = ">=2.0,<2.4" },
     { name = "pillow", specifier = ">=10.0" },
     { name = "pydantic", specifier = ">=2.8,<2.12" },

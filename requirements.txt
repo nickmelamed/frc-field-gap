@@ -44,6 +44,7 @@ markdown-it-py==4.2.0
     # via rich
 matplotlib==3.11.2
     # via
+    #   frc-xdata
     #   roboflow
     #   supervision
 mdurl==0.1.2
