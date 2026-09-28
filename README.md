@@ -38,8 +38,8 @@ Do not edit it by hand.
 Intervals hold the middle 95% of scores from resampling whole recordings or photo groups, as `docs/EVALUATION.md` explains. <!-- numbers: ok -->
 <!-- RESULTS:END -->
 
-`docs/WRITEUP.md` tells the story behind these numbers, including why the
-baseline draws fuel on people in `scorekeeper`. `docs/MODEL_CARD.md`
+`docs/WRITEUP.md` explains these numbers, including why the baseline
+draws fuel on people in `scorekeeper`. `docs/MODEL_CARD.md`
 describes the model and its limits, and `docs/EVALUATION.md` has every
 table and the full diagnosis.
 

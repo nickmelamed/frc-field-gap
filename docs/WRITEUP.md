@@ -1,24 +1,24 @@
-# A fuel detector that sees fuel in the crowd
+# Why a fuel detector sees fuel in the crowd
 
 Draft for v0.1.0. It covers the first three steps of the project: training
 a baseline, scoring it on other teams' data, and working out why it fails.
 The fix and the Raspberry Pi deployment come in later releases. Every
-number here is copied from the tables that `make report` generates, and
-`docs/EVALUATION.md` has the full tables.
+number here comes from the tables that `make report` generates, and
+`docs/EVALUATION.md` has them in full.
 
 ## The short version
 
 A detector trained on one FRC team's footage of the 2026 game piece, fuel,
 did as well on a second team's footage as on its own. On a third team's
-dataset it found every labeled ball but also drew 1083 boxes on things that
-aren't fuel, and precision fell to 0.257. Looking at a random 40 of those
-boxes, 30 were on people, mostly heads in the crowd of a match broadcast
-and spectators in yellow shirts. Seven more were balls from earlier FRC
-games.
+dataset it found all 375 labeled balls but also drew 1083 boxes on things
+that aren't fuel. Looking at a random 40 of those boxes, 30 were on people,
+such as heads in a broadcast crowd and spectators in yellow or orange
+shirts. Seven more were balls from earlier FRC games.
 
-The model never saw a crowd during training, so it never learned that a
-round yellow blob in the stands isn't fuel. The second dataset looked easy
-for a similar reason. Its balls are large, and most images hold just one.
+Most of the training frames show a school shop and hallway, so the model
+had little chance to learn that a round yellow blob in the stands isn't
+fuel. The second dataset scored well for a different reason. Its balls are
+large, and most images hold just one.
 
 ## Why this question
 
@@ -47,14 +47,16 @@ one).
 
 Each dataset names its classes differently, so every label was mapped to
 one of two classes, fuel and robot, and anything else was dropped (D-012).
-The datasets' own splits leaked, with neighboring video frames in both
-train and test, so each one was re-split. A and B are cut by frame order
+The datasets' own splits put neighboring video frames in both train and
+test, so a model would be tested on near copies of its training images.
+Each one was re-split. A and B are cut by frame order
 within each recording, with a gap of dropped frames between train and test,
 and C by groups of related photos (D-013).
 
-The baseline, baseline-a, is RF-DETR Nano trained on A's training split
-with Roboflow's hosted training, at 384x384 and with no augmentation
-(D-016). A labels fuel only, so baseline-a finds fuel only, and it is
+The baseline, baseline-a, is RF-DETR Nano, a small detector from Roboflow,
+trained on A's training split with Roboflow's hosted training. Images were
+shrunk to 384x384, and training added no random flips, crops, or color
+changes (D-016). A labels fuel only, so baseline-a finds fuel only, and it is
 scored on fuel only everywhere (D-019).
 
 ## How detectors are scored
@@ -69,14 +71,16 @@ area they share is more than half the area they cover together.
   means it misses fuel.
 - mAP50 sorts the boxes by confidence and measures how precise the model
   stays as it finds more of the labeled balls. It is 1 when every ball is
-  found before any wrong box.
+  found before any wrong box. The 50 refers to the overlap rule above.
 
 Precision and recall below count boxes with a confidence of at least 0.5.
-mAP50 uses all of them.
+mAP50 uses each image's 25 most confident boxes, down to a confidence of
+0.01.
 
 Each test split comes from a handful of recordings, and frames from one
 recording look alike. So each mAP50 comes with an interval, found by
-resampling whole recordings and scoring again. A wide interval means the
+drawing random sets of whole recordings, with repeats, many times and
+scoring each set. A wide interval means the
 score depends heavily on which recordings ended up in test.
 
 ## Results
@@ -91,16 +95,16 @@ On A, its own dataset, the model does well, but that score is optimistic.
 A's test split holds later frames of the same recordings it trained on.
 
 B was expected to be harder, with a different camera, room, and lighting.
-Instead it scores higher than A.
+Instead it scores as well as A.
 
 C drops. Its mAP50 interval doesn't overlap A's, so the drop is larger than
 the choice of test photos would explain. Every labeled ball is found, so
-the whole drop comes from wrong boxes. Raising the threshold to 0.8 helps
-only partway, with precision 0.724 and recall 0.981.
+the whole drop comes from wrong boxes. Counting only boxes with a confidence
+of 0.8 or more helps only partway, with precision 0.724 and recall 0.981.
 
 ## Why it fails where it does
 
-Every error was matched back to its image and sliced by source, box size,
+Every error was matched back to its image and grouped by source, box size,
 crowding, brightness, and sharpness. Then errors were judged by eye, every
 one on A and B and a random 40 on C (D-021).
 
@@ -112,11 +116,12 @@ Of C's 1083 wrong boxes, 1012 fall on the 283 test images with no fuel
 label, the pit photos and match broadcasts. One source, a 2024 broadcast
 from Milford, gives 632 of them. Of the 40 checked by eye, 30 are people
 and 7 are balls from earlier games. A head in a broadcast frame is about
-the size of a ball, and a yellow shirt is the color of fuel.
+the size of a ball, and a yellow or orange shirt is close to the color of
+fuel.
 
 The other 3 are real fuel that C's labels missed, each in a tight cluster
 next to labeled balls. On C's 31 fuel photos, 60 of the 71 wrong boxes
-overlap a label without matching it. C's clusters may be labeled less
+touch a labeled ball but overlap it less than the half needed to count. C's clusters may be labeled less
 completely than A's, which would make C's fuel photos score a little too
 low. Three balls are too few to say how often it happens.
 
@@ -124,9 +129,10 @@ low. Three balls are too few to say how often it happens.
 
 ![Training split against each test split](assets/diagnosis_baseline-a_domain.png)
 
-The median box side in B-test is 0.148 of the image side, against 0.044 in
-A's training split. B-test has one ball per image at the median, where A's
-training split has 2 and, at the 90th percentile, 17. One large ball in
+The median box side in B's test split is 0.148 of the image side, against
+0.044 in A's training split. B's test split has one ball per image at the
+median. A's training split has 2 at the median and 17 at the 90th
+percentile. One large ball in
 the middle of the frame is an easy case, so B scoring as well as A says
 little about how close the two datasets are. Of B's 13 wrong boxes, 12 are
 other yellow objects in the room, such as the cap of a vacuum cleaner.
@@ -155,11 +161,12 @@ every frame of it shows spectators close to the camera.
 
 The largest error on other teams' data is fuel drawn on people and on
 other games' balls. The merged model in v0.2.0 will train on images of
-crowds, pits, and old game pieces with no fuel label, and the per-source
-slices will show whether that worked. It also needs a rule for how much of
+crowds, pits, and old game pieces with no fuel label, and the results
+for each source will show whether that worked. It also needs a rule for how much of
 an edge ball to label, applied to every dataset, and C's unlabeled clusters
-fixed or left out before C is used for training. A lockbox dataset, picked
-after v0.1.0 and kept out of all training, will check the fix (D-022).
+fixed or left out before C is used for training. A held-back dataset, picked
+after v0.1.0, kept out of all training, and scored only once, will check
+the fix (D-022).
 
 After that come a confidence threshold picked for the robot, where a
 missed ball and a wasted pickup cost different things, and a Raspberry Pi
@@ -177,8 +184,9 @@ intervals are wide. C's scores are bounds. Each image keeps its 25 most
 confident boxes (D-020), which on C dropped only wrong boxes, so C's true
 mAP50 is at most 0.836 and its wrong boxes at least 1083. The verdicts are
 one person's first pass, and on C they cover 40 of 1083 boxes, so they
-show which errors happen more than exactly how often. Slices have no
-intervals, and several rest on one recording.
+show which kinds of error are common, not their exact rates. The results
+by source, size, and the rest have no intervals, and several rest on one
+recording.
 
 The model was trained on Roboflow's platform, which can't be repeated bit
 for bit. Everything after training can be. The predictions are cached in
@@ -193,9 +201,14 @@ for the download only. On your own machine:
 
 ```bash
 make setup
-make download harmonize          # needs ROBOFLOW_API_KEY in .env
-make report                      # rebuilds the tables and figures
+make download    # needs ROBOFLOW_API_KEY in .env
+make harmonize
+make report      # rebuilds the tables and figures from reports/
 ```
+
+`make download` ends with an error for `lava`, a candidate dataset with no
+published version, and exits with a failure code. The other datasets are
+still downloaded, so carry on with `make harmonize`.
 
 `docs/EVALUATION.md` explains how to score a model live, and
 `docs/RETRAINING.md` how the baseline was trained. The datasets are

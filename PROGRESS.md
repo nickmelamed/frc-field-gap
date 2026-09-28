@@ -164,8 +164,8 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     clustered fuel. The D-020 limit still counts every predicted class
     before unscored ones are dropped.
 - [ ] Task 9: Draft write-up + v0.1.0 (Tue to Wed Sept 29 to 30)
-  - `docs/WRITEUP.md` tells the baseline, cross-dataset, and diagnosis
-    steps, and is checked by check_numbers. `docs/MODEL_CARD.md` is a
+  - `docs/WRITEUP.md` covers the baseline, the cross-dataset scores, and
+    the diagnosis, and check_numbers checks it. `docs/MODEL_CARD.md` is a
     first draft. `notebooks/reproduce_baseline.ipynb` downloads,
     harmonizes, and rescores the committed predictions on Colab (D-023).
     The package version is 0.1.0. The tag and the GitHub Release wait for
@@ -177,7 +177,10 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     fresh clone in a new Python 3.11 environment, but its Colab-only cells
     have not been run on Colab.
   - For Nick. Run the notebook on Colab once after tagging, since it clones
-    `v0.1.0`.
+    `v0.1.0`. `frc-download` exits 1 on every run, because `lava` has no
+    pinned version and counts as a failure, so `make download harmonize`
+    stops after the download. The docs say to carry on. Skipping unpinned
+    entries instead of failing them would be a separate fix.
 - [ ] Task 10: Merged-data fix (v0.2.0)
 - [ ] Task 11: Threshold choice (v0.2.0)
 - [ ] Task 12: Edge deployment (v0.3.0, before interviews)
