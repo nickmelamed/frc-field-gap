@@ -328,3 +328,158 @@ Recordings or groups with the most labeled boxes:
 
 The other 99 hold 289 images and 66 fuel boxes.
 <!-- EVALUATION:END -->
+
+## Diagnosis
+
+Everything between the `DIAGNOSIS` markers is written by `make report` from
+`reports/diagnosis/`, which `make diagnose MODEL=<model>` makes from the
+published runs' cached predictions. Do not edit it by hand.
+
+<!-- DIAGNOSIS:START -->
+### Where baseline-a's errors fall
+
+Hits, false positives, and misses count predictions with confidence of at least 0.5, matched to labels as the confusion matrix matches them. Brightness is the mean gray level from 0 to 255 and sharpness the variance of the Laplacian, both measured on the image stretched to 384 pixels square, as the model sees it. Their bins hold equal numbers of images, pooled over every test split, so a bin can hold few images of one dataset.
+
+Brightness:
+
+| Dataset | Brightness | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| marswars | below 107.8 | 81 | 142 | 130 | 4 | 12 | 0.97 | 0.915 | 0.938 | 0.049 |
+| marswars | 107.8 to 115.6 | 42 | 252 | 233 | 10 | 19 | 0.959 | 0.925 | 0.936 | 0.238 |
+| marswars | 115.6 and above | 48 | 61 | 59 | 2 | 2 | 0.967 | 0.967 | 0.968 | 0.042 |
+| robotzftp2 | below 107.8 | 96 | 100 | 91 | 8 | 9 | 0.919 | 0.91 | 0.987 | 0.083 |
+| robotzftp2 | 107.8 to 115.6 | 62 | 106 | 105 | 5 | 1 | 0.955 | 0.991 | 0.994 | 0.081 |
+| robotzftp2 | 115.6 and above | 128 | 170 | 170 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| scorekeeper | below 107.8 | 81 | 113 | 113 | 241 | 0 | 0.319 | 1.0 | 0.785 | 2.975 |
+| scorekeeper | 107.8 to 115.6 | 149 | 105 | 105 | 581 | 0 | 0.153 | 1.0 | 0.931 | 3.899 |
+| scorekeeper | 115.6 and above | 84 | 157 | 157 | 261 | 0 | 0.376 | 1.0 | 0.857 | 3.107 |
+
+Sharpness:
+
+| Dataset | Sharpness | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| marswars | below 170.9 | 58 | 296 | 271 | 10 | 25 | 0.964 | 0.916 | 0.936 | 0.172 |
+| marswars | 170.9 to 695.3 | 113 | 159 | 151 | 6 | 8 | 0.962 | 0.95 | 0.953 | 0.053 |
+| robotzftp2 | below 170.9 | 160 | 180 | 176 | 4 | 4 | 0.978 | 0.978 | 0.998 | 0.025 |
+| robotzftp2 | 170.9 to 695.3 | 94 | 136 | 132 | 4 | 4 | 0.971 | 0.971 | 0.995 | 0.043 |
+| robotzftp2 | 695.3 and above | 32 | 60 | 58 | 5 | 2 | 0.921 | 0.967 | 0.989 | 0.156 |
+| scorekeeper | below 170.9 | 38 | 375 | 375 | 74 | 0 | 0.835 | 1.0 | 0.886 | 1.947 |
+| scorekeeper | 170.9 to 695.3 | 51 | 0 | 0 | 70 | 0 | 0.0 | n/a | n/a | 1.373 |
+| scorekeeper | 695.3 and above | 225 | 0 | 0 | 939 | 0 | 0.0 | n/a | n/a | 4.173 |
+
+Labeled fuel per image:
+
+| Dataset | Labeled fuel per image | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| marswars | 0 | 35 | 0 | 0 | 1 | 0 | 0.0 | n/a | n/a | 0.029 |
+| marswars | 1 | 37 | 37 | 36 | 1 | 1 | 0.973 | 0.973 | 0.999 | 0.027 |
+| marswars | 2 to 4 | 75 | 151 | 150 | 1 | 1 | 0.993 | 0.993 | 0.986 | 0.013 |
+| marswars | 5 to 9 | 7 | 51 | 39 | 4 | 12 | 0.907 | 0.765 | 0.828 | 0.571 |
+| marswars | 10 or more | 17 | 216 | 197 | 9 | 19 | 0.956 | 0.912 | 0.926 | 0.529 |
+| robotzftp2 | 0 | 17 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| robotzftp2 | 1 | 162 | 162 | 158 | 7 | 4 | 0.958 | 0.975 | 0.996 | 0.043 |
+| robotzftp2 | 2 to 4 | 107 | 214 | 208 | 6 | 6 | 0.972 | 0.972 | 0.994 | 0.056 |
+| scorekeeper | 0 | 283 | 0 | 0 | 1012 | 0 | 0.0 | n/a | n/a | 3.576 |
+| scorekeeper | 5 to 9 | 2 | 18 | 18 | 8 | 0 | 0.692 | 1.0 | 0.875 | 4.0 |
+| scorekeeper | 10 or more | 29 | 357 | 357 | 63 | 0 | 0.85 | 1.0 | 0.903 | 2.172 |
+
+Has labeled fuel:
+
+| Dataset | Has labeled fuel | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| marswars | yes | 136 | 455 | 422 | 15 | 33 | 0.966 | 0.927 | 0.936 | 0.11 |
+| marswars | no | 35 | 0 | 0 | 1 | 0 | 0.0 | n/a | n/a | 0.029 |
+| robotzftp2 | yes | 269 | 376 | 366 | 13 | 10 | 0.966 | 0.973 | 0.994 | 0.048 |
+| robotzftp2 | no | 17 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper | yes | 31 | 375 | 375 | 71 | 0 | 0.841 | 1.0 | 0.889 | 2.29 |
+| scorekeeper | no | 283 | 0 | 0 | 1012 | 0 | 0.0 | n/a | n/a | 3.576 |
+
+Source:
+
+| Dataset | Source | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| marswars | Basler_daA1280-54uc__24770352__20260112_180305685 | 23 | 16 | 15 | 1 | 1 | 0.938 | 0.938 | 0.996 | 0.043 |
+| marswars | Basler_daA1280-54uc__24770352__20260112_180602871 | 10 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| marswars | Basler_daA1280-54uc__24770352__20260112_180633579 | 21 | 32 | 32 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| marswars | Basler_daA1280-54uc__24770352__20260112_180745507 | 26 | 33 | 33 | 1 | 0 | 0.971 | 1.0 | 0.999 | 0.038 |
+| marswars | Basler_daA1280-54uc__24770352__20260112_180938780 | 22 | 39 | 39 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| marswars | Basler_daA1280-54uc__24770352__20260112_181311364 | 69 | 335 | 303 | 14 | 32 | 0.956 | 0.904 | 0.922 | 0.203 |
+| robotzftp2 | IMG_5833_MOV | 79 | 129 | 129 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 | IMG_5834_MOV | 14 | 14 | 14 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 | IMG_5835_MOV | 65 | 117 | 111 | 8 | 6 | 0.933 | 0.949 | 0.985 | 0.123 |
+| robotzftp2 | IMG_5836_MOV | 35 | 35 | 31 | 1 | 4 | 0.969 | 0.886 | 0.994 | 0.029 |
+| robotzftp2 | IMG_5837_MOV | 20 | 20 | 20 | 2 | 0 | 0.909 | 1.0 | 1.0 | 0.1 |
+| robotzftp2 | IMG_5838_MOV | 29 | 25 | 25 | 2 | 0 | 0.926 | 1.0 | 1.0 | 0.069 |
+| robotzftp2 | IMG_5839_MOV | 44 | 36 | 36 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| scorekeeper | fuel photos | 31 | 375 | 375 | 71 | 0 | 0.841 | 1.0 | 0.889 | 2.29 |
+| scorekeeper | 2024 Milford broadcast | 159 | 0 | 0 | 632 | 0 | 0.0 | n/a | n/a | 3.975 |
+| scorekeeper | frc_train photos | 60 | 0 | 0 | 111 | 0 | 0.0 | n/a | n/a | 1.85 |
+| scorekeeper | YouTube frames | 34 | 0 | 0 | 217 | 0 | 0.0 | n/a | n/a | 6.382 |
+| scorekeeper | other | 30 | 0 | 0 | 52 | 0 | 0.0 | n/a | n/a | 1.733 |
+
+By relative box size. A box is small when it covers less than 0.0025 of the image area, medium below 0.0225, and large otherwise. Labeled boxes are sized by their label and false positives by their own box.
+
+| Dataset | Size | Labeled boxes | Hits | Recall | False positives |
+|---|---|---|---|---|---|
+| marswars | small | 222 | 192 | 0.865 | 12 |
+| marswars | medium | 233 | 230 | 0.987 | 3 |
+| marswars | large | 0 | 0 | n/a | 1 |
+| robotzftp2 | small | 13 | 7 | 0.538 | 11 |
+| robotzftp2 | medium | 180 | 177 | 0.983 | 1 |
+| robotzftp2 | large | 183 | 182 | 0.995 | 1 |
+| scorekeeper | small | 32 | 32 | 1.0 | 870 |
+| scorekeeper | medium | 335 | 335 | 1.0 | 186 |
+| scorekeeper | large | 8 | 8 | 1.0 | 27 |
+
+False positives by why they matched no label. A duplicate overlaps a label that another prediction already took. A localization error overlaps a label by more than 0.1 IoU, but not enough to count. One inside an unscored label has its center inside a box of a class the model is not scored on, such as a robot. The rest are background.
+
+| Dataset | Duplicate | Localization | Inside an unscored label | Background |
+|---|---|---|---|---|
+| marswars | 1 | 12 | 0 | 3 |
+| robotzftp2 | 0 | 1 | 0 | 12 |
+| scorekeeper | 2 | 58 | 53 | 970 |
+
+The model's training split next to each test split. Each cell gives the quantiles 0.1, 0.5, 0.9. Box side is the side of a square with the box's share of the image area, as a fraction of the image side.
+
+| Split | Role | Images | Labeled boxes | Brightness | Sharpness | Box side | Boxes per image |
+|---|---|---|---|---|---|---|---|
+| marswars train | training | 942 | 8653 | 67.432 / 116.428 / 138.227 | 114.865 / 167.537 / 460.009 | 0.02 / 0.044 / 0.087 | 1.0 / 2.0 / 17.0 |
+| marswars test | test | 171 | 455 | 92.645 / 108.514 / 131.201 | 121.96 / 192.29 / 254.477 | 0.028 / 0.051 / 0.077 | 0.0 / 2.0 / 9.0 |
+| robotzftp2 test | test | 286 | 376 | 76.049 / 111.808 / 153.63 | 27.24 / 139.397 / 724.864 | 0.06 / 0.148 / 0.238 | 1.0 / 1.0 / 2.0 |
+| scorekeeper test | test | 314 | 375 | 93.041 / 114.773 / 126.0 | 97.835 / 1995.108 / 2400.531 | 0.05 / 0.061 / 0.116 | 0.0 / 0.0 / 0.0 |
+
+Errors judged by eye. Where a split has more errors than were reviewed, the reviewed ones are a seeded random sample.
+
+| Verdict | marswars false positives | marswars misses | robotzftp2 false positives | robotzftp2 misses | scorekeeper false positives |
+|---|---|---|---|---|---|
+| Errors | 16 | 33 | 13 | 10 | 1083 |
+| Reviewed | 16 | 33 | 13 | 10 | 40 |
+| unlabeled fuel | 1 | 0 | 0 | 0 | 3 |
+| person | 1 | 0 | 0 | 0 | 30 |
+| wrong box on labeled fuel | 5 | 3 | 1 | 0 | 0 |
+| loose or offset label | 1 | 2 | 0 | 0 | 0 |
+| ball cut off at the image edge | 8 | 24 | 0 | 10 | 0 |
+| barely visible fuel | 0 | 4 | 0 | 0 | 0 |
+| other yellow object | 0 | 0 | 12 | 0 | 0 |
+| ball from another game | 0 | 0 | 0 | 0 | 7 |
+
+The failure gallery, tile by tile from the top left:
+
+| Tile | Dataset | Error | Source |
+|---|---|---|---|
+| 1 | marswars | false positive | `Basler_daA1280-54uc__24770352__20260112_181311364` |
+| 2 | marswars | miss | `Basler_daA1280-54uc__24770352__20260112_181311364` |
+| 3 | marswars | false positive | `Basler_daA1280-54uc__24770352__20260112_180745507` |
+| 4 | robotzftp2 | false positive | `IMG_5835_MOV` |
+| 5 | robotzftp2 | miss | `IMG_5836_MOV` |
+| 6 | robotzftp2 | false positive | `IMG_5837_MOV` |
+| 7 | robotzftp2 | false positive | `IMG_5838_MOV` |
+| 8 | scorekeeper | false positive | `other` |
+| 9 | scorekeeper | false positive | `fuel photos` |
+| 10 | scorekeeper | false positive | `frc_train photos` |
+| 11 | scorekeeper | false positive | `YouTube frames` |
+| 12 | scorekeeper | false positive | `other` |
+| 13 | scorekeeper | false positive | `fuel photos` |
+| 14 | scorekeeper | false positive | `frc_train photos` |
+| 15 | scorekeeper | false positive | `YouTube frames` |
+<!-- DIAGNOSIS:END -->

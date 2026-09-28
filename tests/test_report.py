@@ -6,6 +6,18 @@ from pathlib import Path
 
 import pytest
 
+from frc_xdata.config import AreaBuckets
+from frc_xdata.diagnose import (
+    ClassDiagnosis,
+    Diagnosis,
+    FeatureSummary,
+    GalleryTile,
+    ReviewCount,
+    SizeRow,
+    SliceScore,
+    Slicing,
+    SplitDiagnosis,
+)
 from frc_xdata.errors import ConfigError
 from frc_xdata.evaluate import (
     BootstrapResult,
@@ -20,9 +32,12 @@ from frc_xdata.evaluate import (
     UnitCount,
 )
 from frc_xdata.report import (
+    DIAGNOSIS_MARKERS,
     EVALUATION_MARKERS,
     RESULTS_MARKERS,
     PublishedRun,
+    diagnosis_section,
+    diagnosis_sections,
     evaluation_sections,
     load_runs,
     main,
@@ -288,3 +303,143 @@ def test_limit_note_numbers_are_stored_in_the_run() -> None:
     r = with_limit(3, 2)
     reported = {n for line in run_section(clean(r)).splitlines() for n in NUMBER.findall(line)}
     assert reported <= set(NUMBER.findall(r.model_dump_json())) | {"95%"}
+
+
+def score(name: str, images: int, labeled: int, hits: int, fps: int) -> SliceScore:
+    return SliceScore(
+        name=name,
+        images=images,
+        labeled=labeled,
+        hits=hits,
+        false_positives=fps,
+        misses=labeled - hits,
+        map50=0.812 if labeled else None,
+        precision=round(hits / (hits + fps), 3) if hits + fps else None,
+        recall=round(hits / labeled, 3) if labeled else None,
+        false_positives_per_image=round(fps / images, 3),
+        false_positive_kinds={
+            "duplicate": 0,
+            "localization": 1,
+            "inside_unscored": 0,
+            "background": fps - 1,
+        },
+    )
+
+
+def diagnosis(review: list[ReviewCount] | None = None) -> Diagnosis:
+    yes, no = score("yes", 3, 5, 4, 2), score("no", 2, 0, 0, 3)
+    fuel = ClassDiagnosis(
+        name="fuel",
+        overall=score("all", 5, 5, 4, 5),
+        slicings=[
+            Slicing(
+                by="brightness",
+                slices=[score("below 101.5", 2, 1, 1, 2), score("101.5 and above", 3, 4, 3, 3)],
+            ),
+            Slicing(by="has labeled fuel", slices=[yes, no]),
+        ],
+        sizes=[SizeRow(bucket="small", labeled=2, hits=1, recall=0.5, false_positives=4)],
+    )
+    return Diagnosis(
+        model="m",
+        confidence=0.5,
+        iou=0.5,
+        feature_px=384,
+        localization_floor=0.1,
+        area_buckets=AreaBuckets(small_max=0.0025, medium_max=0.0225),
+        quantiles=[0.1, 0.5, 0.9],
+        brightness_edges=[101.5],
+        sharpness_edges=[220.25],
+        splits=[
+            SplitDiagnosis(
+                run_id="r1",
+                predictions_from="this run",
+                dataset="alpha",
+                split="test",
+                max_predictions_per_image=25,
+                classes=[fuel],
+            )
+        ],
+        domain=[
+            FeatureSummary(
+                dataset="alpha",
+                split="train",
+                role="training",
+                images=9,
+                boxes=12,
+                brightness=[80.25, 110.5, 140.75],
+                sharpness=[90.125, 150.5, 400.875],
+                box_side=[0.021, 0.043, 0.087],
+                boxes_per_image=[1.0, 2.0, 6.0],
+            )
+        ],
+        gallery=[GalleryTile(dataset="alpha", file_name="a.jpg", kind="miss", source="rec1")],
+        review=review
+        if review is not None
+        else [
+            ReviewCount(
+                dataset="alpha",
+                kind="miss",
+                total=7,
+                sampled=4,
+                verdicts={"ball cut off at the image edge": 3, "clear fuel": 1},
+                by_automatic_kind={},
+            )
+        ],
+    )
+
+
+def write_diagnosis_file(root: Path, d: Diagnosis) -> Path:
+    out = root / "diagnosis" / d.model
+    out.mkdir(parents=True)
+    (out / "diagnosis.json").write_text(d.model_dump_json(indent=2), encoding="utf-8")
+    return root / "diagnosis"
+
+
+def test_every_number_in_the_diagnosis_section_is_in_its_json() -> None:
+    d = diagnosis()
+    text = diagnosis_sections([d])
+    reported = {n for line in text.splitlines() for n in NUMBER.findall(line)}
+    assert "101.5" in reported
+    assert reported <= set(NUMBER.findall(d.model_dump_json()))
+
+
+def test_diagnosis_section_names_slices_sizes_review_and_gallery() -> None:
+    text = diagnosis_section(diagnosis())
+    assert "Has labeled fuel:" in text
+    assert "| alpha | no | 2 | 0 | 0 | 3 | 0 | 0.0 | n/a | n/a | 1.5 |" in text
+    assert "| alpha | small | 2 | 1 | 0.5 | 4 |" in text
+    assert "| Verdict | alpha misses |" in text
+    assert "| ball cut off at the image edge | 3 |" in text
+    assert "| 1 | alpha | miss | `rec1` |" in text
+
+
+def test_a_diagnosis_without_review_says_so() -> None:
+    assert "No errors have been reviewed by eye yet." in diagnosis_section(diagnosis(review=[]))
+
+
+def test_write_report_fills_the_diagnosis_markers_once_a_diagnosis_exists(tmp_path: Path) -> None:
+    runs = tmp_path / "runs"
+    write_run(runs, result("r1"), "2026-09-27T10:00:00+00:00")
+    readme, evaluation = tmp_path / "README.md", tmp_path / "EVALUATION.md"
+    readme.write_text("{}\n{}\n".format(*RESULTS_MARKERS), "utf-8")
+    start, end = EVALUATION_MARKERS
+    d_start, d_end = DIAGNOSIS_MARKERS
+    evaluation.write_text(f"{start}\n{end}\n{d_start}\nold\n{d_end}\n", "utf-8")
+    # Without a diagnosis the marked text is left alone.
+    write_report(runs, readme, evaluation, tmp_path / "missing")
+    assert "\nold\n" in evaluation.read_text(encoding="utf-8")
+    assert write_report(runs, readme, evaluation, write_diagnosis_file(tmp_path, diagnosis())) == [
+        evaluation
+    ]
+    assert "### Where m's errors fall" in evaluation.read_text(encoding="utf-8")
+
+
+def test_write_report_needs_diagnosis_markers_when_a_diagnosis_exists(tmp_path: Path) -> None:
+    runs = tmp_path / "runs"
+    write_run(runs, result("r1"), "2026-09-27T10:00:00+00:00")
+    readme, evaluation = tmp_path / "README.md", tmp_path / "EVALUATION.md"
+    readme.write_text("{}\n{}\n".format(*RESULTS_MARKERS), "utf-8")
+    evaluation.write_text("{}\n{}\n".format(*EVALUATION_MARKERS), "utf-8")
+    with pytest.raises(ConfigError):
+        write_report(runs, readme, evaluation, write_diagnosis_file(tmp_path, diagnosis()))
