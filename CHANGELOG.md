@@ -6,6 +6,8 @@ uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-28
+
 ### Added
 
 - Python 3.11 project managed with uv, with a committed lockfile and a
@@ -84,3 +86,11 @@ uses [Semantic Versioning](https://semver.org/).
 - The package version is 0.1.0.
 - `frc-download` skips a dataset with no pinned project or version with a
   warning, instead of recording a failure and exiting 1 (D-024).
+
+### Fixed
+
+- Three `scorekeeper` sample-grid tiles with partly visible faces are
+  left out of `docs/assets/samples_scorekeeper.png`.
+
+[Unreleased]: https://github.com/nickmelamed/frc-field-gap/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/nickmelamed/frc-field-gap/releases/tag/v0.1.0
