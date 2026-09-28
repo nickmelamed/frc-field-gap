@@ -28,7 +28,7 @@ requirements:  ## Re-export requirements.txt for Colab from uv.lock
 
 agent-check: check  ## Fast checks the Claude Code Stop hook runs
 	python3 scripts/agent/check_style.py .
-	python3 scripts/agent/check_numbers.py README.md docs/DATASETS.md docs/EVALUATION.md docs/MODEL_CARD.md docs/DEPLOYMENT.md --sources reports
+	python3 scripts/agent/check_numbers.py README.md docs/DATASETS.md docs/EVALUATION.md docs/MODEL_CARD.md docs/WRITEUP.md docs/DEPLOYMENT.md --sources reports
 
 download:  ## Download pinned datasets to data/raw/ (ARGS=--resolve to look them up)
 	uv run frc-download $(ARGS)
