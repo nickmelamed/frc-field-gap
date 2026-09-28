@@ -535,45 +535,45 @@ again.
 
 Decision. `frc-diagnose` reads the caches behind each published run and
 matches boxes by the rule supervision's confusion matrix uses: pairs of the
-same class first, then by IoU from high to low, with IoU strictly above
-0.5. The Task 8 plan said confidence first, but only this rule reproduces
-a run's counts, and the command fails if any slice or whole split disagrees
-with them. A false positive is a duplicate, a localization error (IoU with
-a label above `localization_floor`, 0.1), inside an unscored label such as
-a robot, or background. The low floor still counts a loose or offset box
-on a real ball as a localization error, and nothing that barely touches a
-label. Box sizes are shares of the image area
+same class first, then by IoU from high to low, with IoU strictly above 0.5.
+The Task 8 plan said confidence first, but only this rule reproduces a run's
+counts, and the command fails if any slice or whole split disagrees with
+them. A false positive is a duplicate, a localization error (IoU with a
+label above `localization_floor`, 0.1), inside an unscored label such as a
+robot, or background. The floor is low enough to count a loose or offset box
+on a real ball as a localization error, and high enough to leave out boxes
+that barely touch a label. Box sizes are shares of the image area
 (`inspect.area_buckets`). Brightness and sharpness (variance of the
 Laplacian) are measured on the image stretched to 384 pixels, as the model
 sees it (D-016), and cut into three equal-count bins pooled over the
 diagnosed test splits. Crowding bins start at 0, 1, 2, 5, and 10 labeled
-boxes. C is sliced by kind of photo, from patterns on the source
-name, and A and B by recording. Errors are judged by eye from numbered
-crops: every false positive and miss when a split has at most 40 of a
-kind, and a seeded sample of 40 otherwise. Verdicts live in
-`reports/diagnosis/review.csv`, and the run fails if they do not match the
-sample. The gallery alternates false positives and misses, spreads over
-sources, and keeps frames of one recording at least 30 apart. `frc-report`
-draws the figures from the diagnosis, so `make report` rebuilds them with
-the tables, and every bar is labeled with its value from the JSON.
+boxes. C is sliced by kind of photo, from patterns on the source name, and A
+and B by recording. Errors are judged by eye from numbered crops: every
+false positive and miss when a split has at most 40 of a kind, and a seeded
+sample of 40 otherwise. Verdicts live in `reports/diagnosis/review.csv`, and
+the run fails if they do not match the sample. The gallery alternates false
+positives and misses, spreads over sources, and keeps frames of one
+recording at least 30 apart. `frc-report` draws the figures from the
+diagnosis, so `make report` rebuilds them with the tables, and every bar is
+labeled with its value from the JSON.
 
 Why. Matching the run's own counts ties every slice to the published
 numbers. Relative sizes and the 384 pixel view make datasets of different
 resolutions comparable. Pooled bins avoid picking edges after seeing the
 results. A sample of 40 is small enough for one person to review. The
-review's verdict list grew during the first pass, when people, other
-yellow objects, and balls cut off by the image edge turned up.
+review's verdict list grew during the first pass, when people, other yellow
+objects, and balls cut off by the image edge turned up.
 
 Consequences. Slices have no intervals. On C, the brightness and sharpness
 bins mostly separate fuel photos from broadcasts, so they are confounded
-with source. The review has one reviewer, and its verdicts are a first pass
-for Nick to check. The face check left out five gallery tiles and the whole
-2024 Milford broadcast, whose frames all show spectators close to the
-camera, so the largest source of C's false positives has no tile. A gets
-3 tiles instead of 4, since its other errors are excluded or within 30
-frames of a pick, and the command logs a warning when that happens. The
-check against a run's published counts matches every scored class at
-once, so it also holds for the two-class models of Task 10.
+with source. One person judged the review, in a single pass. The face check
+left out five gallery tiles and the whole 2024 Milford broadcast, whose
+frames all show spectators close to the camera, so the largest source of C's
+false positives has no tile. A gets 3 tiles instead of 4, since its other
+errors are excluded or within 30 frames of a pick, and the command logs a
+warning when that happens. The check against a run's published counts
+matches every scored class at once, so it also holds for the two-class
+models of Task 10.
 
 ## D-022: Choose the lockbox dataset after v0.1.0 (2026-09-27)
 
@@ -588,6 +588,5 @@ Why. The v0.1.0 deadline leaves no time to look up and check new Universe
 datasets before the write-up, and Task 8 does not need one.
 
 Consequences. The lockbox is picked knowing that people and balls from
-other games cause most false positives on C. Its choice must be recorded
-with that in mind, and it must still pass the duplicate check against
-every training source.
+other games cause most false positives on C. Its decision entry must say so,
+and it must still pass the duplicate check against every training source.
