@@ -318,16 +318,25 @@ def _kind_table(d: Diagnosis) -> list[str]:
         "has its center in a box of a class the model is not scored on, such as a robot. "
         "The rest are background.",
         "",
-        *_header(["Dataset", *(FALSE_POSITIVE_KIND_NAMES[k] for k in FALSE_POSITIVE_KINDS)]),
+        *_header(
+            [
+                "Dataset",
+                "Which images",
+                *(FALSE_POSITIVE_KIND_NAMES[k] for k in FALSE_POSITIVE_KINDS),
+            ]
+        ),
     ]
     for s in d.splits:
         for c in s.classes:
-            kinds = c.overall.false_positive_kinds
-            lines.append(
-                _row(
-                    [_split_label(d, s.dataset, c.name), *(kinds[k] for k in FALSE_POSITIVE_KINDS)]
-                )
-            )
+            label = _split_label(d, s.dataset, c.name)
+            rows = [("all", c.overall)]
+            has = next((x for x in c.slicings if x.by == f"has labeled {c.name}"), None)
+            if has is not None:
+                names = {"yes": f"with labeled {c.name}", "no": f"without labeled {c.name}"}
+                rows += [(names.get(x.name, x.name), x) for x in has.slices]
+            for name, x in rows:
+                kinds = x.false_positive_kinds
+                lines.append(_row([label, name, *(kinds[k] for k in FALSE_POSITIVE_KINDS)]))
     return lines
 
 

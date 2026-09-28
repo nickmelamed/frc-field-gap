@@ -651,19 +651,44 @@ def image_sources(
     return keys, sorted(set(keys))
 
 
-def _check_run_totals(result: RunResult, overall: SliceScore) -> None:
-    """Fail if a single-class diagnosis does not reproduce the run's own counts.
+def check_run_totals(cases: SplitCases) -> None:
+    """Fail if matching every scored class together does not reproduce the run's counts.
 
-    With one scored class, the class-by-class matching here is the run's
-    matching, so the counts must agree exactly.
+    The slices match one class at a time, which for a single scored class is
+    the run's own matching. With several classes the run can also pair a box
+    with a label of another class, so the whole split is matched again here
+    with every scored class at once, the way the run did.
+
+    Raises:
+        CountMismatchError: If any class's hits, false positives, or misses
+            differ from the run's published counts.
     """
-    if len(result.scored_classes) != 1:
-        return
-    (c,) = result.metrics.classes
-    got = (overall.hits, overall.false_positives, overall.misses)
-    want = (c.true_positives, c.false_positives, c.false_negatives)
-    if got != want:
-        raise CountMismatchError(f"{result.run_id}: rebuilt {got}, but the run published {want}")
+    r = cases.result
+    scored_ids = [cases.classes.index(c) for c in r.scored_classes]
+    counts = {c: [0, 0, 0] for c in scored_ids}
+    for preds, labels in zip(cases.predictions, cases.labels, strict=True):
+        kept = above(restrict(preds, scored_ids), r.metrics.confidence)
+        wanted = restrict(labels, scored_ids)
+        match = match_boxes(kept, wanted, r.metrics.iou)
+        pred_ids, label_ids = _class_ids(kept), _class_ids(wanted)
+        for p, _ in match.hits:
+            counts[int(pred_ids[p])][0] += 1
+        for p, lab in match.confusions:
+            counts[int(pred_ids[p])][1] += 1
+            counts[int(label_ids[lab])][2] += 1
+        for p in match.false_positives:
+            counts[int(pred_ids[p])][1] += 1
+        for lab in match.misses:
+            counts[int(label_ids[lab])][2] += 1
+    published = {c.name: c for c in r.metrics.classes}
+    for cid in scored_ids:
+        c = published[cases.classes[cid]]
+        got = tuple(counts[cid])
+        want = (c.true_positives, c.false_positives, c.false_negatives)
+        if got != want:
+            raise CountMismatchError(
+                f"{r.run_id} {c.name}: rebuilt {got}, but the run published {want}"
+            )
 
 
 @dataclass(frozen=True)
@@ -704,7 +729,13 @@ def diagnose_split(
     cfg: DiagnoseConfig,
     buckets: AreaBuckets,
 ) -> SplitDiagnosis:
-    """Slice every scored class's errors in one run."""
+    """Slice every scored class's errors in one run.
+
+    Raises:
+        CountMismatchError: If the matching does not reproduce the run's
+            published counts.
+    """
+    check_run_totals(cases)
     r = cases.result
     confidence, iou = r.metrics.confidence, r.metrics.iou
     brightness_names, sharpness_names = bin_names(brightness_edges), bin_names(sharpness_edges)
@@ -758,7 +789,6 @@ def diagnose_split(
         ),
         classes=classes,
     )
-    _check_run_totals(r, classes[0].overall)
     return diagnosis
 
 
@@ -1212,6 +1242,16 @@ def diagnose_model(project: ProjectConfig, model: str) -> DiagnosisRun:
             cfg.gallery.min_frame_gap,
         )
     ]
+    for dataset, count in cfg.gallery.per_dataset.items():
+        shown = sum(p.dataset == dataset for p in picks)
+        if shown < count:
+            logger.warning(
+                "the gallery shows %d of %d %s tiles, since exclusions and the frame gap "
+                "leave no more errors to pick",
+                shown,
+                count,
+                dataset,
+            )
     sample = review_sample(items, cfg.review.per_kind, str(project.seed))
     review: list[ReviewCount] = []
     if cfg.review.file.is_file():
@@ -1347,6 +1387,7 @@ def diagnosis_meta(
         ev.models_file,
         ev.coverage_file,
         project.paths.reports_dir / SPLITS_NAME,
+        project.diagnose.review.file,
     ]
     return {
         "created": utc_timestamp(),

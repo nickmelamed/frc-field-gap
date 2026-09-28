@@ -541,3 +541,13 @@ def test_review_sheet_writes_crops_and_a_template(
     assert rows[0] == "dataset,file_name,kind,x1,y1,x2,y2,verdict,note"
     assert len(rows) == 4
     assert not (diagnosed / "reports" / "diagnosis").exists()
+
+
+def test_main_fails_when_the_matching_disagrees_with_the_published_run(diagnosed: Path) -> None:
+    path = diagnosed / "reports" / "runs" / "run1" / "metrics.json"
+    metrics = json.loads(path.read_text("utf-8"))
+    (fuel,) = metrics["metrics"]["classes"]
+    fuel["false_positives"] += 1
+    path.write_text(json.dumps(metrics), "utf-8")
+    with pytest.raises(CountMismatchError, match="run1 fuel"):
+        diagnose.main(["m", "--project-config", "configs/project.yaml"])
