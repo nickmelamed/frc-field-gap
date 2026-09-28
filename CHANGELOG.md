@@ -52,6 +52,14 @@ uses [Semantic Versioning](https://semver.org/).
 - baseline-a scored on the test splits of `marswars`, `robotzftp2`, and
   `scorekeeper`, with the results in the README and `docs/EVALUATION.md`
   and a write-up of how the model does on each dataset.
+- `frc-diagnose` (`make diagnose MODEL=...`) slices a model's errors from
+  its published runs' cached predictions by source, relative box size,
+  crowding, brightness, and sharpness, checks that its matching reproduces
+  each run's counts, and draws a face-checked failure gallery.
+  `--review-sheet` writes numbered crops for judging errors by eye into
+  `reports/diagnosis/review.csv` (D-021).
+- baseline-a's diagnosis, with a write-up in `docs/EVALUATION.md` of why
+  it fails where it does.
 
 ### Changed
 
@@ -64,3 +72,6 @@ uses [Semantic Versioning](https://semver.org/).
 - Each run records in `metrics.json` how many images reached that limit, and
   how many reached it with every kept box above the threshold. The report
   prints both under the run's table.
+- `frc-report` also renders the diagnosis tables into `docs/EVALUATION.md`
+  and draws the diagnosis figures in `docs/assets/`.
+- matplotlib is a declared dependency.
