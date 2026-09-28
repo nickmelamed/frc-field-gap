@@ -6,13 +6,74 @@ slices the hits, false positives, and misses by box size, brightness, blur,
 crowding, and source. It never calls the model.
 """
 
+import argparse
+import json
+import logging
+import re
+import sys
+from collections import Counter
 from collections.abc import Sequence
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
+from itertools import pairwise
+from pathlib import Path
 from typing import Literal
 
 import numpy as np
 import numpy.typing as npt
 import supervision as sv
+from PIL import Image
+from pydantic import BaseModel, ConfigDict
+
+from frc_xdata.config import (
+    AreaBuckets,
+    DiagnoseConfig,
+    ModelsFile,
+    ProjectConfig,
+    SourcePattern,
+    load_yaml,
+)
+from frc_xdata.download import PROJECT_CONFIG
+from frc_xdata.errors import ConfigError, CountMismatchError, DirtyTreeError
+from frc_xdata.evaluate import (
+    DECIMALS,
+    RunResult,
+    above,
+    align,
+    compute_metrics,
+    load_predictions,
+    restrict,
+    top_k,
+)
+from frc_xdata.harmonize import SPLITS_NAME
+from frc_xdata.inspect_datasets import (
+    ANNOTATIONS_NAME,
+    Box,
+    ImageRecord,
+    area_bucket,
+    load_split,
+)
+from frc_xdata.logging_utils import add_log_level_argument, setup_logging
+from frc_xdata.provenance import (
+    git_commit,
+    git_is_dirty,
+    git_tree,
+    package_versions,
+    sha256_file,
+    utc_timestamp,
+)
+from frc_xdata.runs import load_runs, predictions_path, select_runs
+from frc_xdata.splits import recording_key
+
+DIAGNOSIS_NAME = "diagnosis.json"
+META_NAME = "meta.json"
+# Brightness and blur are on scales of tens to thousands, so one decimal
+# is enough to name a bin.
+FEATURE_DECIMALS = 1
+SIZE_BUCKETS = ("small", "medium", "large")
+OTHER_SOURCE = "other"
+
+logger = logging.getLogger(__name__)
 
 FalsePositiveKind = Literal["duplicate", "localization", "inside_unscored", "background"]
 FALSE_POSITIVE_KINDS: tuple[FalsePositiveKind, ...] = (
@@ -141,3 +202,698 @@ def false_positive_kind(
     if len(unscored) and _inside(center, unscored):
         return "inside_unscored"
     return "background"
+
+
+def image_features(image: Image.Image, side: int) -> tuple[float, float]:
+    """Return the mean gray level and the variance of the Laplacian of ``image``.
+
+    The image is first stretched to ``side`` pixels square, the way the model
+    sees it. Gray levels run from 0 to 255. A low Laplacian variance means few
+    sharp edges, which usually means blur.
+    """
+    gray = np.asarray(
+        image.convert("L").resize((side, side), Image.Resampling.BILINEAR), dtype=np.float64
+    )
+    laplacian = (
+        gray[:-2, 1:-1] + gray[2:, 1:-1] + gray[1:-1, :-2] + gray[1:-1, 2:] - 4 * gray[1:-1, 1:-1]
+    )
+    return float(gray.mean()), float(laplacian.var())
+
+
+def quantile_edges(values: Sequence[float], bins: int) -> list[float]:
+    """Return the ``bins - 1`` edges that cut ``values`` into equal-count bins."""
+    if not values:
+        raise ValueError("no values to cut into bins")
+    cuts = np.quantile(np.asarray(values, dtype=np.float64), np.arange(1, bins) / bins)
+    return [round(float(c), FEATURE_DECIMALS) for c in cuts]
+
+
+def bin_index(value: float, edges: Sequence[float]) -> int:
+    """Return the bin a value falls in. A value on an edge goes to the higher bin."""
+    return int(np.searchsorted(np.asarray(edges), value, side="right"))
+
+
+def bin_names(edges: Sequence[float]) -> list[str]:
+    """Name the bins that ``edges`` make, lowest first."""
+    if not edges:
+        return ["all"]
+    inner = [f"{a} to {b}" for a, b in pairwise(edges)]
+    return [f"below {edges[0]}", *inner, f"{edges[-1]} and above"]
+
+
+def count_names(edges: Sequence[int]) -> list[str]:
+    """Name bins of whole counts whose lower edges are ``edges``."""
+    names = [str(a) if b - a == 1 else f"{a} to {b - 1}" for a, b in pairwise(edges)]
+    return [*names, f"{edges[-1]} or more"]
+
+
+def source_of(source_name: str, patterns: Sequence[SourcePattern]) -> str:
+    """Return the first pattern name that matches, or ``other``."""
+    for p in patterns:
+        if re.search(p.pattern, source_name):
+            return p.name
+    return OTHER_SOURCE
+
+
+def relative_side(box: Box, width: int, height: int) -> float:
+    """Return the side of a square with the box's share of the image area, as a fraction."""
+    return float(np.sqrt(box.w * box.h / (width * height)))
+
+
+def _box(xyxy: npt.NDArray[np.float64]) -> Box:
+    x1, y1, x2, y2 = (float(v) for v in xyxy)
+    return Box("", x1, y1, x2 - x1, y2 - y1)
+
+
+@dataclass(frozen=True)
+class ImageErrors:
+    """One image's hits, false positives, and misses for one class."""
+
+    matched_labels: tuple[int, ...]
+    missed_labels: tuple[int, ...]
+    false_positive_boxes: npt.NDArray[np.float64]
+    false_positive_kinds: tuple[FalsePositiveKind, ...]
+
+
+def image_errors(
+    predictions: sv.Detections,
+    labels: sv.Detections,
+    unscored: npt.NDArray[np.float64],
+    confidence: float,
+    iou: float,
+    localization_floor: float,
+) -> ImageErrors:
+    """Match one image's predictions of one class at ``confidence`` and type each false positive.
+
+    Args:
+        predictions: The image's predictions of the class, at every confidence.
+        labels: The image's labeled boxes of the class.
+        unscored: Labeled boxes of classes that are not scored, shape ``(n, 4)``.
+        confidence: Threshold a prediction must reach to count.
+        iou: Overlap a hit must exceed.
+        localization_floor: See :func:`false_positive_kind`.
+    """
+    kept = above(predictions, confidence)
+    match = match_boxes(kept, labels, iou)
+    matched = tuple(label for _, label in match.hits)
+    boxes = _xyxy(kept)[list(match.false_positives)].reshape(-1, 4)
+    return ImageErrors(
+        matched_labels=matched,
+        missed_labels=match.misses,
+        false_positive_boxes=boxes,
+        false_positive_kinds=tuple(
+            false_positive_kind(b, labels, matched, unscored, iou, localization_floor)
+            for b in boxes
+        ),
+    )
+
+
+class _Record(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+
+class SliceScore(_Record):
+    """Scores for the images in one slice, at the run's threshold."""
+
+    name: str
+    images: int
+    labeled: int
+    hits: int
+    false_positives: int
+    misses: int
+    # None where undefined, as in a run's metrics (D-018).
+    map50: float | None
+    precision: float | None
+    recall: float | None
+    false_positives_per_image: float
+    false_positive_kinds: dict[str, int]
+
+
+class Slicing(_Record):
+    """One way of cutting a split into groups of images."""
+
+    by: str
+    slices: list[SliceScore]
+
+
+class SizeRow(_Record):
+    """Hits and misses of labeled boxes, and false positives, of one relative size."""
+
+    bucket: str
+    labeled: int
+    hits: int
+    recall: float | None
+    false_positives: int
+
+
+class ClassDiagnosis(_Record):
+    """Where one scored class's errors fall in one split."""
+
+    name: str
+    overall: SliceScore
+    slicings: list[Slicing]
+    sizes: list[SizeRow]
+
+
+class SplitDiagnosis(_Record):
+    """The diagnosis of one published run."""
+
+    run_id: str
+    predictions_from: str
+    dataset: str
+    split: str
+    max_predictions_per_image: int
+    classes: list[ClassDiagnosis]
+
+
+class FeatureSummary(_Record):
+    """Quantiles of image and box features for one split, to compare domains."""
+
+    dataset: str
+    split: str
+    role: Literal["training", "test"]
+    images: int
+    boxes: int
+    brightness: list[float]
+    sharpness: list[float]
+    box_side: list[float]
+    boxes_per_image: list[float]
+
+
+class Diagnosis(_Record):
+    """Everything ``diagnosis.json`` holds for one model."""
+
+    model: str
+    confidence: float
+    iou: float
+    feature_px: int
+    localization_floor: float
+    area_buckets: AreaBuckets
+    quantiles: list[float]
+    brightness_edges: list[float]
+    sharpness_edges: list[float]
+    splits: list[SplitDiagnosis]
+    domain: list[FeatureSummary]
+
+
+def _share(part: int, whole: int) -> float | None:
+    return round(part / whole, DECIMALS) if whole else None
+
+
+def score_slice(
+    name: str,
+    indices: Sequence[int],
+    predictions: Sequence[sv.Detections],
+    labels: Sequence[sv.Detections],
+    errors: Sequence[ImageErrors],
+    classes: Sequence[str],
+    class_name: str,
+    confidence: float,
+    iou: float,
+) -> SliceScore:
+    """Score one class on the images at ``indices``.
+
+    Scores come from the same function a run uses, so a slice of every image
+    reproduces the run's numbers.
+
+    Raises:
+        CountMismatchError: If the per-box matching disagrees with the
+            confusion matrix on this slice.
+    """
+    preds = [predictions[i] for i in indices]
+    targets = [labels[i] for i in indices]
+    (c,) = compute_metrics(
+        preds, targets, classes, [class_name], confidence, iou, [confidence]
+    ).classes
+    errs = [errors[i] for i in indices]
+    hits = sum(len(e.matched_labels) for e in errs)
+    misses = sum(len(e.missed_labels) for e in errs)
+    kinds = Counter(k for e in errs for k in e.false_positive_kinds)
+    fps = sum(kinds.values())
+    if (hits, fps, misses) != (c.true_positives, c.false_positives, c.false_negatives):
+        raise CountMismatchError(
+            f"slice {name!r}: matched {hits} hits, {fps} false positives, {misses} misses, "
+            f"but the confusion matrix has {c.true_positives}, {c.false_positives}, "
+            f"{c.false_negatives}"
+        )
+    return SliceScore(
+        name=name,
+        images=len(indices),
+        labeled=c.instances,
+        hits=hits,
+        false_positives=fps,
+        misses=misses,
+        map50=c.map50,
+        precision=c.precision,
+        recall=c.recall,
+        false_positives_per_image=round(fps / len(indices), DECIMALS),
+        false_positive_kinds={k: kinds.get(k, 0) for k in FALSE_POSITIVE_KINDS},
+    )
+
+
+def slicing(
+    by: str,
+    groups: Sequence[str],
+    order: Sequence[str],
+    score: "SliceScorer",
+) -> Slicing:
+    """Score each named group of images, in ``order``, leaving out empty groups.
+
+    Args:
+        by: What the images are grouped by.
+        groups: The group of each image.
+        order: Every group name, in the order to report them.
+        score: Scores a named list of image indices.
+    """
+    members: dict[str, list[int]] = {}
+    for i, g in enumerate(groups):
+        members.setdefault(g, []).append(i)
+    unknown = sorted(set(members) - set(order))
+    return Slicing(
+        by=by,
+        slices=[score(name, members[name]) for name in [*order, *unknown] if name in members],
+    )
+
+
+class SliceScorer:
+    """Scores slices of one class in one split."""
+
+    def __init__(
+        self,
+        predictions: Sequence[sv.Detections],
+        labels: Sequence[sv.Detections],
+        errors: Sequence[ImageErrors],
+        classes: Sequence[str],
+        class_name: str,
+        confidence: float,
+        iou: float,
+    ) -> None:
+        """Keep one class's per-image detections and errors."""
+        self._args = (predictions, labels, errors, classes, class_name, confidence, iou)
+
+    def __call__(self, name: str, indices: Sequence[int]) -> SliceScore:
+        """Score the images at ``indices`` under ``name``."""
+        return score_slice(name, indices, *self._args)
+
+
+def size_rows(
+    records: Sequence[ImageRecord],
+    labels: Sequence[sv.Detections],
+    errors: Sequence[ImageErrors],
+    buckets: AreaBuckets,
+) -> list[SizeRow]:
+    """Count hits and misses by labeled box size, and false positives by their own size.
+
+    Sizes are shares of the image area (``inspect.area_buckets``), so they
+    mean the same thing at every resolution, unlike COCO's pixel sizes.
+    """
+    labeled: Counter[str] = Counter()
+    hit: Counter[str] = Counter()
+    false: Counter[str] = Counter()
+    for r, lab, e in zip(records, labels, errors, strict=True):
+        matched = set(e.matched_labels)
+        for i, xyxy in enumerate(_xyxy(lab)):
+            bucket = area_bucket(_box(xyxy), r.width, r.height, buckets)
+            labeled[bucket] += 1
+            hit[bucket] += i in matched
+        for xyxy in e.false_positive_boxes:
+            false[area_bucket(_box(xyxy), r.width, r.height, buckets)] += 1
+    return [
+        SizeRow(
+            bucket=b,
+            labeled=labeled[b],
+            hits=hit[b],
+            recall=_share(hit[b], labeled[b]),
+            false_positives=false[b],
+        )
+        for b in SIZE_BUCKETS
+    ]
+
+
+def quantiles_of(values: Sequence[float], quantiles: Sequence[float]) -> list[float]:
+    """Return the quantiles of ``values``, rounded, or an empty list when there are none."""
+    if not values:
+        return []
+    found = np.quantile(np.asarray(values, dtype=np.float64), quantiles)
+    return [round(float(v), DECIMALS) for v in found]
+
+
+@dataclass(frozen=True)
+class SplitCases:
+    """One published run's images, labels, and cached predictions."""
+
+    result: RunResult
+    split_dir: Path
+    records: list[ImageRecord]
+    classes: list[str]
+    predictions: list[sv.Detections]
+    labels: list[sv.Detections]
+
+
+def load_cases(project: ProjectConfig, result: RunResult) -> SplitCases:
+    """Load a run's split and its cached predictions, under the run's per-image limit.
+
+    Raises:
+        ConfigError: If the split or the cache is missing, or the cache does
+            not cover every image.
+    """
+    split_dir = project.paths.harmonized_dir / result.dataset / result.split
+    if not (split_dir / ANNOTATIONS_NAME).is_file():
+        raise ConfigError(f"{split_dir} has no annotations. Run make harmonize first")
+    cache = predictions_path(project.evaluate.runs_dir, result)
+    if not cache.is_file():
+        raise ConfigError(f"{result.run_id} reads predictions from {cache}, which is missing")
+    ds = sv.DetectionDataset.from_coco(
+        images_directory_path=str(split_dir), annotations_path=str(split_dir / ANNOTATIONS_NAME)
+    )
+    records = sorted(load_split(split_dir, result.dataset), key=lambda r: r.ref.file_name)
+    names = [r.ref.file_name for r in records]
+    limit = (
+        project.evaluate.max_predictions_per_image
+        if result.per_image_limit is None
+        else result.per_image_limit.per_image
+    )
+    cached = {n: top_k(p, limit) for n, p in load_predictions(cache).items()}
+    return SplitCases(
+        result=result,
+        split_dir=split_dir,
+        records=records,
+        classes=list(ds.classes),
+        predictions=align(cached, names, ds.classes),
+        labels=[ds.annotations[str(split_dir / n)] for n in names],
+    )
+
+
+def split_features(
+    split_dir: Path, records: Sequence[ImageRecord], side: int
+) -> list[tuple[float, float]]:
+    """Return brightness and sharpness for every image, in the order of ``records``."""
+
+    def one(r: ImageRecord) -> tuple[float, float]:
+        with Image.open(split_dir / r.ref.file_name) as image:
+            return image_features(image, side)
+
+    with ThreadPoolExecutor() as pool:
+        return list(pool.map(one, records))
+
+
+def image_sources(
+    project: ProjectConfig, dataset: str, records: Sequence[ImageRecord]
+) -> tuple[list[str], list[str]] | None:
+    """Return each image's source and the order to report sources in.
+
+    Recordings name the source for datasets cut by frame order, reported in
+    name order. Other datasets need patterns under ``diagnose.sources``,
+    reported in the patterns' order. Returns None when neither applies.
+    """
+    patterns = project.diagnose.sources.get(dataset)
+    if patterns is not None:
+        sources = [source_of(r.source_name, patterns) for r in records]
+        return sources, [*(p.name for p in patterns), OTHER_SOURCE]
+    method = project.splits.datasets.get(dataset)
+    if method is None or method.method != "temporal":
+        return None
+    keys = [recording_key(r.source_name, method.recording_pattern) or OTHER_SOURCE for r in records]
+    return keys, sorted(set(keys))
+
+
+def _check_run_totals(result: RunResult, overall: SliceScore) -> None:
+    """Fail if a single-class diagnosis does not reproduce the run's own counts.
+
+    With one scored class, the class-by-class matching here is the run's
+    matching, so the counts must agree exactly.
+    """
+    if len(result.scored_classes) != 1:
+        return
+    (c,) = result.metrics.classes
+    got = (overall.hits, overall.false_positives, overall.misses)
+    want = (c.true_positives, c.false_positives, c.false_negatives)
+    if got != want:
+        raise CountMismatchError(f"{result.run_id}: rebuilt {got}, but the run published {want}")
+
+
+def diagnose_split(
+    cases: SplitCases,
+    features: Sequence[tuple[float, float]],
+    sources: tuple[list[str], list[str]] | None,
+    brightness_edges: Sequence[float],
+    sharpness_edges: Sequence[float],
+    cfg: DiagnoseConfig,
+    buckets: AreaBuckets,
+) -> SplitDiagnosis:
+    """Slice every scored class's errors in one run."""
+    r = cases.result
+    confidence, iou = r.metrics.confidence, r.metrics.iou
+    scored_ids = [cases.classes.index(c) for c in r.scored_classes]
+    other_ids = [i for i in range(len(cases.classes)) if i not in scored_ids]
+    unscored = [_xyxy(restrict(lab, other_ids)) for lab in cases.labels]
+    brightness_names, sharpness_names = bin_names(brightness_edges), bin_names(sharpness_edges)
+    crowd_names = count_names(cfg.crowding_edges)
+    classes = []
+    for name, cid in zip(r.scored_classes, scored_ids, strict=True):
+        preds = [restrict(p, [cid]) for p in cases.predictions]
+        labels = [restrict(lab, [cid]) for lab in cases.labels]
+        errors = [
+            image_errors(p, lab, u, confidence, iou, cfg.localization_floor)
+            for p, lab, u in zip(preds, labels, unscored, strict=True)
+        ]
+        score = SliceScorer(preds, labels, errors, cases.classes, name, confidence, iou)
+        overall = score("all", range(len(preds)))
+        counts = [len(lab) for lab in labels]
+        slicings = [
+            slicing(
+                "brightness",
+                [brightness_names[bin_index(b, brightness_edges)] for b, _ in features],
+                brightness_names,
+                score,
+            ),
+            slicing(
+                "sharpness",
+                [sharpness_names[bin_index(s, sharpness_edges)] for _, s in features],
+                sharpness_names,
+                score,
+            ),
+            slicing(
+                f"labeled {name} per image",
+                [crowd_names[bin_index(n, cfg.crowding_edges) - 1] for n in counts],
+                crowd_names,
+                score,
+            ),
+            slicing(
+                f"has labeled {name}", ["yes" if n else "no" for n in counts], ["yes", "no"], score
+            ),
+        ]
+        if sources is not None:
+            slicings.append(slicing("source", *sources, score))
+        classes.append(
+            ClassDiagnosis(
+                name=name,
+                overall=overall,
+                slicings=slicings,
+                sizes=size_rows(cases.records, labels, errors, buckets),
+            )
+        )
+    diagnosis = SplitDiagnosis(
+        run_id=r.run_id,
+        predictions_from=r.predictions_from,
+        dataset=r.dataset,
+        split=r.split,
+        max_predictions_per_image=(
+            r.per_image_limit.per_image if r.per_image_limit is not None else 0
+        ),
+        classes=classes,
+    )
+    _check_run_totals(r, classes[0].overall)
+    return diagnosis
+
+
+def feature_summary(
+    dataset: str,
+    split: str,
+    role: Literal["training", "test"],
+    records: Sequence[ImageRecord],
+    features: Sequence[tuple[float, float]],
+    classes: Sequence[str],
+    quantiles: Sequence[float],
+) -> FeatureSummary:
+    """Summarize image and labeled box features of the ``classes`` boxes in one split."""
+    boxes = [[b for b in r.boxes if b.label in classes] for r in records]
+    sides = [
+        relative_side(b, r.width, r.height)
+        for r, bs in zip(records, boxes, strict=True)
+        for b in bs
+    ]
+    return FeatureSummary(
+        dataset=dataset,
+        split=split,
+        role=role,
+        images=len(records),
+        boxes=len(sides),
+        brightness=quantiles_of([f[0] for f in features], quantiles),
+        sharpness=quantiles_of([f[1] for f in features], quantiles),
+        box_side=quantiles_of(sides, quantiles),
+        boxes_per_image=quantiles_of([float(len(bs)) for bs in boxes], quantiles),
+    )
+
+
+def diagnose_model(project: ProjectConfig, model: str) -> Diagnosis:
+    """Diagnose every published run of ``model`` and compare its training data with each split.
+
+    Raises:
+        ConfigError: If the model is unknown or has no published run.
+    """
+    cfg = project.diagnose
+    ev = project.evaluate
+    entries = load_yaml(ev.models_file, ModelsFile).models
+    if model not in entries:
+        raise ConfigError(f"{model} is not in {ev.models_file}")
+    runs = [r.result for r in select_runs(load_runs(ev.runs_dir)) if r.result.model == model]
+    if not runs:
+        raise ConfigError(f"{model} has no published run under {ev.runs_dir}")
+    thresholds = {(r.metrics.confidence, r.metrics.iou) for r in runs}
+    if len(thresholds) != 1:
+        raise ConfigError(f"{model}'s runs use different thresholds {sorted(thresholds)}")
+    ((confidence, iou),) = thresholds
+
+    all_cases = [load_cases(project, r) for r in runs]
+    features = []
+    for c in all_cases:
+        logger.info(
+            "measuring %d images of %s %s", len(c.records), c.result.dataset, c.result.split
+        )
+        features.append(split_features(c.split_dir, c.records, cfg.feature_px))
+    pooled = [f for fs in features for f in fs]
+    brightness_edges = quantile_edges([b for b, _ in pooled], cfg.feature_bins)
+    sharpness_edges = quantile_edges([s for _, s in pooled], cfg.feature_bins)
+
+    splits = [
+        diagnose_split(
+            c,
+            fs,
+            image_sources(project, c.result.dataset, c.records),
+            brightness_edges,
+            sharpness_edges,
+            cfg,
+            project.inspect.area_buckets,
+        )
+        for c, fs in zip(all_cases, features, strict=True)
+    ]
+
+    trained_on = entries[model].dataset
+    train_dir = project.paths.harmonized_dir / trained_on / "train"
+    train_records = sorted(load_split(train_dir, trained_on), key=lambda r: r.ref.file_name)
+    logger.info("measuring %d images of %s train", len(train_records), trained_on)
+    scored = sorted({c for r in runs for c in r.scored_classes})
+    domain = [
+        feature_summary(
+            trained_on,
+            "train",
+            "training",
+            train_records,
+            split_features(train_dir, train_records, cfg.feature_px),
+            scored,
+            cfg.quantiles,
+        ),
+        *(
+            feature_summary(
+                c.result.dataset,
+                c.result.split,
+                "test",
+                c.records,
+                fs,
+                c.result.scored_classes,
+                cfg.quantiles,
+            )
+            for c, fs in zip(all_cases, features, strict=True)
+        ),
+    ]
+    return Diagnosis(
+        model=model,
+        confidence=confidence,
+        iou=iou,
+        feature_px=cfg.feature_px,
+        localization_floor=cfg.localization_floor,
+        area_buckets=project.inspect.area_buckets,
+        quantiles=cfg.quantiles,
+        brightness_edges=brightness_edges,
+        sharpness_edges=sharpness_edges,
+        splits=splits,
+        domain=domain,
+    )
+
+
+def diagnosis_meta(
+    repo: Path,
+    project: ProjectConfig,
+    project_config: Path,
+    diagnosis: Diagnosis,
+    argv: Sequence[str],
+    dirty: bool,
+) -> dict[str, object]:
+    """Return the provenance SPEC section 3.5 asks for, for one diagnosis."""
+    ev = project.evaluate
+    annotations = {
+        f"{s.dataset}/{s.split}": sha256_file(
+            project.paths.harmonized_dir / s.dataset / s.split / ANNOTATIONS_NAME
+        )
+        for s in diagnosis.splits
+    }
+    for d in diagnosis.domain:
+        path = project.paths.harmonized_dir / d.dataset / d.split / ANNOTATIONS_NAME
+        annotations[f"{d.dataset}/{d.split}"] = sha256_file(path)
+    configs = [
+        project_config,
+        ev.models_file,
+        ev.coverage_file,
+        project.paths.reports_dir / SPLITS_NAME,
+    ]
+    return {
+        "created": utc_timestamp(),
+        "command": ["frc-diagnose", *argv],
+        "git": {"commit": git_commit(repo), "tree": git_tree(repo), "dirty": dirty},
+        "configs": {str(p): sha256_file(p) if p.is_file() else None for p in configs},
+        "annotations_sha256": annotations,
+        "runs": {s.run_id: s.predictions_from for s in diagnosis.splits},
+        "packages": package_versions(),
+    }
+
+
+def write_diagnosis(out_dir: Path, diagnosis: Diagnosis, meta: dict[str, object]) -> None:
+    """Write ``diagnosis.json`` and ``meta.json``, rendering both before writing either."""
+    files = {
+        DIAGNOSIS_NAME: json.dumps(diagnosis.model_dump(mode="json"), indent=2) + "\n",
+        META_NAME: json.dumps(meta, indent=2) + "\n",
+    }
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for name, text in files.items():
+        (out_dir / name).write_text(text, encoding="utf-8")
+    logger.info("wrote %s", ", ".join(str(out_dir / n) for n in files))
+
+
+def load_diagnosis(path: Path) -> Diagnosis:
+    """Read a ``diagnosis.json`` written by :func:`write_diagnosis`."""
+    return Diagnosis.model_validate_json(path.read_text(encoding="utf-8"))
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run the diagnosis command line and return the exit code."""
+    parser = argparse.ArgumentParser(
+        description="Slice a model's errors from its published runs into reports/diagnosis/."
+    )
+    parser.add_argument("model", help="run name in reports/models.yaml, such as baseline-a")
+    parser.add_argument("--allow-dirty", action="store_true", help="run from a dirty tree")
+    parser.add_argument("--project-config", type=Path, default=PROJECT_CONFIG)
+    add_log_level_argument(parser)
+    raw_args = sys.argv[1:] if argv is None else argv
+    args = parser.parse_args(raw_args)
+    setup_logging(args.log_level)
+
+    repo = Path.cwd()
+    dirty = git_is_dirty(repo)
+    if dirty and not args.allow_dirty:
+        raise DirtyTreeError("commit or stash changes first, or pass --allow-dirty")
+    project = load_yaml(args.project_config, ProjectConfig)
+    diagnosis = diagnose_model(project, args.model)
+    meta = diagnosis_meta(repo, project, args.project_config, diagnosis, raw_args, dirty)
+    write_diagnosis(project.diagnose.output_dir / args.model, diagnosis, meta)
+    return 0

@@ -137,3 +137,33 @@ evaluate:
   bootstrap:
     resamples: 1000
     level: 0.95
+
+# Slicing a model's errors with frc-diagnose, from its cached predictions (D-021).
+diagnose:
+  output_dir: reports/diagnosis
+  # The model sees every image stretched to 384x384 (D-016), so brightness
+  # and blur are measured at that size, which also makes blur comparable
+  # across datasets of different resolutions.
+  feature_px: 384
+  # A false positive that overlaps a label by more than this, but not enough
+  # to be a hit, is a localization error rather than background.
+  localization_floor: 0.1
+  # Brightness and blur are cut into this many equal-count bins, pooled over
+  # every diagnosed split, so the edges are computed rather than chosen.
+  feature_bins: 3
+  # Lower edges of the bins for labeled boxes per image.
+  crowding_edges: [0, 1, 2, 5, 10]
+  # Quantiles reported when comparing training data with each test split.
+  quantiles: [0.1, 0.5, 0.9]
+  # Datasets with no recordings are sliced by the kind of photo, matched on
+  # the source name in order. Anything unmatched is "other".
+  sources:
+    scorekeeper:
+      - name: fuel photos
+        pattern: '^frame_\d+\.'
+      - name: 2024 Milford broadcast
+        pattern: 'Milford'
+      - name: frc_train photos
+        pattern: '^frc_train_'
+      - name: YouTube frames
+        pattern: '^(?:[A-Za-z0-9_-]{11}_\d+|youtube-\d+)\.'

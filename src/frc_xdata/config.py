@@ -2,6 +2,7 @@
 
 import os
 import re
+from itertools import pairwise
 from pathlib import Path
 from typing import Annotated, Literal, TypeVar
 
@@ -208,6 +209,40 @@ class EvaluateConfig(_Frozen):
         return self
 
 
+class SourcePattern(_Frozen):
+    """A named group of images whose source name matches ``pattern``."""
+
+    name: str
+    pattern: str
+
+    @model_validator(mode="after")
+    def _compiles(self) -> "SourcePattern":
+        try:
+            re.compile(self.pattern)
+        except re.error as e:
+            raise ValueError(f"pattern does not compile: {e}") from e
+        return self
+
+
+class DiagnoseConfig(_Frozen):
+    """Settings for slicing a model's errors."""
+
+    output_dir: RelativePath
+    feature_px: PositiveInt
+    localization_floor: Probability
+    feature_bins: Annotated[int, Field(ge=2)]
+    crowding_edges: list[Annotated[int, Field(ge=0)]]
+    quantiles: list[Probability]
+    sources: dict[DatasetKey, list[SourcePattern]] = {}
+
+    @model_validator(mode="after")
+    def _edges_start_at_zero(self) -> "DiagnoseConfig":
+        edges = self.crowding_edges
+        if not edges or edges[0] != 0 or any(a >= b for a, b in pairwise(edges)):
+            raise ValueError("crowding_edges must start at 0 and increase")
+        return self
+
+
 class ProjectConfig(_Frozen):
     """Settings shared by every stage, from ``configs/project.yaml``."""
 
@@ -217,6 +252,7 @@ class ProjectConfig(_Frozen):
     splits: SplitsConfig
     platform: PlatformConfig
     evaluate: EvaluateConfig
+    diagnose: DiagnoseConfig
 
 
 class ModelEntry(BaseModel):

@@ -10,7 +10,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
-from frc_xdata.evaluate import META_NAME, METRICS_NAME, RunResult
+from frc_xdata.evaluate import META_NAME, METRICS_NAME, PREDICTIONS_NAME, THIS_RUN, RunResult
 
 logger = logging.getLogger(__name__)
 
@@ -58,3 +58,12 @@ def select_runs(runs: Sequence[PublishedRun]) -> list[PublishedRun]:
         if key not in newest or run.created > newest[key].created:
             newest[key] = run
     return [newest[k] for k in sorted(newest)]
+
+
+def predictions_path(runs_dir: Path, result: RunResult) -> Path:
+    """Return the cache that holds a run's predictions.
+
+    A rescore scores another run's cache and keeps no copy of it.
+    """
+    source = result.run_id if result.predictions_from == THIS_RUN else result.predictions_from
+    return runs_dir / source / PREDICTIONS_NAME
