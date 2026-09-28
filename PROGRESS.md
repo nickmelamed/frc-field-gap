@@ -151,18 +151,18 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     clearly visible ball. C's clustered fuel has unlabeled balls.
   - Differences from SPEC section 7. Boxes are matched by IoU order, as
     supervision's confusion matrix does, so slices reproduce the runs'
-    counts. matplotlib is now a declared dependency. Run selection moved
-    to `runs.py`. `frc-report` draws the figures. The gallery has 15
-    tiles (D-021).
+    counts. matplotlib is a declared dependency. Run selection moved to
+    `runs.py`. `frc-report` draws the figures. The gallery has 15 tiles
+    (D-021).
   - For Nick. Check the verdicts in `reports/diagnosis/review.csv` and look
     at `docs/assets/failures.png` before the PR merges, especially tiles 8,
-    11, and 15, which show distant people. The lockbox dataset
-    waits until after v0.1.0 (D-022).
-  - For Task 10. Add negatives with people and other games' balls, set a
+    11, and 15, which show distant people. The lockbox waits until after
+    v0.1.0 (D-022).
+  - For Task 10. Add negatives with people and other games' balls. Set a
     label rule for balls cut off by the frame edge, where A's labels and
-    the model disagree on how much to box, and fix or drop
-    C's unlabeled clustered fuel. The D-020 limit still counts every
-    predicted class before unscored ones are dropped.
+    the model disagree on how much to box. Fix or drop C's unlabeled
+    clustered fuel. The D-020 limit still counts every predicted class
+    before unscored ones are dropped.
 - [ ] Task 9: Draft write-up + v0.1.0 (Tue to Wed Sept 29 to 30)
 - [ ] Task 10: Merged-data fix (v0.2.0)
 - [ ] Task 11: Threshold choice (v0.2.0)
