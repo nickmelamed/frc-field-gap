@@ -33,9 +33,9 @@ scores").
 ## Intended use
 
 baseline-a exists to measure how a detector trained on one team's data
-does on other teams' data, and to find out why it fails. It is meant for
-research and teaching, such as an FRC student comparing their own
-dataset with it.
+does on other teams' data, and to find out why it fails. It is meant as a
+reference for research and teaching, such as a team comparing its own
+model's scores on these test splits with these.
 
 It is not meant to drive a robot. It has never been scored on footage from
 a real 2026 match, because the project's own field test set is not
@@ -56,15 +56,16 @@ sat on both sides. Each recording was cut by frame order into train, valid,
 and test, with a gap of dropped frames between them (D-013). The training
 split holds 942 images and 8653 fuel boxes, valid 140 images, and test 171
 images from 6 recordings. The platform version used for training adds only
-the 384x384 stretch (D-016).
+auto-orient and the 384x384 stretch (D-016).
 
 ## Evaluation
 
 The model was scored on the test splits of three datasets, each from a
 different team. Precision and recall count predictions with a confidence
 of at least 0.5. The intervals come from resampling whole recordings or
-groups of related photos, as `docs/EVALUATION.md` explains, along with
-what mAP50, precision, and recall mean.
+groups of related photos, as `docs/EVALUATION.md` explains. Precision is
+the share of the model's boxes that are real fuel, recall is the share of
+labeled fuel it found, and mAP50 combines both across all confidences.
 
 | Dataset | Images | mAP50 | mAP50 interval | Precision | Recall |
 |---|---|---|---|---|---|
@@ -87,7 +88,8 @@ These come from the diagnosis in `docs/EVALUATION.md`, where errors were
 sliced by source and judged by eye.
 
 The model draws fuel on people. Of 40 sampled false positives on C, 30 are
-people, such as heads in a broadcast crowd or spectators in yellow shirts.
+people, such as heads in a broadcast crowd or spectators in yellow or
+orange shirts.
 Seven are yellow, orange, and blue balls from earlier FRC games. Almost
 all of C's false positives fall on pit photos and match broadcasts with no
 fuel in them.
@@ -112,16 +114,16 @@ all.
 - C is scored on fuel only, and its robot labels are ignored (D-019).
 - The eye review is one person's first pass, and C's verdicts rest on 40
   of its 1083 false positives.
-- Platform training can't be repeated bit for bit, and the hosted service
-  reported a TensorRT fp16 backend, so scores can differ slightly from
-  those in the Roboflow app.
+- The hosted service runs the model at reduced numeric precision
+  (TensorRT fp16), so scores can differ slightly from those in the
+  Roboflow app.
 
 ## Reproducing the scores
 
 `notebooks/reproduce_baseline.ipynb` downloads and harmonizes the datasets
-on Colab and rescores the committed predictions with
-`frc-evaluate --from-cache`, which needs a Roboflow API key for the
-download only. `docs/EVALUATION.md` covers scoring a model live.
+on Colab, then rescores the committed predictions with
+`frc-evaluate --from-cache`. It needs a Roboflow API key for the download
+only. `docs/EVALUATION.md` covers scoring a model live.
 
 ## License
 
