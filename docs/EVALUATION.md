@@ -2,8 +2,9 @@
 
 This page explains how models are scored, lists every published result,
 and diagnoses where the errors come from. Everything between the
-`EVALUATION` and `DIAGNOSIS` markers below is written by `make report` from
-`reports/runs/` and `reports/diagnosis/`. Do not edit it by hand.
+`EVALUATION` markers and between the `DIAGNOSIS` markers is written by
+`make report` from `reports/runs/` and `reports/diagnosis/`. Do not edit
+it by hand.
 
 ## How the baseline does on other teams' data
 
@@ -50,10 +51,9 @@ field test set has not been scored.
 
 `make diagnose MODEL=baseline-a` matched every cached prediction of the
 three runs to the labels again and sliced the hits, false positives, and
-misses by source, box size, crowding, brightness, and sharpness. It made no
-new calls to the model, and it checks that its matching reproduces each
-run's published counts. The tables are under "Diagnosis" at the end of
-this page, and the figures below are drawn from them by `make report`.
+misses by source, box size, crowding, brightness, and sharpness. It reuses
+the cached predictions and reproduces each run's published counts (D-021).
+The tables are under "Diagnosis" at the end of this page.
 Errors were also judged by eye (D-021): every false positive and miss on A
 and B, and a random 40 of C's false positives. The verdicts and a note on
 each are in `reports/diagnosis/review.csv`.
@@ -67,8 +67,9 @@ fuel label, which is 3.576 per image. These are the pit photos and match
 broadcasts. The 2024 Milford broadcast alone gives 632 of them. On the 31
 photos that do show fuel, the model finds every ball (recall 1.0),
 precision is 0.841, and mAP50 is 0.889. That is below A's 0.936 and its
-interval, so C's fuel photos are somewhat harder for the model too, but
-most of the drop on C comes from photos that have no fuel in them.
+interval, so C's fuel photos are harder for the model too. All of C scores
+0.836, so the photos without fuel account for the rest of the mAP50 drop
+and for nearly all of the false positives.
 
 Of the 40 sampled false positives on C, 30 are people: heads in the front
 row of a broadcast, spectators in yellow or orange shirts, a yellow hat,
@@ -85,10 +86,8 @@ positive kinds), so C's clusters may be labeled less completely than A's.
 If so, C's score on its fuel photos is a little too low. Three sampled
 boxes are too few to say how often this happens.
 
-The limit of 25 predictions per image (D-020) can only have hidden false
-positives at 0.5 on the 4 images where every kept box is at or above 0.5.
-The counts here are lower bounds, and 4 images cannot change which sources
-lead.
+The per-image limit (D-020) can hide false positives on only 4 images, too
+few to change which sources lead.
 
 ### B is easy because its balls are large and few
 
@@ -103,14 +102,13 @@ at the 90th percentile, where A's training split has 17. Large, isolated
 balls are an easy case, so B scoring as well as A says little about how
 close the two domains are.
 
-B-test has only 13 small boxes, and the model finds 7 of them (recall
-0.538), against A's 0.865 on small boxes. 13 boxes are too few to rely on.
+B-test has only 13 small boxes, too few to rely on, and the model finds 7
+of them (recall 0.538), against A's 0.865.
 Of B's 13 false positives, 12 are other yellow objects in the room, such as
 the cap of a vacuum cleaner and an envelope. All 10 of its misses are balls
 cut off by the edge of the frame, in two recordings, and 9 of them fall in
-the darkest brightness bin. That is why recall is lower in B's darkest
-images (0.91) than in its brightest (1.0), so the bins show the recordings
-more than the light.
+the darkest brightness bin. That is why recall is 0.91 in B's darkest
+images and 1.0 in its brightest.
 
 ### A's misses are mostly balls cut off by the frame edge
 
@@ -124,11 +122,11 @@ off by the edge of the fisheye frame. Their labels are thin strips, which
 count as small boxes, and the model boxes them differently or not at all.
 Another 4 are balls mostly hidden by a hand or an arm. None is a clearly
 visible ball that the model skipped, so nothing here shows that shrinking
-the frames to 384 pixels (D-016) loses whole balls. A's 16 false positives
-are mostly the same kind. Eight are boxes on edge balls, 7 of which
-overlap a label but not enough to count, 5 are wrong boxes on labeled fuel, 3 of
-them one box over two touching balls, and only 1 is on something that is
-not fuel (a person's head).
+the frames to 384 pixels (D-016) loses whole balls. Half of A's 16 false
+positives are the same kind. Eight are boxes on edge balls, 7 of which
+overlap a label but not enough to count. Five are wrong boxes on labeled
+fuel, 3 of them one box over two touching balls. The last 3 are an
+unlabeled ball, a loose label, and a box on a person's head.
 
 ### What this means for the fix
 
@@ -137,8 +135,8 @@ and on balls from earlier games. The merged model in Task 10 needs images
 of people, crowds, and other games' balls with no fuel label, which C's
 pit and broadcast photos provide. The per-source slices here will show
 whether that worked. Balls cut off by the frame edge cause most of A's
-errors and all of B's misses, where the label and the model disagree on
-how much of the ball to box. A rule for labeling edge balls belongs in the
+errors and all of B's misses, because labels and model disagree on how
+much of such a ball to box. A rule for labeling edge balls belongs in the
 harmonized data. C's unlabeled clustered fuel should be fixed or left out
 before C's fuel photos are used for training.
 
@@ -150,7 +148,7 @@ three test splits, so on C they mostly separate the fuel photos, which are
 soft, from the sharp broadcast frames, and on B they follow the
 recordings. They say little on their own. The verdicts are one reviewer's
 first pass, and C's rest on 40 of 1083 false positives, so they show which
-kinds of error occur more than their exact shares. A lockbox dataset for
+kinds of error occur, not how often. A lockbox dataset for
 checking the fix was not picked before this diagnosis (D-022). The failure
 gallery leaves out the Milford broadcast, since every frame of it shows
 spectators close to the camera.
@@ -158,9 +156,8 @@ spectators close to the camera.
 ![Failure gallery](assets/failures.png)
 
 The gallery shows 15 of the errors, with labels in green, false positives
-in orange, and missed labels in light blue. It is drawn by `make
-diagnose`, and the tile-by-tile list is under "Diagnosis" at the end of
-this page.
+in orange, and missed labels in light blue. The tiles are listed under
+"Diagnosis" at the end of this page.
 
 ## Reading the numbers
 
@@ -448,7 +445,7 @@ The other 99 hold 289 images and 66 fuel boxes.
 
 Everything between the `DIAGNOSIS` markers is written by `make report` from
 `reports/diagnosis/`, which `make diagnose MODEL=<model>` makes from the
-published runs' cached predictions. Do not edit it by hand.
+published runs' cached predictions.
 
 <!-- DIAGNOSIS:START -->
 ### Where baseline-a's errors fall
