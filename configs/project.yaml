@@ -219,12 +219,20 @@ diagnose:
     min_crop_px: 96
     file: reports/diagnosis/review.csv
     verdicts:
+      # False positives
       - unlabeled fuel
       - ball from another game
+      - person
+      - other yellow object
       - robot part
       - field or venue element
+      # Either kind: the model's box merges, splits, or doubles labeled
+      # fuel, the label is the loose one, or the ball is cut off by the
+      # image edge and neither box is clearly right.
+      - wrong box on labeled fuel
       - loose or offset label
-      - misplaced prediction
+      - ball cut off at the image edge
+      # Misses
       - barely visible fuel
       - clear fuel
       - other
