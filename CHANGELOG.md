@@ -52,11 +52,11 @@ uses [Semantic Versioning](https://semver.org/).
 - baseline-a scored on the test splits of `marswars`, `robotzftp2`, and
   `scorekeeper`, with the results in the README and `docs/EVALUATION.md`
   and a write-up of how the model does on each dataset.
-- `frc-diagnose` (`make diagnose MODEL=...`) slices a model's errors from
-  its published runs' cached predictions by source, relative box size,
-  crowding, brightness, and sharpness, checks that its matching reproduces
-  each run's counts, and draws a face-checked failure gallery.
-  `--review-sheet` writes numbered crops for judging errors by eye into
+- `frc-diagnose` (`make diagnose MODEL=...`) slices a model's errors by
+  source, relative box size, crowding, brightness, and sharpness, from its
+  published runs' cached predictions, and draws a face-checked failure
+  gallery. `--review-sheet` writes numbered crop sheets and a blank verdict
+  file under `data/contact_sheets/`. The verdicts go in
   `reports/diagnosis/review.csv` (D-021).
 - baseline-a's diagnosis, with a write-up in `docs/EVALUATION.md` of why
   it fails where it does.
