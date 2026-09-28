@@ -224,6 +224,32 @@ class SourcePattern(_Frozen):
         return self
 
 
+class GalleryConfig(GridConfig):
+    """The failure gallery, with how many tiles each dataset gets."""
+
+    per_dataset: dict[DatasetKey, PositiveInt]
+    min_frame_gap: Annotated[int, Field(ge=0)] = 0
+    # Sources left out whole, when every frame of one broadcast shows the same faces.
+    exclude_sources: dict[DatasetKey, list[str]] = {}
+
+    @model_validator(mode="after")
+    def _fits(self) -> "GalleryConfig":
+        if sum(self.per_dataset.values()) > self.rows * self.cols:
+            raise ValueError("per_dataset asks for more tiles than the gallery has")
+        return self
+
+
+class ReviewConfig(TileLayout):
+    """The sample of errors that is checked by eye, and the verdicts allowed."""
+
+    per_kind: PositiveInt
+    # Crops show this many box widths of context around the box.
+    context: Annotated[float, Field(ge=1)]
+    min_crop_px: PositiveInt
+    file: RelativePath
+    verdicts: list[str]
+
+
 class DiagnoseConfig(_Frozen):
     """Settings for slicing a model's errors."""
 
@@ -233,6 +259,8 @@ class DiagnoseConfig(_Frozen):
     feature_bins: Annotated[int, Field(ge=2)]
     crowding_edges: list[Annotated[int, Field(ge=0)]]
     quantiles: list[Probability]
+    gallery: GalleryConfig
+    review: ReviewConfig
     sources: dict[DatasetKey, list[SourcePattern]] = {}
 
     @model_validator(mode="after")

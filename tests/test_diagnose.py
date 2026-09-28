@@ -1,31 +1,48 @@
 import json
+from collections import Counter
 from itertools import count
 from pathlib import Path
 
 import numpy as np
 import pytest
 import supervision as sv
+import yaml
 from conftest import smooth_image, write_split
 from PIL import Image, ImageFilter
 from pydantic import ValidationError
-from test_evaluate_cli import ARGS, fake, workspace
+from test_evaluate_cli import ARGS, REPO_ROOT, fake, workspace
 
 from frc_xdata import diagnose, evaluate
-from frc_xdata.config import AreaBuckets, DiagnoseConfig, SourcePattern
+from frc_xdata.config import (
+    AreaBuckets,
+    DiagnoseConfig,
+    GalleryConfig,
+    ProjectConfig,
+    SourcePattern,
+    load_yaml,
+)
 from frc_xdata.diagnose import (
+    ErrorItem,
+    ErrorKind,
     ImageErrors,
     SliceScorer,
     bin_index,
     bin_names,
     count_names,
+    crop_box,
+    draw_errors,
     false_positive_kind,
+    gallery_picks,
     image_errors,
     image_features,
     load_diagnosis,
     match_boxes,
     quantile_edges,
     quantiles_of,
+    read_review,
     relative_side,
+    review_counts,
+    review_sample,
     score_slice,
     size_rows,
     slicing,
@@ -209,13 +226,8 @@ def test_the_first_matching_source_wins_and_the_rest_are_other() -> None:
 
 
 def test_crowding_edges_must_start_at_zero_and_increase() -> None:
-    base = {
-        "output_dir": "reports/diagnosis",
-        "feature_px": 384,
-        "localization_floor": 0.1,
-        "feature_bins": 3,
-        "quantiles": [0.5],
-    }
+    project = load_yaml(REPO_ROOT / "configs" / "project.yaml", ProjectConfig)
+    base = project.diagnose.model_dump(exclude={"crowding_edges"})
     DiagnoseConfig(**base, crowding_edges=[0, 1, 5])
     for bad in ([1, 2], [0, 2, 2], []):
         with pytest.raises(ValidationError):
@@ -360,3 +372,172 @@ def test_main_refuses_a_dirty_tree(diagnosed: Path, monkeypatch: pytest.MonkeyPa
 def test_a_model_without_a_published_run_is_an_error(diagnosed: Path) -> None:
     with pytest.raises(ConfigError, match="no published run"):
         diagnose.main(["m2", "--project-config", "configs/project.yaml"])
+
+
+def item(
+    name: str,
+    kind: ErrorKind = "false positive",
+    score: float = 0.9,
+    source: str = "s",
+    frame: int | None = None,
+    auto: str = "background",
+    dataset: str = "d",
+) -> ErrorItem:
+    return ErrorItem(
+        dataset=dataset,
+        split="test",
+        file_name=name,
+        source=source,
+        kind=kind,
+        automatic_kind=auto if kind == "false positive" else "",
+        score=score if kind == "false positive" else 0.0,
+        xyxy=(1.0, 2.0, 3.0, 4.0),
+        frame=frame,
+    )
+
+
+def test_gallery_picks_alternate_kinds_with_one_tile_per_image() -> None:
+    items = [
+        item("a", score=0.9, source="x"),
+        item("a", "miss", source="x"),
+        item("b", score=0.8, source="y"),
+        item("c", "miss", source="z"),
+        item("c", "miss", source="z"),
+    ]
+    picks = gallery_picks(items, 3, [])
+    assert [(p.file_name, p.kind) for p in picks] == [
+        ("a", "false positive"),
+        ("c", "miss"),
+        ("b", "false positive"),
+    ]
+
+
+def test_gallery_picks_spread_over_sources_before_repeating_one() -> None:
+    items = [item("a1", score=0.99, source="a"), item("a2", score=0.98, source="a")]
+    items.append(item("b1", score=0.5, source="b"))
+    assert [p.file_name for p in gallery_picks(items, 2, [])] == ["a1", "b1"]
+
+
+def test_gallery_picks_skip_excluded_images_and_close_frames() -> None:
+    items = [
+        item("f10", score=0.9, frame=10),
+        item("f12", score=0.8, frame=12),
+        item("f50", score=0.7, frame=50),
+        item("bad", score=0.99, frame=100),
+    ]
+    picks = gallery_picks(items, 3, ["bad"], min_frame_gap=30)
+    assert [p.file_name for p in picks] == ["f10", "f50"]
+
+
+def test_gallery_fills_with_one_kind_when_the_other_runs_out() -> None:
+    items = [item(n, score=s, source=n) for n, s in (("a", 0.9), ("b", 0.8), ("c", 0.7))]
+    assert [p.file_name for p in gallery_picks(items, 5, [])] == ["a", "b", "c"]
+
+
+def test_review_sample_is_seeded_capped_and_keeps_small_groups_whole() -> None:
+    many = [item(f"i{n:02d}") for n in range(30)]
+    few = [item("m1", "miss"), item("m2", "miss")]
+    first = review_sample([*many, *few], 5, "seed")
+    assert first == review_sample(list(reversed([*many, *few])), 5, "seed")
+    assert len(first[("d", "false positive")]) == 5
+    assert [i.file_name for i in first[("d", "miss")]] == ["m1", "m2"]
+
+
+def write_review(path: Path, rows: list[list[object]]) -> Path:
+    lines = ["dataset,file_name,kind,x1,y1,x2,y2,verdict,note"]
+    lines += [",".join(str(v) for v in row) for row in rows]
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+VERDICTS = ["clear fuel", "unlabeled fuel", "other"]
+
+
+def test_read_review_rejects_unknown_verdicts_and_repeats(tmp_path: Path) -> None:
+    row = ["d", "a", "false positive", 1.0, 2.0, 3.0, 4.0, "unlabeled fuel", ""]
+    assert read_review(write_review(tmp_path / "ok.csv", [row]), VERDICTS) == {
+        item("a").key: "unlabeled fuel"
+    }
+    with pytest.raises(ConfigError, match="is not one of"):
+        read_review(write_review(tmp_path / "bad.csv", [[*row[:7], "maybe", ""]]), VERDICTS)
+    with pytest.raises(ConfigError, match="twice"):
+        read_review(write_review(tmp_path / "twice.csv", [row, row]), VERDICTS)
+
+
+def test_review_counts_tally_verdicts_by_automatic_kind() -> None:
+    sample = {("d", "false positive"): [item("a"), item("b", auto="localization")]}
+    verdicts = {item("a").key: "unlabeled fuel", item("b").key: "other"}
+    totals: Counter[tuple[str, str]] = Counter({("d", "false positive"): 10})
+    (count,) = review_counts(sample, totals, verdicts, VERDICTS)
+    assert (count.total, count.sampled) == (10, 2)
+    assert count.verdicts == {"unlabeled fuel": 1, "other": 1}
+    assert count.by_automatic_kind == {
+        "localization": {"other": 1},
+        "background": {"unlabeled fuel": 1},
+    }
+
+
+def test_review_counts_need_a_verdict_for_every_sampled_error() -> None:
+    sample = {("d", "false positive"): [item("a"), item("b")]}
+    with pytest.raises(ConfigError, match="no verdict"):
+        review_counts(sample, Counter(), {item("a").key: "other"}, VERDICTS)
+
+
+def test_review_counts_reject_verdicts_outside_the_sample() -> None:
+    sample = {("d", "false positive"): [item("a")]}
+    verdicts = {item("a").key: "other", item("gone").key: "other"}
+    with pytest.raises(ConfigError, match="not in the sample"):
+        review_counts(sample, Counter(), verdicts, VERDICTS)
+
+
+def test_crops_stay_inside_the_image_and_keep_their_minimum_size() -> None:
+    image = gray(0, 200)
+    crop, corner = crop_box(image, (190, 190, 198, 198), context=4, min_px=64)
+    assert crop.size == (64, 64)
+    assert corner == (136, 136)
+    crop, corner = crop_box(image, (90, 90, 110, 110), context=4, min_px=64)
+    assert (crop.size, corner) == ((80, 80), (60, 60))
+
+
+def test_draw_errors_scales_the_image_to_fit() -> None:
+    drawn = draw_errors(
+        Image.new("RGB", (200, 100)), np.array([[0, 0, 10, 10.0]]), NO_BOXES, NO_BOXES, 50
+    )
+    assert drawn.size == (50, 25)
+
+
+def test_a_gallery_needs_room_for_every_tile() -> None:
+    project = load_yaml(REPO_ROOT / "configs" / "project.yaml", ProjectConfig)
+    data = project.diagnose.gallery.model_dump()
+    GalleryConfig(**{**data, "per_dataset": {"a": 16}})
+    with pytest.raises(ValidationError):
+        GalleryConfig(**{**data, "per_dataset": {"a": 16, "b": 1}})
+
+
+def test_main_writes_the_gallery_and_counts_the_review(diagnosed: Path) -> None:
+    assert evaluate.main([*ARGS, "--from-cache", "run1"]) == 0
+    assert diagnose.main(["m", "--project-config", "configs/project.yaml"]) == 0
+    assert (diagnosed / "docs" / "assets" / "failures.png").is_file()
+    result = load_diagnosis(diagnosed / "reports" / "diagnosis" / "m" / "diagnosis.json")
+    # The fake model is perfect at 0.5, so there is nothing to show or review.
+    assert (result.gallery, result.review) == ([], [])
+
+
+def test_review_sheet_writes_crops_and_a_template(
+    diagnosed: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    project = yaml.safe_load((diagnosed / "configs" / "project.yaml").read_text("utf-8"))
+    # A threshold above the fake model's confidence turns every box into a miss.
+    runs = diagnosed / "reports" / "runs"
+    metrics = json.loads((runs / "run1" / "metrics.json").read_text("utf-8"))
+    metrics["metrics"]["confidence"] = 0.95
+    (fuel,) = metrics["metrics"]["classes"]
+    fuel.update(true_positives=0, false_negatives=3)
+    (runs / "run1" / "metrics.json").write_text(json.dumps(metrics), "utf-8")
+    assert diagnose.main(["m", "--review-sheet", "--project-config", "configs/project.yaml"]) == 0
+    sheets = diagnosed / project["paths"]["contact_sheet_dir"]
+    assert (sheets / "review_alpha_miss_1.jpg").is_file()
+    rows = (sheets / "review_template.csv").read_text("utf-8").splitlines()
+    assert rows[0] == "dataset,file_name,kind,x1,y1,x2,y2,verdict,note"
+    assert len(rows) == 4
+    assert not (diagnosed / "reports" / "diagnosis").exists()
