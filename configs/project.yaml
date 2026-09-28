@@ -169,7 +169,7 @@ diagnose:
         pattern: '^(?:[A-Za-z0-9_-]{11}_\d+|youtube-\d+)\.'
   # Failure gallery at docs/assets/failures.png. Picks alternate between
   # false positives and misses, spread over sources. Excluded files show a
-  # face (face-check skill), and a replacement is picked in their place.
+  # face, and the next pick takes their place.
   gallery:
     rows: 4
     cols: 4

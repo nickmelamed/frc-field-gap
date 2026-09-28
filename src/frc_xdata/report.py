@@ -2,9 +2,8 @@
 
 ``frc-report`` reads every run under ``reports/runs/`` and every diagnosis
 under ``reports/diagnosis/``, and rewrites only the text between each
-document's start and end markers. A run is published when it scored a whole
-split from a clean working tree. For each model, dataset, and split, the
-newest such run is used. Values are printed exactly as the run or diagnosis
+document's start and end markers. Runs are chosen by
+:func:`frc_xdata.runs.select_runs`. Values are printed exactly as the run or diagnosis
 stored them, so every number in the docs can be found under ``reports/``.
 """
 
@@ -315,8 +314,8 @@ def _kind_table(d: Diagnosis) -> list[str]:
         "",
         "False positives by why they matched no label. A duplicate overlaps a label that "
         "another prediction already took. A localization error overlaps a label by more than "
-        f"{d.localization_floor} IoU, but not enough to count. One inside an unscored label "
-        "has its center inside a box of a class the model is not scored on, such as a robot. "
+        f"{d.localization_floor} IoU, but not enough to count. A box inside an unscored label "
+        "has its center in a box of a class the model is not scored on, such as a robot. "
         "The rest are background.",
         "",
         *_header(["Dataset", *(FALSE_POSITIVE_KIND_NAMES[k] for k in FALSE_POSITIVE_KINDS)]),
@@ -413,7 +412,8 @@ def diagnosis_section(d: Diagnosis) -> str:
         f"### Where {d.model}'s errors fall",
         "",
         f"Hits, false positives, and misses count predictions with confidence of at least "
-        f"{d.confidence}, matched to labels as the confusion matrix matches them. Brightness "
+        f"{d.confidence}, matched to labels the way supervision's confusion matrix matches "
+        "them (see Limits). Brightness "
         "is the mean gray level from 0 to 255 and sharpness the variance of the Laplacian, "
         f"both measured on the image stretched to {d.feature_px} pixels square, as the model "
         "sees it. Their bins hold equal numbers of images, pooled over every test split, so a "

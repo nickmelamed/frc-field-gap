@@ -1,10 +1,8 @@
 """Draw the diagnosis figures in docs/assets/ from a model's diagnosis.
 
-Each figure repeats numbers from the tables that ``frc-report`` writes into
-docs/EVALUATION.md, which serve as its table view. Colors are the first
-three slots of a categorical palette checked for color vision deficiency,
-one per dataset, and every bar carries its value, so no reading depends on
-color alone.
+Each figure shows numbers from the tables ``frc-report`` writes into
+docs/EVALUATION.md. Each dataset has one color from a colorblind-safe
+palette, and every bar is labeled with its value.
 """
 
 from collections.abc import Sequence
@@ -79,7 +77,6 @@ def size_figure(d: Diagnosis, path: Path) -> Path:
                     color=MUTED,
                 )
                 continue
-            # A narrower bar than its slot leaves a gap between neighbours.
             ax.bar(
                 left + slot / 2,
                 r.recall,
@@ -212,7 +209,7 @@ def write_figures(d: Diagnosis, assets_dir: Path) -> list[Path]:
     """Write every figure for one model and return the paths written.
 
     False positives by source are drawn for the split with the most false
-    positives per image, where the model does worst.
+    positives per image.
     """
     stem = f"diagnosis_{d.model}"
     written = [size_figure(d, assets_dir / f"{stem}_size.png")]

@@ -142,13 +142,8 @@ def match_boxes(predictions: sv.Detections, labels: sv.Detections, iou: float) -
     A pair needs IoU strictly above ``iou``. Pairs whose classes agree are
     taken first, then by IoU from highest to lowest, and each box joins at
     most one pair. Following the same rule means the counts here add up to
-    the hits, false positives, and misses a run reports.
-
-    Args:
-        predictions: One image's predictions, already cut at the confidence
-            threshold.
-        labels: The image's labeled boxes.
-        iou: Overlap a pair must exceed.
+    the hits, false positives, and misses a run reports. ``predictions``
+    must already be cut at the confidence threshold.
     """
     overlaps = iou_matrix(labels, predictions)
     label_ids, pred_ids = np.nonzero(overlaps > iou)
@@ -501,11 +496,8 @@ def slicing(
 ) -> Slicing:
     """Score each named group of images, in ``order``, leaving out empty groups.
 
-    Args:
-        by: What the images are grouped by.
-        groups: The group of each image.
-        order: Every group name, in the order to report them.
-        score: Scores a named list of image indices.
+    ``groups`` holds the group of each image, and ``score`` is called once
+    per non-empty group with its image indices.
     """
     members: dict[str, list[int]] = {}
     for i, g in enumerate(groups):
@@ -1339,7 +1331,7 @@ def diagnosis_meta(
     argv: Sequence[str],
     dirty: bool,
 ) -> dict[str, object]:
-    """Return the provenance SPEC section 3.5 asks for, for one diagnosis."""
+    """Return the inputs, hashes, and versions behind one diagnosis."""
     ev = project.evaluate
     annotations = {
         f"{s.dataset}/{s.split}": sha256_file(
