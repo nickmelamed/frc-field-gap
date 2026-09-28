@@ -61,7 +61,8 @@ Dependencies change only through `uv` and the lockfile.
 - `tests/`: synthetic COCO fixtures only. Network tests are marked
   `integration` and skipped in CI.
 - `.claude/rules/`: Python, test, and writing standards for matching files.
-- `.claude/skills/`: `/finish-task`, `/release`, `/platform-training`.
+- `.claude/skills/`: `/finish-task`, `/release`, `/platform-training`,
+  `/publish-run`.
 
 ## How to work here
 
