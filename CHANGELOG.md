@@ -60,6 +60,12 @@ uses [Semantic Versioning](https://semver.org/).
   `reports/diagnosis/review.csv` (D-021).
 - baseline-a's diagnosis, with a write-up in `docs/EVALUATION.md` of why
   it fails where it does.
+- `docs/WRITEUP.md`, a draft write-up of the baseline, the cross-dataset
+  results, and the diagnosis, and `docs/MODEL_CARD.md`, a first model
+  card for baseline-a.
+- `notebooks/reproduce_baseline.ipynb`, a Colab notebook that downloads
+  and harmonizes the datasets and rescores the committed predictions
+  against the published scores (D-023).
 
 ### Changed
 
@@ -75,3 +81,4 @@ uses [Semantic Versioning](https://semver.org/).
 - `frc-report` also renders the diagnosis tables into `docs/EVALUATION.md`
   and draws the diagnosis figures in `docs/assets/`.
 - matplotlib is a declared dependency.
+- The package version is 0.1.0.
