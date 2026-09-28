@@ -18,6 +18,7 @@ from frc_xdata.diagnose import DIAGNOSIS_NAME, FALSE_POSITIVE_KINDS, Diagnosis, 
 from frc_xdata.download import PROJECT_CONFIG
 from frc_xdata.errors import ConfigError
 from frc_xdata.evaluate import ClassMetrics, RunResult
+from frc_xdata.figures import write_figures
 from frc_xdata.logging_utils import add_log_level_argument, setup_logging
 from frc_xdata.runs import PublishedRun, load_runs, select_runs
 
@@ -489,4 +490,7 @@ def main(argv: list[str] | None = None) -> int:
     setup_logging(args.log_level)
     project = load_yaml(args.project_config, ProjectConfig)
     write_report(project.evaluate.runs_dir, README, EVALUATION, project.diagnose.output_dir)
+    for d in load_diagnoses(project.diagnose.output_dir):
+        for path in write_figures(d, project.paths.assets_dir):
+            logger.info("wrote %s", path)
     return 0
