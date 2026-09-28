@@ -1,0 +1,113 @@
+dataset,file_name,kind,x1,y1,x2,y2,verdict,note
+marswars,Basler_daA1280-54uc__24770352__20260112_180305685_0210_png.rf.b40a0a55f146f485842e11df2ce40771.jpg,false positive,439.0,422.0,618.0,599.0,person,a head
+marswars,Basler_daA1280-54uc__24770352__20260112_180745507_0226_png.rf.6c58ee5d6cd9eb4a611e3a5aff4a04ff.jpg,false positive,208.0,100.0,237.0,143.0,unlabeled fuel,ball half hidden between legs
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0459_png.rf.8685dd14cb7841911a2097c8c4929dbb.jpg,false positive,485.0,415.0,552.0,483.0,loose or offset label,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0488_png.rf.96b86c2f499f31d4d033696153219717.jpg,false positive,3.0,64.0,43.0,111.0,wrong box on labeled fuel,one box over two touching balls
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0488_png.rf.96b86c2f499f31d4d033696153219717.jpg,false positive,35.0,38.0,88.0,97.0,wrong box on labeled fuel,one box over two touching balls
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0489_png.rf.a085d1a4513d5542ff133873ee52d994.jpg,false positive,57.0,0.0,100.0,20.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0494_png.rf.e2af0e7aac3636f3f3519bd9a2cd5791.jpg,false positive,254.0,0.0,293.0,11.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0498_png.rf.8ac91db37b32a7aca66784b9b4901c1d.jpg,false positive,103.0,95.0,162.0,158.0,wrong box on labeled fuel,second box on one ball
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0500_png.rf.5af263592d0a9b4513013e135dd0f4e2.jpg,false positive,171.0,0.0,216.0,15.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0504_png.rf.9f114bc1d31e2898bb692f03254ea62d.jpg,false positive,95.0,0.0,131.0,7.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0505_png.rf.ae443bcc56632ef214245471dce2f7a9.jpg,false positive,196.0,0.0,238.0,10.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0505_png.rf.ae443bcc56632ef214245471dce2f7a9.jpg,false positive,307.0,0.0,348.0,10.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0510_png.rf.2881d2e472da05539c60a07ffa3f6aaf.jpg,false positive,214.0,0.0,246.0,9.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0510_png.rf.2881d2e472da05539c60a07ffa3f6aaf.jpg,false positive,544.0,147.0,600.0,194.0,wrong box on labeled fuel,box straddles two balls
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0511_png.rf.2671725530a199532dab9a86abb799f1.jpg,false positive,462.0,5.0,493.0,55.0,wrong box on labeled fuel,box on the part of a ball a hand leaves visible
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0514_png.rf.557d6062676a54a27d3ff19a66feb514.jpg,false positive,322.0,0.0,358.0,15.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_180305685_0199_png.rf.2836889989fe4bd868b82d1805a22d67.jpg,miss,1242.0,714.0,1280.0,802.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0459_png.rf.8685dd14cb7841911a2097c8c4929dbb.jpg,miss,469.0,404.0,569.0,495.2,loose or offset label,label much larger than the ball
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0488_png.rf.96b86c2f499f31d4d033696153219717.jpg,miss,1.0,83.0,13.5,103.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0488_png.rf.96b86c2f499f31d4d033696153219717.jpg,miss,11.0,69.0,49.8,100.2,wrong box on labeled fuel,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0488_png.rf.96b86c2f499f31d4d033696153219717.jpg,miss,35.0,48.0,81.2,64.2,wrong box on labeled fuel,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0488_png.rf.96b86c2f499f31d4d033696153219717.jpg,miss,48.0,59.0,86.8,94.0,wrong box on labeled fuel,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0489_png.rf.a085d1a4513d5542ff133873ee52d994.jpg,miss,0.0,110.0,12.5,142.5,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0489_png.rf.a085d1a4513d5542ff133873ee52d994.jpg,miss,46.0,0.0,72.2,31.2,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0489_png.rf.a085d1a4513d5542ff133873ee52d994.jpg,miss,76.0,0.0,101.0,15.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0491_png.rf.99f043648926279782a6566f54e55de0.jpg,miss,21.0,0.0,53.5,25.0,loose or offset label,label on empty carpet
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0491_png.rf.99f043648926279782a6566f54e55de0.jpg,miss,123.0,0.0,167.0,23.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0494_png.rf.e2af0e7aac3636f3f3519bd9a2cd5791.jpg,miss,275.0,0.0,302.0,7.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0494_png.rf.e2af0e7aac3636f3f3519bd9a2cd5791.jpg,miss,611.0,0.0,649.0,7.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0495_png.rf.1a627a451475a01e5928d3e47c607eea.jpg,miss,488.0,0.0,566.8,16.2,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0498_png.rf.8ac91db37b32a7aca66784b9b4901c1d.jpg,miss,234.0,0.0,294.0,7.5,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0500_png.rf.5af263592d0a9b4513013e135dd0f4e2.jpg,miss,0.0,114.0,22.5,162.8,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0500_png.rf.5af263592d0a9b4513013e135dd0f4e2.jpg,miss,170.0,0.0,228.8,26.2,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0502_png.rf.d4cc4ffb14d358961682523663cd6a70.jpg,miss,0.0,117.0,9.0,155.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0502_png.rf.d4cc4ffb14d358961682523663cd6a70.jpg,miss,94.0,0.0,126.0,35.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0502_png.rf.d4cc4ffb14d358961682523663cd6a70.jpg,miss,180.0,0.0,207.0,7.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0503_png.rf.32e25f9a83e18f55fd455fae011e6b80.jpg,miss,186.0,0.0,229.8,11.2,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0505_png.rf.ae443bcc56632ef214245471dce2f7a9.jpg,miss,155.0,0.0,198.8,18.8,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0505_png.rf.ae443bcc56632ef214245471dce2f7a9.jpg,miss,198.0,0.0,236.8,23.8,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0505_png.rf.ae443bcc56632ef214245471dce2f7a9.jpg,miss,288.0,0.0,353.0,17.5,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0506_png.rf.590c382f2307db91b773dd54eef9ca2f.jpg,miss,200.0,0.0,230.0,16.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0507_png.rf.d04e50d19127c2842145dc9440c3e785.jpg,miss,298.0,0.0,346.8,8.8,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0509_png.rf.48e831108f5c989df1f598c35d46e3eb.jpg,miss,451.0,23.0,486.0,63.0,barely visible fuel,behind other balls and an arm
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0510_png.rf.2881d2e472da05539c60a07ffa3f6aaf.jpg,miss,215.0,0.0,250.0,21.2,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0510_png.rf.2881d2e472da05539c60a07ffa3f6aaf.jpg,miss,525.0,120.0,613.8,176.2,barely visible fuel,in a hand
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0511_png.rf.2671725530a199532dab9a86abb799f1.jpg,miss,468.0,6.0,488.0,44.0,barely visible fuel,behind an arm
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0511_png.rf.2671725530a199532dab9a86abb799f1.jpg,miss,469.0,40.0,530.0,82.0,barely visible fuel,under a hand
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0513_png.rf.33b38badeef9278f109bf70b6700d3d2.jpg,miss,423.0,0.0,456.0,6.0,ball cut off at the image edge,
+marswars,Basler_daA1280-54uc__24770352__20260112_181311364_0514_png.rf.557d6062676a54a27d3ff19a66feb514.jpg,miss,316.0,0.0,357.2,27.5,ball cut off at the image edge,
+robotzftp2,IMG_5835_MOV-0374_jpg.rf.c04dcdd728275d169518c8a4079ddafe.jpg,false positive,167.0,435.0,218.0,476.0,other yellow object,yellow cap on a vacuum
+robotzftp2,IMG_5835_MOV-0375_jpg.rf.38f13eb96dc8824c852947f8e2f84952.jpg,false positive,180.0,432.0,227.0,472.0,other yellow object,
+robotzftp2,IMG_5835_MOV-0376_jpg.rf.a20170ed49c5fa54ad003b89db29618f.jpg,false positive,190.0,429.0,235.0,469.0,other yellow object,
+robotzftp2,IMG_5835_MOV-0377_jpg.rf.ad3dfac068536319c8ac652ac2a547a0.jpg,false positive,191.0,426.0,242.0,466.0,other yellow object,
+robotzftp2,IMG_5835_MOV-0378_jpg.rf.14fea43b8fd41f528a2752f23374ef5d.jpg,false positive,196.0,422.0,245.0,465.0,other yellow object,
+robotzftp2,IMG_5835_MOV-0394_jpg.rf.95098a89790067356fe7917e03b580f9.jpg,false positive,281.0,433.0,326.0,472.0,other yellow object,
+robotzftp2,IMG_5835_MOV-0422_jpg.rf.dd19881fd25b87201b0bd3feb98ec55b.jpg,false positive,554.0,422.0,588.0,455.0,other yellow object,orange envelope in a bin
+robotzftp2,IMG_5835_MOV-0423_jpg.rf.b9edd96c915859831744f7408277f6a7.jpg,false positive,555.0,423.0,588.0,455.0,other yellow object,
+robotzftp2,IMG_5836_MOV-0217_jpg.rf.0106385aa495990fa760e5802066f7a9.jpg,false positive,1815.0,481.0,1909.0,567.0,other yellow object,yellow-green note
+robotzftp2,IMG_5837_MOV-0115_jpg.rf.68e87a89868eaad256bf877b115fb4b8.jpg,false positive,879.0,897.0,934.0,938.0,other yellow object,small yellow object on a desk
+robotzftp2,IMG_5837_MOV-0121_jpg.rf.3300bfc7f137352013c39009bec2bfe4.jpg,false positive,734.0,660.0,793.0,698.0,other yellow object,
+robotzftp2,IMG_5838_MOV-0169_jpg.rf.2ffb53759f6dca087277f83d607e32ba.jpg,false positive,878.0,0.0,1125.0,198.0,wrong box on labeled fuel,box on part of a blurred ball
+robotzftp2,IMG_5838_MOV-0172_jpg.rf.dfe314dcc5c473ec84fb76485d8f38f2.jpg,false positive,690.0,153.0,756.0,195.0,other yellow object,
+robotzftp2,IMG_5835_MOV-0372_jpg.rf.b4669f2ca4e60a94712d1fab70c5a1d5.jpg,miss,1044.1,0.2,1149.7,35.4,ball cut off at the image edge,
+robotzftp2,IMG_5835_MOV-0373_jpg.rf.c77a5d42316f3fe5e2f33f040062e4bf.jpg,miss,1046.2,0.0,1147.6,27.1,ball cut off at the image edge,
+robotzftp2,IMG_5835_MOV-0374_jpg.rf.c04dcdd728275d169518c8a4079ddafe.jpg,miss,1050.4,0.0,1145.2,25.3,ball cut off at the image edge,
+robotzftp2,IMG_5835_MOV-0376_jpg.rf.a20170ed49c5fa54ad003b89db29618f.jpg,miss,1051.6,-0.0,1149.7,18.3,ball cut off at the image edge,
+robotzftp2,IMG_5835_MOV-0390_jpg.rf.d1d782cbeed53481a349cab0ec01f804.jpg,miss,1052.0,0.0,1139.9,21.2,ball cut off at the image edge,
+robotzftp2,IMG_5835_MOV-0391_jpg.rf.5ae80060d4557f69f8952dd3c89c0cf3.jpg,miss,1051.8,0.3,1141.9,43.9,ball cut off at the image edge,
+robotzftp2,IMG_5836_MOV-0227_jpg.rf.cb915c3ba0bc6d5cc29156ce583c9c08.jpg,miss,0.0,0.0,315.0,174.9,ball cut off at the image edge,
+robotzftp2,IMG_5836_MOV-0229_jpg.rf.daf1c828490b4246b20fc4a0b6e9d57c.jpg,miss,0.9,0.0,114.5,205.7,ball cut off at the image edge,
+robotzftp2,IMG_5836_MOV-0230_jpg.rf.5543b1b2b3086c39ae03885736fe1050.jpg,miss,0.0,0.0,116.6,262.0,ball cut off at the image edge,
+robotzftp2,IMG_5836_MOV-0231_jpg.rf.3c03dc6abfa10f6bccd8c1bf00ffe732.jpg,miss,0.0,0.0,112.5,276.9,ball cut off at the image edge,
+scorekeeper,-Q97WO6Zc_U_2_jpg.rf.145d637161a1eb8f552490511cd13501.jpg,false positive,168.0,250.0,179.0,273.0,ball from another game,2017 ball
+scorekeeper,-Q97WO6Zc_U_3_jpg.rf.ebd789b63085f8d50d622a6195a1d509.jpg,false positive,97.0,101.0,107.0,116.0,ball from another game,
+scorekeeper,-Q97WO6Zc_U_3_jpg.rf.ebd789b63085f8d50d622a6195a1d509.jpg,false positive,160.0,303.0,168.0,318.0,ball from another game,
+scorekeeper,2019_robot_in_action_at_regional_competitions-mp4_03492_png.rf.b3a6ded60f12ecffa138264856ecc804.jpg,false positive,22.0,417.0,96.0,454.0,ball from another game,2019 cargo
+scorekeeper,2019_robot_in_action_at_regional_competitions-mp4_03492_png.rf.b3a6ded60f12ecffa138264856ecc804.jpg,false positive,143.0,445.0,185.0,512.0,ball from another game,
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0017_jpg.rf.4827d904bcdc39f248a2684ba03e8a1e.jpg,false positive,297.0,343.0,315.0,379.0,person,head in the front row
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0047_jpg.rf.dd3119335fcae5ae22555e9e005c5bf3.jpg,false positive,239.0,351.0,249.0,380.0,person,
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0061_jpg.rf.ec7c9afcd8d65dd4dafec8f12cf91d12.jpg,false positive,355.0,337.0,373.0,376.0,person,
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0068_jpg.rf.9353b82ca8a7d81c85954f6aa544c1dc.jpg,false positive,298.0,345.0,315.0,378.0,person,
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0070_jpg.rf.e0ec2a3be829aa4f97c18952daf5bc1a.jpg,false positive,38.0,347.0,52.0,365.0,person,
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0071_jpg.rf.52604f3ad0faaf7611b919e3b7311b1b.jpg,false positive,298.0,345.0,315.0,378.0,person,
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0089_jpg.rf.836b10c15d2343181b2d2aeefafaa496.jpg,false positive,37.0,347.0,51.0,364.0,person,
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0099_jpg.rf.e5c16ae280132a1d27c1818b47261006.jpg,false positive,298.0,343.0,315.0,379.0,person,
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0100_jpg.rf.2323c9c24a2778e33df52b2c14fcb0f2.jpg,false positive,20.0,102.0,33.0,125.0,person,
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0104_jpg.rf.6695ea303a8dd87a57302fb7c722ee74.jpg,false positive,22.0,102.0,33.0,124.0,person,
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0107_jpg.rf.ac64afc6076727798941eddf3c00c032.jpg,false positive,21.0,102.0,33.0,125.0,person,
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0107_jpg.rf.ac64afc6076727798941eddf3c00c032.jpg,false positive,38.0,348.0,51.0,364.0,person,yellow hat
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0111_jpg.rf.23e12b0a577f102a52c3cf9d59eb0625.jpg,false positive,37.0,348.0,52.0,364.0,person,
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0119_jpg.rf.d34884e1dbdc379d226f2adfc0ebd7ac.jpg,false positive,37.0,347.0,52.0,364.0,person,
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0136_jpg.rf.2acd87167047767402a40d046fed9424.jpg,false positive,132.0,354.0,147.0,383.0,person,
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0140_jpg.rf.09b23dc6b6f6ac14992a9bc217f14fb7.jpg,false positive,239.0,352.0,250.0,381.0,person,
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0154_jpg.rf.d88a6c462a40027742d3255a594feb2d.jpg,false positive,38.0,348.0,51.0,364.0,person,
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0157_jpg.rf.6b5f153b6c9324d9bad06a3a7952828d.jpg,false positive,276.0,351.0,293.0,381.0,person,
+scorekeeper,frame_0238_jpg.rf.709791023f03580c82c8b993d6537fdf.jpg,false positive,292.0,120.0,312.0,152.0,unlabeled fuel,"ball behind another, no label"
+scorekeeper,frame_0384_jpg.rf.7bf14483bb17c298466b8f860c5370ad.jpg,false positive,173.0,209.0,196.0,251.0,unlabeled fuel,
+scorekeeper,frame_0394_jpg.rf.a4c2b14841ab6f32c1087116bac8df33.jpg,false positive,261.0,183.0,283.0,220.0,unlabeled fuel,
+scorekeeper,frc_train_221_jpg.rf.f0a2a3fa4bcd60370a21f2d11a0e9ea1.jpg,false positive,34.0,1.0,71.0,31.0,person,
+scorekeeper,frc_train_302_jpg.rf.09aab126191b4d07947ef09481f0baa7.jpg,false positive,305.0,4.0,322.0,30.0,ball from another game,2020 power cell
+scorekeeper,frc_train_757_jpg.rf.90155cc15c686ed35e2ee2259d918ad0.jpg,false positive,81.0,244.0,92.0,266.0,ball from another game,2022 cargo
+scorekeeper,mQbklnVHj7k_11_jpg.rf.e1ef7dea2e9f30ddcd8eaf7953da4718.jpg,false positive,218.0,111.0,227.0,129.0,person,mascot
+scorekeeper,mQbklnVHj7k_13_jpg.rf.c834214af7cffc741ab748bedc76bb6c.jpg,false positive,161.0,112.0,170.0,130.0,person,
+scorekeeper,mQbklnVHj7k_14_jpg.rf.160625f460744b5de17b5ab30fa852e6.jpg,false positive,218.0,110.0,227.0,130.0,person,
+scorekeeper,mQbklnVHj7k_2_jpg.rf.fd883694342df58b1a9983ca96868f28.jpg,false positive,325.0,314.0,348.0,385.0,person,
+scorekeeper,mQbklnVHj7k_4_jpg.rf.f11753e190e8e0aa2ae4968bd8aecc5a.jpg,false positive,161.0,112.0,169.0,130.0,person,
+scorekeeper,mQbklnVHj7k_4_jpg.rf.f11753e190e8e0aa2ae4968bd8aecc5a.jpg,false positive,236.0,317.0,264.0,385.0,person,
+scorekeeper,mQbklnVHj7k_4_jpg.rf.f11753e190e8e0aa2ae4968bd8aecc5a.jpg,false positive,322.0,316.0,351.0,385.0,person,
+scorekeeper,mQbklnVHj7k_7_jpg.rf.38da190ab5086e15a1ea014c86012625.jpg,false positive,171.0,112.0,177.0,127.0,person,
+scorekeeper,mQbklnVHj7k_7_jpg.rf.38da190ab5086e15a1ea014c86012625.jpg,false positive,234.0,320.0,263.0,385.0,person,
+scorekeeper,mQbklnVHj7k_9_jpg.rf.2e2452761ec8766698faa358ae653001.jpg,false positive,217.0,111.0,227.0,129.0,person,
+scorekeeper,ncash2023_gopro3-mp4_00805_png.rf.7f96d0520faf1b0c2b32db16fc191ea1.jpg,false positive,31.0,70.0,44.0,93.0,person,
