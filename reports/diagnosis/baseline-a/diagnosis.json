@@ -1,0 +1,1499 @@
+{
+  "model": "baseline-a",
+  "confidence": 0.5,
+  "iou": 0.5,
+  "feature_px": 384,
+  "localization_floor": 0.1,
+  "area_buckets": {
+    "small_max": 0.0025,
+    "medium_max": 0.0225
+  },
+  "quantiles": [
+    0.1,
+    0.5,
+    0.9
+  ],
+  "brightness_edges": [
+    107.8,
+    115.6
+  ],
+  "sharpness_edges": [
+    170.9,
+    695.3
+  ],
+  "splits": [
+    {
+      "run_id": "baseline-a__marswars-test__20260927T221432Z",
+      "predictions_from": "baseline-a__marswars-test__20260927T213447Z",
+      "dataset": "marswars",
+      "split": "test",
+      "max_predictions_per_image": 25,
+      "classes": [
+        {
+          "name": "fuel",
+          "overall": {
+            "name": "all",
+            "images": 171,
+            "labeled": 455,
+            "hits": 422,
+            "false_positives": 16,
+            "misses": 33,
+            "map50": 0.936,
+            "precision": 0.963,
+            "recall": 0.927,
+            "false_positives_per_image": 0.094,
+            "false_positive_kinds": {
+              "duplicate": 1,
+              "localization": 12,
+              "inside_unscored": 0,
+              "background": 3
+            }
+          },
+          "slicings": [
+            {
+              "by": "brightness",
+              "slices": [
+                {
+                  "name": "below 107.8",
+                  "images": 81,
+                  "labeled": 142,
+                  "hits": 130,
+                  "false_positives": 4,
+                  "misses": 12,
+                  "map50": 0.938,
+                  "precision": 0.97,
+                  "recall": 0.915,
+                  "false_positives_per_image": 0.049,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 4,
+                    "inside_unscored": 0,
+                    "background": 0
+                  }
+                },
+                {
+                  "name": "107.8 to 115.6",
+                  "images": 42,
+                  "labeled": 252,
+                  "hits": 233,
+                  "false_positives": 10,
+                  "misses": 19,
+                  "map50": 0.936,
+                  "precision": 0.959,
+                  "recall": 0.925,
+                  "false_positives_per_image": 0.238,
+                  "false_positive_kinds": {
+                    "duplicate": 1,
+                    "localization": 7,
+                    "inside_unscored": 0,
+                    "background": 2
+                  }
+                },
+                {
+                  "name": "115.6 and above",
+                  "images": 48,
+                  "labeled": 61,
+                  "hits": 59,
+                  "false_positives": 2,
+                  "misses": 2,
+                  "map50": 0.968,
+                  "precision": 0.967,
+                  "recall": 0.967,
+                  "false_positives_per_image": 0.042,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 1,
+                    "inside_unscored": 0,
+                    "background": 1
+                  }
+                }
+              ]
+            },
+            {
+              "by": "sharpness",
+              "slices": [
+                {
+                  "name": "below 170.9",
+                  "images": 58,
+                  "labeled": 296,
+                  "hits": 271,
+                  "false_positives": 10,
+                  "misses": 25,
+                  "map50": 0.936,
+                  "precision": 0.964,
+                  "recall": 0.916,
+                  "false_positives_per_image": 0.172,
+                  "false_positive_kinds": {
+                    "duplicate": 1,
+                    "localization": 8,
+                    "inside_unscored": 0,
+                    "background": 1
+                  }
+                },
+                {
+                  "name": "170.9 to 695.3",
+                  "images": 113,
+                  "labeled": 159,
+                  "hits": 151,
+                  "false_positives": 6,
+                  "misses": 8,
+                  "map50": 0.953,
+                  "precision": 0.962,
+                  "recall": 0.95,
+                  "false_positives_per_image": 0.053,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 4,
+                    "inside_unscored": 0,
+                    "background": 2
+                  }
+                }
+              ]
+            },
+            {
+              "by": "labeled fuel per image",
+              "slices": [
+                {
+                  "name": "0",
+                  "images": 35,
+                  "labeled": 0,
+                  "hits": 0,
+                  "false_positives": 1,
+                  "misses": 0,
+                  "map50": null,
+                  "precision": 0.0,
+                  "recall": null,
+                  "false_positives_per_image": 0.029,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 1
+                  }
+                },
+                {
+                  "name": "1",
+                  "images": 37,
+                  "labeled": 37,
+                  "hits": 36,
+                  "false_positives": 1,
+                  "misses": 1,
+                  "map50": 0.999,
+                  "precision": 0.973,
+                  "recall": 0.973,
+                  "false_positives_per_image": 0.027,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 1
+                  }
+                },
+                {
+                  "name": "2 to 4",
+                  "images": 75,
+                  "labeled": 151,
+                  "hits": 150,
+                  "false_positives": 1,
+                  "misses": 1,
+                  "map50": 0.986,
+                  "precision": 0.993,
+                  "recall": 0.993,
+                  "false_positives_per_image": 0.013,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 1,
+                    "inside_unscored": 0,
+                    "background": 0
+                  }
+                },
+                {
+                  "name": "5 to 9",
+                  "images": 7,
+                  "labeled": 51,
+                  "hits": 39,
+                  "false_positives": 4,
+                  "misses": 12,
+                  "map50": 0.828,
+                  "precision": 0.907,
+                  "recall": 0.765,
+                  "false_positives_per_image": 0.571,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 4,
+                    "inside_unscored": 0,
+                    "background": 0
+                  }
+                },
+                {
+                  "name": "10 or more",
+                  "images": 17,
+                  "labeled": 216,
+                  "hits": 197,
+                  "false_positives": 9,
+                  "misses": 19,
+                  "map50": 0.926,
+                  "precision": 0.956,
+                  "recall": 0.912,
+                  "false_positives_per_image": 0.529,
+                  "false_positive_kinds": {
+                    "duplicate": 1,
+                    "localization": 7,
+                    "inside_unscored": 0,
+                    "background": 1
+                  }
+                }
+              ]
+            },
+            {
+              "by": "has labeled fuel",
+              "slices": [
+                {
+                  "name": "yes",
+                  "images": 136,
+                  "labeled": 455,
+                  "hits": 422,
+                  "false_positives": 15,
+                  "misses": 33,
+                  "map50": 0.936,
+                  "precision": 0.966,
+                  "recall": 0.927,
+                  "false_positives_per_image": 0.11,
+                  "false_positive_kinds": {
+                    "duplicate": 1,
+                    "localization": 12,
+                    "inside_unscored": 0,
+                    "background": 2
+                  }
+                },
+                {
+                  "name": "no",
+                  "images": 35,
+                  "labeled": 0,
+                  "hits": 0,
+                  "false_positives": 1,
+                  "misses": 0,
+                  "map50": null,
+                  "precision": 0.0,
+                  "recall": null,
+                  "false_positives_per_image": 0.029,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 1
+                  }
+                }
+              ]
+            },
+            {
+              "by": "source",
+              "slices": [
+                {
+                  "name": "Basler_daA1280-54uc__24770352__20260112_180305685",
+                  "images": 23,
+                  "labeled": 16,
+                  "hits": 15,
+                  "false_positives": 1,
+                  "misses": 1,
+                  "map50": 0.996,
+                  "precision": 0.938,
+                  "recall": 0.938,
+                  "false_positives_per_image": 0.043,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 1
+                  }
+                },
+                {
+                  "name": "Basler_daA1280-54uc__24770352__20260112_180602871",
+                  "images": 10,
+                  "labeled": 0,
+                  "hits": 0,
+                  "false_positives": 0,
+                  "misses": 0,
+                  "map50": null,
+                  "precision": null,
+                  "recall": null,
+                  "false_positives_per_image": 0.0,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 0
+                  }
+                },
+                {
+                  "name": "Basler_daA1280-54uc__24770352__20260112_180633579",
+                  "images": 21,
+                  "labeled": 32,
+                  "hits": 32,
+                  "false_positives": 0,
+                  "misses": 0,
+                  "map50": 1.0,
+                  "precision": 1.0,
+                  "recall": 1.0,
+                  "false_positives_per_image": 0.0,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 0
+                  }
+                },
+                {
+                  "name": "Basler_daA1280-54uc__24770352__20260112_180745507",
+                  "images": 26,
+                  "labeled": 33,
+                  "hits": 33,
+                  "false_positives": 1,
+                  "misses": 0,
+                  "map50": 0.999,
+                  "precision": 0.971,
+                  "recall": 1.0,
+                  "false_positives_per_image": 0.038,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 1
+                  }
+                },
+                {
+                  "name": "Basler_daA1280-54uc__24770352__20260112_180938780",
+                  "images": 22,
+                  "labeled": 39,
+                  "hits": 39,
+                  "false_positives": 0,
+                  "misses": 0,
+                  "map50": 1.0,
+                  "precision": 1.0,
+                  "recall": 1.0,
+                  "false_positives_per_image": 0.0,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 0
+                  }
+                },
+                {
+                  "name": "Basler_daA1280-54uc__24770352__20260112_181311364",
+                  "images": 69,
+                  "labeled": 335,
+                  "hits": 303,
+                  "false_positives": 14,
+                  "misses": 32,
+                  "map50": 0.922,
+                  "precision": 0.956,
+                  "recall": 0.904,
+                  "false_positives_per_image": 0.203,
+                  "false_positive_kinds": {
+                    "duplicate": 1,
+                    "localization": 12,
+                    "inside_unscored": 0,
+                    "background": 1
+                  }
+                }
+              ]
+            }
+          ],
+          "sizes": [
+            {
+              "bucket": "small",
+              "labeled": 222,
+              "hits": 192,
+              "recall": 0.865,
+              "false_positives": 12
+            },
+            {
+              "bucket": "medium",
+              "labeled": 233,
+              "hits": 230,
+              "recall": 0.987,
+              "false_positives": 3
+            },
+            {
+              "bucket": "large",
+              "labeled": 0,
+              "hits": 0,
+              "recall": null,
+              "false_positives": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": "baseline-a__robotzftp2-test__20260927T221735Z",
+      "predictions_from": "baseline-a__robotzftp2-test__20260927T214029Z",
+      "dataset": "robotzftp2",
+      "split": "test",
+      "max_predictions_per_image": 25,
+      "classes": [
+        {
+          "name": "fuel",
+          "overall": {
+            "name": "all",
+            "images": 286,
+            "labeled": 376,
+            "hits": 366,
+            "false_positives": 13,
+            "misses": 10,
+            "map50": 0.994,
+            "precision": 0.966,
+            "recall": 0.973,
+            "false_positives_per_image": 0.045,
+            "false_positive_kinds": {
+              "duplicate": 0,
+              "localization": 1,
+              "inside_unscored": 0,
+              "background": 12
+            }
+          },
+          "slicings": [
+            {
+              "by": "brightness",
+              "slices": [
+                {
+                  "name": "below 107.8",
+                  "images": 96,
+                  "labeled": 100,
+                  "hits": 91,
+                  "false_positives": 8,
+                  "misses": 9,
+                  "map50": 0.987,
+                  "precision": 0.919,
+                  "recall": 0.91,
+                  "false_positives_per_image": 0.083,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 1,
+                    "inside_unscored": 0,
+                    "background": 7
+                  }
+                },
+                {
+                  "name": "107.8 to 115.6",
+                  "images": 62,
+                  "labeled": 106,
+                  "hits": 105,
+                  "false_positives": 5,
+                  "misses": 1,
+                  "map50": 0.994,
+                  "precision": 0.955,
+                  "recall": 0.991,
+                  "false_positives_per_image": 0.081,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 5
+                  }
+                },
+                {
+                  "name": "115.6 and above",
+                  "images": 128,
+                  "labeled": 170,
+                  "hits": 170,
+                  "false_positives": 0,
+                  "misses": 0,
+                  "map50": 1.0,
+                  "precision": 1.0,
+                  "recall": 1.0,
+                  "false_positives_per_image": 0.0,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 0
+                  }
+                }
+              ]
+            },
+            {
+              "by": "sharpness",
+              "slices": [
+                {
+                  "name": "below 170.9",
+                  "images": 160,
+                  "labeled": 180,
+                  "hits": 176,
+                  "false_positives": 4,
+                  "misses": 4,
+                  "map50": 0.998,
+                  "precision": 0.978,
+                  "recall": 0.978,
+                  "false_positives_per_image": 0.025,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 1,
+                    "inside_unscored": 0,
+                    "background": 3
+                  }
+                },
+                {
+                  "name": "170.9 to 695.3",
+                  "images": 94,
+                  "labeled": 136,
+                  "hits": 132,
+                  "false_positives": 4,
+                  "misses": 4,
+                  "map50": 0.995,
+                  "precision": 0.971,
+                  "recall": 0.971,
+                  "false_positives_per_image": 0.043,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 4
+                  }
+                },
+                {
+                  "name": "695.3 and above",
+                  "images": 32,
+                  "labeled": 60,
+                  "hits": 58,
+                  "false_positives": 5,
+                  "misses": 2,
+                  "map50": 0.989,
+                  "precision": 0.921,
+                  "recall": 0.967,
+                  "false_positives_per_image": 0.156,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 5
+                  }
+                }
+              ]
+            },
+            {
+              "by": "labeled fuel per image",
+              "slices": [
+                {
+                  "name": "0",
+                  "images": 17,
+                  "labeled": 0,
+                  "hits": 0,
+                  "false_positives": 0,
+                  "misses": 0,
+                  "map50": null,
+                  "precision": null,
+                  "recall": null,
+                  "false_positives_per_image": 0.0,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 0
+                  }
+                },
+                {
+                  "name": "1",
+                  "images": 162,
+                  "labeled": 162,
+                  "hits": 158,
+                  "false_positives": 7,
+                  "misses": 4,
+                  "map50": 0.996,
+                  "precision": 0.958,
+                  "recall": 0.975,
+                  "false_positives_per_image": 0.043,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 1,
+                    "inside_unscored": 0,
+                    "background": 6
+                  }
+                },
+                {
+                  "name": "2 to 4",
+                  "images": 107,
+                  "labeled": 214,
+                  "hits": 208,
+                  "false_positives": 6,
+                  "misses": 6,
+                  "map50": 0.994,
+                  "precision": 0.972,
+                  "recall": 0.972,
+                  "false_positives_per_image": 0.056,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 6
+                  }
+                }
+              ]
+            },
+            {
+              "by": "has labeled fuel",
+              "slices": [
+                {
+                  "name": "yes",
+                  "images": 269,
+                  "labeled": 376,
+                  "hits": 366,
+                  "false_positives": 13,
+                  "misses": 10,
+                  "map50": 0.994,
+                  "precision": 0.966,
+                  "recall": 0.973,
+                  "false_positives_per_image": 0.048,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 1,
+                    "inside_unscored": 0,
+                    "background": 12
+                  }
+                },
+                {
+                  "name": "no",
+                  "images": 17,
+                  "labeled": 0,
+                  "hits": 0,
+                  "false_positives": 0,
+                  "misses": 0,
+                  "map50": null,
+                  "precision": null,
+                  "recall": null,
+                  "false_positives_per_image": 0.0,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 0
+                  }
+                }
+              ]
+            },
+            {
+              "by": "source",
+              "slices": [
+                {
+                  "name": "IMG_5833_MOV",
+                  "images": 79,
+                  "labeled": 129,
+                  "hits": 129,
+                  "false_positives": 0,
+                  "misses": 0,
+                  "map50": 1.0,
+                  "precision": 1.0,
+                  "recall": 1.0,
+                  "false_positives_per_image": 0.0,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 0
+                  }
+                },
+                {
+                  "name": "IMG_5834_MOV",
+                  "images": 14,
+                  "labeled": 14,
+                  "hits": 14,
+                  "false_positives": 0,
+                  "misses": 0,
+                  "map50": 1.0,
+                  "precision": 1.0,
+                  "recall": 1.0,
+                  "false_positives_per_image": 0.0,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 0
+                  }
+                },
+                {
+                  "name": "IMG_5835_MOV",
+                  "images": 65,
+                  "labeled": 117,
+                  "hits": 111,
+                  "false_positives": 8,
+                  "misses": 6,
+                  "map50": 0.985,
+                  "precision": 0.933,
+                  "recall": 0.949,
+                  "false_positives_per_image": 0.123,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 8
+                  }
+                },
+                {
+                  "name": "IMG_5836_MOV",
+                  "images": 35,
+                  "labeled": 35,
+                  "hits": 31,
+                  "false_positives": 1,
+                  "misses": 4,
+                  "map50": 0.994,
+                  "precision": 0.969,
+                  "recall": 0.886,
+                  "false_positives_per_image": 0.029,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 1
+                  }
+                },
+                {
+                  "name": "IMG_5837_MOV",
+                  "images": 20,
+                  "labeled": 20,
+                  "hits": 20,
+                  "false_positives": 2,
+                  "misses": 0,
+                  "map50": 1.0,
+                  "precision": 0.909,
+                  "recall": 1.0,
+                  "false_positives_per_image": 0.1,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 2
+                  }
+                },
+                {
+                  "name": "IMG_5838_MOV",
+                  "images": 29,
+                  "labeled": 25,
+                  "hits": 25,
+                  "false_positives": 2,
+                  "misses": 0,
+                  "map50": 1.0,
+                  "precision": 0.926,
+                  "recall": 1.0,
+                  "false_positives_per_image": 0.069,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 1,
+                    "inside_unscored": 0,
+                    "background": 1
+                  }
+                },
+                {
+                  "name": "IMG_5839_MOV",
+                  "images": 44,
+                  "labeled": 36,
+                  "hits": 36,
+                  "false_positives": 0,
+                  "misses": 0,
+                  "map50": 1.0,
+                  "precision": 1.0,
+                  "recall": 1.0,
+                  "false_positives_per_image": 0.0,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "sizes": [
+            {
+              "bucket": "small",
+              "labeled": 13,
+              "hits": 7,
+              "recall": 0.538,
+              "false_positives": 11
+            },
+            {
+              "bucket": "medium",
+              "labeled": 180,
+              "hits": 177,
+              "recall": 0.983,
+              "false_positives": 1
+            },
+            {
+              "bucket": "large",
+              "labeled": 183,
+              "hits": 182,
+              "recall": 0.995,
+              "false_positives": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": "baseline-a__scorekeeper-test__20260927T222144Z",
+      "predictions_from": "baseline-a__scorekeeper-test__20260927T215915Z",
+      "dataset": "scorekeeper",
+      "split": "test",
+      "max_predictions_per_image": 25,
+      "classes": [
+        {
+          "name": "fuel",
+          "overall": {
+            "name": "all",
+            "images": 314,
+            "labeled": 375,
+            "hits": 375,
+            "false_positives": 1083,
+            "misses": 0,
+            "map50": 0.836,
+            "precision": 0.257,
+            "recall": 1.0,
+            "false_positives_per_image": 3.449,
+            "false_positive_kinds": {
+              "duplicate": 2,
+              "localization": 58,
+              "inside_unscored": 53,
+              "background": 970
+            }
+          },
+          "slicings": [
+            {
+              "by": "brightness",
+              "slices": [
+                {
+                  "name": "below 107.8",
+                  "images": 81,
+                  "labeled": 113,
+                  "hits": 113,
+                  "false_positives": 241,
+                  "misses": 0,
+                  "map50": 0.785,
+                  "precision": 0.319,
+                  "recall": 1.0,
+                  "false_positives_per_image": 2.975,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 18,
+                    "inside_unscored": 32,
+                    "background": 191
+                  }
+                },
+                {
+                  "name": "107.8 to 115.6",
+                  "images": 149,
+                  "labeled": 105,
+                  "hits": 105,
+                  "false_positives": 581,
+                  "misses": 0,
+                  "map50": 0.931,
+                  "precision": 0.153,
+                  "recall": 1.0,
+                  "false_positives_per_image": 3.899,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 10,
+                    "inside_unscored": 3,
+                    "background": 568
+                  }
+                },
+                {
+                  "name": "115.6 and above",
+                  "images": 84,
+                  "labeled": 157,
+                  "hits": 157,
+                  "false_positives": 261,
+                  "misses": 0,
+                  "map50": 0.857,
+                  "precision": 0.376,
+                  "recall": 1.0,
+                  "false_positives_per_image": 3.107,
+                  "false_positive_kinds": {
+                    "duplicate": 2,
+                    "localization": 30,
+                    "inside_unscored": 18,
+                    "background": 211
+                  }
+                }
+              ]
+            },
+            {
+              "by": "sharpness",
+              "slices": [
+                {
+                  "name": "below 170.9",
+                  "images": 38,
+                  "labeled": 375,
+                  "hits": 375,
+                  "false_positives": 74,
+                  "misses": 0,
+                  "map50": 0.886,
+                  "precision": 0.835,
+                  "recall": 1.0,
+                  "false_positives_per_image": 1.947,
+                  "false_positive_kinds": {
+                    "duplicate": 2,
+                    "localization": 58,
+                    "inside_unscored": 0,
+                    "background": 14
+                  }
+                },
+                {
+                  "name": "170.9 to 695.3",
+                  "images": 51,
+                  "labeled": 0,
+                  "hits": 0,
+                  "false_positives": 70,
+                  "misses": 0,
+                  "map50": null,
+                  "precision": 0.0,
+                  "recall": null,
+                  "false_positives_per_image": 1.373,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 30,
+                    "background": 40
+                  }
+                },
+                {
+                  "name": "695.3 and above",
+                  "images": 225,
+                  "labeled": 0,
+                  "hits": 0,
+                  "false_positives": 939,
+                  "misses": 0,
+                  "map50": null,
+                  "precision": 0.0,
+                  "recall": null,
+                  "false_positives_per_image": 4.173,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 23,
+                    "background": 916
+                  }
+                }
+              ]
+            },
+            {
+              "by": "labeled fuel per image",
+              "slices": [
+                {
+                  "name": "0",
+                  "images": 283,
+                  "labeled": 0,
+                  "hits": 0,
+                  "false_positives": 1012,
+                  "misses": 0,
+                  "map50": null,
+                  "precision": 0.0,
+                  "recall": null,
+                  "false_positives_per_image": 3.576,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 53,
+                    "background": 959
+                  }
+                },
+                {
+                  "name": "5 to 9",
+                  "images": 2,
+                  "labeled": 18,
+                  "hits": 18,
+                  "false_positives": 8,
+                  "misses": 0,
+                  "map50": 0.875,
+                  "precision": 0.692,
+                  "recall": 1.0,
+                  "false_positives_per_image": 4.0,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 7,
+                    "inside_unscored": 0,
+                    "background": 1
+                  }
+                },
+                {
+                  "name": "10 or more",
+                  "images": 29,
+                  "labeled": 357,
+                  "hits": 357,
+                  "false_positives": 63,
+                  "misses": 0,
+                  "map50": 0.903,
+                  "precision": 0.85,
+                  "recall": 1.0,
+                  "false_positives_per_image": 2.172,
+                  "false_positive_kinds": {
+                    "duplicate": 2,
+                    "localization": 51,
+                    "inside_unscored": 0,
+                    "background": 10
+                  }
+                }
+              ]
+            },
+            {
+              "by": "has labeled fuel",
+              "slices": [
+                {
+                  "name": "yes",
+                  "images": 31,
+                  "labeled": 375,
+                  "hits": 375,
+                  "false_positives": 71,
+                  "misses": 0,
+                  "map50": 0.889,
+                  "precision": 0.841,
+                  "recall": 1.0,
+                  "false_positives_per_image": 2.29,
+                  "false_positive_kinds": {
+                    "duplicate": 2,
+                    "localization": 58,
+                    "inside_unscored": 0,
+                    "background": 11
+                  }
+                },
+                {
+                  "name": "no",
+                  "images": 283,
+                  "labeled": 0,
+                  "hits": 0,
+                  "false_positives": 1012,
+                  "misses": 0,
+                  "map50": null,
+                  "precision": 0.0,
+                  "recall": null,
+                  "false_positives_per_image": 3.576,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 53,
+                    "background": 959
+                  }
+                }
+              ]
+            },
+            {
+              "by": "source",
+              "slices": [
+                {
+                  "name": "fuel photos",
+                  "images": 31,
+                  "labeled": 375,
+                  "hits": 375,
+                  "false_positives": 71,
+                  "misses": 0,
+                  "map50": 0.889,
+                  "precision": 0.841,
+                  "recall": 1.0,
+                  "false_positives_per_image": 2.29,
+                  "false_positive_kinds": {
+                    "duplicate": 2,
+                    "localization": 58,
+                    "inside_unscored": 0,
+                    "background": 11
+                  }
+                },
+                {
+                  "name": "2024 Milford broadcast",
+                  "images": 159,
+                  "labeled": 0,
+                  "hits": 0,
+                  "false_positives": 632,
+                  "misses": 0,
+                  "map50": null,
+                  "precision": 0.0,
+                  "recall": null,
+                  "false_positives_per_image": 3.975,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 0,
+                    "background": 632
+                  }
+                },
+                {
+                  "name": "frc_train photos",
+                  "images": 60,
+                  "labeled": 0,
+                  "hits": 0,
+                  "false_positives": 111,
+                  "misses": 0,
+                  "map50": null,
+                  "precision": 0.0,
+                  "recall": null,
+                  "false_positives_per_image": 1.85,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 35,
+                    "background": 76
+                  }
+                },
+                {
+                  "name": "YouTube frames",
+                  "images": 34,
+                  "labeled": 0,
+                  "hits": 0,
+                  "false_positives": 217,
+                  "misses": 0,
+                  "map50": null,
+                  "precision": 0.0,
+                  "recall": null,
+                  "false_positives_per_image": 6.382,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 12,
+                    "background": 205
+                  }
+                },
+                {
+                  "name": "other",
+                  "images": 30,
+                  "labeled": 0,
+                  "hits": 0,
+                  "false_positives": 52,
+                  "misses": 0,
+                  "map50": null,
+                  "precision": 0.0,
+                  "recall": null,
+                  "false_positives_per_image": 1.733,
+                  "false_positive_kinds": {
+                    "duplicate": 0,
+                    "localization": 0,
+                    "inside_unscored": 6,
+                    "background": 46
+                  }
+                }
+              ]
+            }
+          ],
+          "sizes": [
+            {
+              "bucket": "small",
+              "labeled": 32,
+              "hits": 32,
+              "recall": 1.0,
+              "false_positives": 870
+            },
+            {
+              "bucket": "medium",
+              "labeled": 335,
+              "hits": 335,
+              "recall": 1.0,
+              "false_positives": 186
+            },
+            {
+              "bucket": "large",
+              "labeled": 8,
+              "hits": 8,
+              "recall": 1.0,
+              "false_positives": 27
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "domain": [
+    {
+      "dataset": "marswars",
+      "split": "train",
+      "role": "training",
+      "images": 942,
+      "boxes": 8653,
+      "brightness": [
+        67.432,
+        116.428,
+        138.227
+      ],
+      "sharpness": [
+        114.865,
+        167.537,
+        460.009
+      ],
+      "box_side": [
+        0.02,
+        0.044,
+        0.087
+      ],
+      "boxes_per_image": [
+        1.0,
+        2.0,
+        17.0
+      ]
+    },
+    {
+      "dataset": "marswars",
+      "split": "test",
+      "role": "test",
+      "images": 171,
+      "boxes": 455,
+      "brightness": [
+        92.645,
+        108.514,
+        131.201
+      ],
+      "sharpness": [
+        121.96,
+        192.29,
+        254.477
+      ],
+      "box_side": [
+        0.028,
+        0.051,
+        0.077
+      ],
+      "boxes_per_image": [
+        0.0,
+        2.0,
+        9.0
+      ]
+    },
+    {
+      "dataset": "robotzftp2",
+      "split": "test",
+      "role": "test",
+      "images": 286,
+      "boxes": 376,
+      "brightness": [
+        76.049,
+        111.808,
+        153.63
+      ],
+      "sharpness": [
+        27.24,
+        139.397,
+        724.864
+      ],
+      "box_side": [
+        0.06,
+        0.148,
+        0.238
+      ],
+      "boxes_per_image": [
+        1.0,
+        1.0,
+        2.0
+      ]
+    },
+    {
+      "dataset": "scorekeeper",
+      "split": "test",
+      "role": "test",
+      "images": 314,
+      "boxes": 375,
+      "brightness": [
+        93.041,
+        114.773,
+        126.0
+      ],
+      "sharpness": [
+        97.835,
+        1995.108,
+        2400.531
+      ],
+      "box_side": [
+        0.05,
+        0.061,
+        0.116
+      ],
+      "boxes_per_image": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "gallery": [
+    {
+      "dataset": "marswars",
+      "file_name": "Basler_daA1280-54uc__24770352__20260112_181311364_0459_png.rf.8685dd14cb7841911a2097c8c4929dbb.jpg",
+      "kind": "false positive",
+      "source": "Basler_daA1280-54uc__24770352__20260112_181311364"
+    },
+    {
+      "dataset": "marswars",
+      "file_name": "Basler_daA1280-54uc__24770352__20260112_181311364_0489_png.rf.a085d1a4513d5542ff133873ee52d994.jpg",
+      "kind": "miss",
+      "source": "Basler_daA1280-54uc__24770352__20260112_181311364"
+    },
+    {
+      "dataset": "marswars",
+      "file_name": "Basler_daA1280-54uc__24770352__20260112_180745507_0226_png.rf.6c58ee5d6cd9eb4a611e3a5aff4a04ff.jpg",
+      "kind": "false positive",
+      "source": "Basler_daA1280-54uc__24770352__20260112_180745507"
+    },
+    {
+      "dataset": "robotzftp2",
+      "file_name": "IMG_5835_MOV-0376_jpg.rf.a20170ed49c5fa54ad003b89db29618f.jpg",
+      "kind": "false positive",
+      "source": "IMG_5835_MOV"
+    },
+    {
+      "dataset": "robotzftp2",
+      "file_name": "IMG_5836_MOV-0227_jpg.rf.cb915c3ba0bc6d5cc29156ce583c9c08.jpg",
+      "kind": "miss",
+      "source": "IMG_5836_MOV"
+    },
+    {
+      "dataset": "robotzftp2",
+      "file_name": "IMG_5837_MOV-0121_jpg.rf.3300bfc7f137352013c39009bec2bfe4.jpg",
+      "kind": "false positive",
+      "source": "IMG_5837_MOV"
+    },
+    {
+      "dataset": "robotzftp2",
+      "file_name": "IMG_5838_MOV-0169_jpg.rf.2ffb53759f6dca087277f83d607e32ba.jpg",
+      "kind": "false positive",
+      "source": "IMG_5838_MOV"
+    },
+    {
+      "dataset": "scorekeeper",
+      "file_name": "2019_PNW_District_Auburn_Event_Quarterfinal_3_Match_1-mp4_00000_png.rf.cbd5e440a1053e4adf0f03b6f456a2ae.jpg",
+      "kind": "false positive",
+      "source": "other"
+    },
+    {
+      "dataset": "scorekeeper",
+      "file_name": "frame_0051_jpg.rf.13768b3a1df8e51d2f8f8a07a9ba5ca7.jpg",
+      "kind": "false positive",
+      "source": "fuel photos"
+    },
+    {
+      "dataset": "scorekeeper",
+      "file_name": "frc_train_396_jpg.rf.6087a4d12000a6d0ce9d1b10614565c3.jpg",
+      "kind": "false positive",
+      "source": "frc_train photos"
+    },
+    {
+      "dataset": "scorekeeper",
+      "file_name": "-Q97WO6Zc_U_22_jpg.rf.971b5a7350cdaa1c775bbfeb4c6a7f6d.jpg",
+      "kind": "false positive",
+      "source": "YouTube frames"
+    },
+    {
+      "dataset": "scorekeeper",
+      "file_name": "blue_big2frame_00200_png.rf.1a62b9682068629b2285b5689b746d97.jpg",
+      "kind": "false positive",
+      "source": "other"
+    },
+    {
+      "dataset": "scorekeeper",
+      "file_name": "frame_0185_jpg.rf.141aa7d5f9ec4f8480e3f1fe4c358ad7.jpg",
+      "kind": "false positive",
+      "source": "fuel photos"
+    },
+    {
+      "dataset": "scorekeeper",
+      "file_name": "frc_train_302_jpg.rf.09aab126191b4d07947ef09481f0baa7.jpg",
+      "kind": "false positive",
+      "source": "frc_train photos"
+    },
+    {
+      "dataset": "scorekeeper",
+      "file_name": "-Q97WO6Zc_U_3_jpg.rf.224c5b3602c0c5a9fc4af5b3839257ea.jpg",
+      "kind": "false positive",
+      "source": "YouTube frames"
+    }
+  ],
+  "review": [
+    {
+      "dataset": "marswars",
+      "kind": "false positive",
+      "total": 16,
+      "sampled": 16,
+      "verdicts": {
+        "unlabeled fuel": 1,
+        "person": 1,
+        "wrong box on labeled fuel": 5,
+        "loose or offset label": 1,
+        "ball cut off at the image edge": 8
+      },
+      "by_automatic_kind": {
+        "duplicate": {
+          "wrong box on labeled fuel": 1
+        },
+        "localization": {
+          "wrong box on labeled fuel": 4,
+          "loose or offset label": 1,
+          "ball cut off at the image edge": 7
+        },
+        "background": {
+          "unlabeled fuel": 1,
+          "person": 1,
+          "ball cut off at the image edge": 1
+        }
+      }
+    },
+    {
+      "dataset": "marswars",
+      "kind": "miss",
+      "total": 33,
+      "sampled": 33,
+      "verdicts": {
+        "wrong box on labeled fuel": 3,
+        "loose or offset label": 2,
+        "ball cut off at the image edge": 24,
+        "barely visible fuel": 4
+      },
+      "by_automatic_kind": {}
+    },
+    {
+      "dataset": "robotzftp2",
+      "kind": "false positive",
+      "total": 13,
+      "sampled": 13,
+      "verdicts": {
+        "other yellow object": 12,
+        "wrong box on labeled fuel": 1
+      },
+      "by_automatic_kind": {
+        "localization": {
+          "wrong box on labeled fuel": 1
+        },
+        "background": {
+          "other yellow object": 12
+        }
+      }
+    },
+    {
+      "dataset": "robotzftp2",
+      "kind": "miss",
+      "total": 10,
+      "sampled": 10,
+      "verdicts": {
+        "ball cut off at the image edge": 10
+      },
+      "by_automatic_kind": {}
+    },
+    {
+      "dataset": "scorekeeper",
+      "kind": "false positive",
+      "total": 1083,
+      "sampled": 40,
+      "verdicts": {
+        "unlabeled fuel": 3,
+        "ball from another game": 7,
+        "person": 30
+      },
+      "by_automatic_kind": {
+        "localization": {
+          "unlabeled fuel": 2
+        },
+        "inside_unscored": {
+          "person": 1
+        },
+        "background": {
+          "unlabeled fuel": 1,
+          "ball from another game": 7,
+          "person": 29
+        }
+      }
+    }
+  ]
+}
