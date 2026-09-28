@@ -590,3 +590,31 @@ datasets before the write-up, and Task 8 does not need one.
 Consequences. The lockbox is picked knowing that people and balls from
 other games cause most false positives on C. Its decision entry must say so,
 and it must still pass the duplicate check against every training source.
+
+## D-023: The Colab notebook rescores committed predictions (2026-09-27)
+
+Context. SPEC section 7 asks for a thin Colab notebook that reproduces
+download, harmonize, and eval. baseline-a is a hosted Roboflow model named
+by project and version, and the hosted API looks it up in the caller's own
+workspace (D-017), so another person's key can't call it. The `infer` extra
+pulls CPU-only torch, which would replace Colab's CUDA build.
+
+Decision. Nick chose on 2026-09-27 that `notebooks/reproduce_baseline.ipynb`
+clones the release, installs `requirements.txt` and the package without
+extras, downloads and harmonizes with the reader's own key, and runs
+`frc-evaluate --from-cache` on the predictions behind each published run.
+It compares the new `metrics.json` with the committed one and removes the
+new run folder, so the next rescore starts from a clean tree without
+`--allow-dirty`. A live call is left as an optional, commented-out cell
+that installs `inference-sdk` alone.
+
+Why. A rescore needs no API key and no inference client, and it
+reproduces the published scores exactly (D-018), so anyone can check them.
+The notebook's name differs from SPEC section 6's `train_and_eval.ipynb`,
+since training runs on the platform and isn't in the notebook.
+
+Consequences. The notebook checks the data pipeline and the scoring, not
+the model's predictions, which only the training workspace can make again.
+Run on this branch from a fresh clone and a new Python 3.11 environment,
+all three published runs matched. The Colab-only cells (secrets and the
+Colab runtime) were not run before the release.
