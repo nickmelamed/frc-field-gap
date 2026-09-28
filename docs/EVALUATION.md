@@ -1,8 +1,9 @@
 # Evaluation
 
-This page explains how models are scored and lists every published result.
-Everything between the `EVALUATION` markers below is written by
-`make report` from the runs under `reports/runs/`. Do not edit it by hand.
+This page explains how models are scored, lists every published result,
+and diagnoses where the errors come from. Everything between the
+`EVALUATION` and `DIAGNOSIS` markers below is written by `make report` from
+`reports/runs/` and `reports/diagnosis/`. Do not edit it by hand.
 
 ## How the baseline does on other teams' data
 
@@ -14,8 +15,8 @@ On A, its own dataset, fuel mAP50 is 0.936 (interval 0.923 to 1.0), with
 precision 0.963 and recall 0.927 at a confidence of 0.5.
 
 On B, the model does as well as on A. Fuel mAP50 is 0.994 (interval 0.985
-to 1.0), with precision 0.966 and recall 0.973. Why B is no harder than A is
-still open.
+to 1.0), with precision 0.966 and recall 0.973. The next section explains
+why.
 
 On C, fuel mAP50 drops to 0.836 (interval 0.773 to 0.895). That interval
 does not overlap A's, so the drop is larger than what the choice of test
@@ -34,11 +35,9 @@ least 1083. The drop is at least as large as shown.
 
 C's test split mixes two kinds of photos (see `docs/DATASETS.md`). One kind
 shows fuel indoors. The other shows robots in pits and match broadcasts
-from earlier games, one of which used balls, and none of those photos has a
-fuel label. A first look at the saved predictions puts most of the false
-positives on photos without fuel labels. If that holds up, the model is
-mistaking other round objects for fuel. That is a real model error, since
-those photos correctly have no fuel labels.
+from earlier games, and none of those photos has a fuel label. Almost all
+of the false positives land on the second kind, and most of the sampled
+ones are drawn on people, as the next section shows.
 
 These results have limits. A-test holds later frames of the recordings the
 model trained on (D-013), so A's score is an optimistic reference point.
@@ -46,6 +45,122 @@ A and B each rest on a handful of recordings, which the intervals account
 for. C is scored on fuel only, since baseline-a never learned robots
 (D-019). Each image keeps its 25 most confident predictions (D-020). The
 field test set has not been scored.
+
+## Why the baseline fails where it does
+
+`make diagnose MODEL=baseline-a` matched every cached prediction of the
+three runs to the labels again and sliced the hits, false positives, and
+misses by source, box size, crowding, brightness, and sharpness. It made no
+new calls to the model, and it checks that its matching reproduces each
+run's published counts. The tables are under "Diagnosis" at the end of
+this page, and the figures below are drawn from them by `make report`.
+Errors were also judged by eye (D-021): every false positive and miss on A
+and B, and a random 40 of C's false positives. The verdicts and a note on
+each are in `reports/diagnosis/review.csv`.
+
+### C's false positives come from photos without fuel
+
+![False positives per image by source on scorekeeper](assets/diagnosis_baseline-a_scorekeeper_sources.png)
+
+Of C's 1083 false positives, 1012 fall on the 283 test images that have no
+fuel label, which is 3.576 per image. These are the pit photos and match
+broadcasts. The 2024 Milford broadcast alone gives 632 of them. On the 31
+photos that do show fuel, the model finds every ball (recall 1.0),
+precision is 0.841, and mAP50 is 0.889. That is below A's 0.936 and its
+interval, so C's fuel photos are somewhat harder for the model too, but
+most of the drop on C comes from photos that have no fuel in them.
+
+Of the 40 sampled false positives on C, 30 are people: heads in the front
+row of a broadcast, spectators in yellow or orange shirts, a yellow hat,
+and a mascot. Seven are yellow, orange, and blue balls from earlier games.
+The other 3 are real fuel. In a broadcast frame a head is a round blob
+about the size of a ball, and a yellow shirt or hat has the color of fuel.
+The labels are right, so these are model errors.
+
+The 3 real fuel balls point to a labeling gap in C. All 3 sit in a cluster
+with no box of their own, two of them half hidden behind another ball.
+Of the 71 false positives on C's fuel photos, 60 overlap a label without
+matching it (duplicates and localization errors in the table of false
+positive kinds), so C's clusters may be labeled less completely than A's.
+If so, C's score on its fuel photos is a little too low. Three sampled
+boxes are too few to say how often this happens.
+
+The limit of 25 predictions per image (D-020) can only have hidden false
+positives at 0.5 on the 4 images where every kept box is at or above 0.5.
+The counts here are lower bounds, and 4 images cannot change which sources
+lead.
+
+### B is easy because its balls are large and few
+
+![Recall by relative box size](assets/diagnosis_baseline-a_size.png)
+
+![Training split against each test split](assets/diagnosis_baseline-a_domain.png)
+
+B's balls fill much more of the frame than A's. The median box side is
+0.148 of the image side in B-test, against 0.044 in A's training split and
+0.051 in A-test. B-test also has one ball per image at the median, and two
+at the 90th percentile, where A's training split has 17. Large, isolated
+balls are an easy case, so B scoring as well as A says little about how
+close the two domains are.
+
+B-test has only 13 small boxes, and the model finds 7 of them (recall
+0.538), against A's 0.865 on small boxes. 13 boxes are too few to rely on.
+Of B's 13 false positives, 12 are other yellow objects in the room, such as
+the cap of a vacuum cleaner and an envelope. All 10 of its misses are balls
+cut off by the edge of the frame, in two recordings, and 9 of them fall in
+the darkest brightness bin. That is why recall is lower in B's darkest
+images (0.91) than in its brightest (1.0), so the bins show the recordings
+more than the light.
+
+### A's misses are mostly balls cut off by the frame edge
+
+On A, recall is 0.865 on small boxes and 0.987 on medium ones. Images with
+5 to 9 labeled balls have the lowest recall (0.765), but only 7 images
+fall there. Almost all of A's misses (32 of 33) come from one recording,
+the densest one.
+
+The review explains the small-box gap. Of the 33 misses, 24 are balls cut
+off by the edge of the fisheye frame. Their labels are thin strips, which
+count as small boxes, and the model boxes them differently or not at all.
+Another 4 are balls mostly hidden by a hand or an arm. None is a clearly
+visible ball that the model skipped, so nothing here shows that shrinking
+the frames to 384 pixels (D-016) loses whole balls. A's 16 false positives
+are mostly the same kind. Eight are boxes on edge balls, 7 of which
+overlap a label but not enough to count, 5 are wrong boxes on labeled fuel, 3 of
+them one box over two touching balls, and only 1 is on something that is
+not fuel (a person's head).
+
+### What this means for the fix
+
+The largest error on other teams' data is the model drawing fuel on people
+and on balls from earlier games. The merged model in Task 10 needs images
+of people, crowds, and other games' balls with no fuel label, which C's
+pit and broadcast photos provide. The per-source slices here will show
+whether that worked. Balls cut off by the frame edge cause most of A's
+errors and all of B's misses, where the label and the model disagree on
+how much of the ball to box. A rule for labeling edge balls belongs in the
+harmonized data. C's unlabeled clustered fuel should be fixed or left out
+before C's fuel photos are used for training.
+
+### Limits of the diagnosis
+
+Slices have no intervals, and many rest on few images or on one
+recording. Brightness and sharpness are cut into bins pooled over all
+three test splits, so on C they mostly separate the fuel photos, which are
+soft, from the sharp broadcast frames, and on B they follow the
+recordings. They say little on their own. The verdicts are one reviewer's
+first pass, and C's rest on 40 of 1083 false positives, so they show which
+kinds of error occur more than their exact shares. A lockbox dataset for
+checking the fix was not picked before this diagnosis (D-022). The failure
+gallery leaves out the Milford broadcast, since every frame of it shows
+spectators close to the camera.
+
+![Failure gallery](assets/failures.png)
+
+The gallery shows 15 of the errors, with labels in green, false positives
+in orange, and missed labels in light blue. It is drawn by `make
+diagnose`, and the tile-by-tile list is under "Diagnosis" at the end of
+this page.
 
 ## Reading the numbers
 
@@ -338,7 +453,7 @@ published runs' cached predictions. Do not edit it by hand.
 <!-- DIAGNOSIS:START -->
 ### Where baseline-a's errors fall
 
-Hits, false positives, and misses count predictions with confidence of at least 0.5, matched to labels as the confusion matrix matches them. Brightness is the mean gray level from 0 to 255 and sharpness the variance of the Laplacian, both measured on the image stretched to 384 pixels square, as the model sees it. Their bins hold equal numbers of images, pooled over every test split, so a bin can hold few images of one dataset.
+Hits, false positives, and misses count predictions with confidence of at least 0.5, matched to labels the way supervision's confusion matrix matches them (see Limits). Brightness is the mean gray level from 0 to 255 and sharpness the variance of the Laplacian, both measured on the image stretched to 384 pixels square, as the model sees it. Their bins hold equal numbers of images, pooled over every test split, so a bin can hold few images of one dataset.
 
 Brightness:
 
@@ -431,13 +546,19 @@ By relative box size. A box is small when it covers less than 0.0025 of the imag
 | scorekeeper | medium | 335 | 335 | 1.0 | 186 |
 | scorekeeper | large | 8 | 8 | 1.0 | 27 |
 
-False positives by why they matched no label. A duplicate overlaps a label that another prediction already took. A localization error overlaps a label by more than 0.1 IoU, but not enough to count. One inside an unscored label has its center inside a box of a class the model is not scored on, such as a robot. The rest are background.
+False positives by why they matched no label. A duplicate overlaps a label that another prediction already took. A localization error overlaps a label by more than 0.1 IoU, but not enough to count. A box inside an unscored label has its center in a box of a class the model is not scored on, such as a robot. The rest are background.
 
-| Dataset | Duplicate | Localization | Inside an unscored label | Background |
-|---|---|---|---|---|
-| marswars | 1 | 12 | 0 | 3 |
-| robotzftp2 | 0 | 1 | 0 | 12 |
-| scorekeeper | 2 | 58 | 53 | 970 |
+| Dataset | Which images | Duplicate | Localization | Inside an unscored label | Background |
+|---|---|---|---|---|---|
+| marswars | all | 1 | 12 | 0 | 3 |
+| marswars | with labeled fuel | 1 | 12 | 0 | 2 |
+| marswars | without labeled fuel | 0 | 0 | 0 | 1 |
+| robotzftp2 | all | 0 | 1 | 0 | 12 |
+| robotzftp2 | with labeled fuel | 0 | 1 | 0 | 12 |
+| robotzftp2 | without labeled fuel | 0 | 0 | 0 | 0 |
+| scorekeeper | all | 2 | 58 | 53 | 970 |
+| scorekeeper | with labeled fuel | 2 | 58 | 0 | 11 |
+| scorekeeper | without labeled fuel | 0 | 0 | 53 | 959 |
 
 The model's training split next to each test split. Each cell gives the quantiles 0.1, 0.5, 0.9. Box side is the side of a square with the box's share of the image area, as a fraction of the image side.
 
