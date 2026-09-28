@@ -84,9 +84,9 @@ scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-
 scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0071_jpg.rf.52604f3ad0faaf7611b919e3b7311b1b.jpg,false positive,298.0,345.0,315.0,378.0,person,
 scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0089_jpg.rf.836b10c15d2343181b2d2aeefafaa496.jpg,false positive,37.0,347.0,51.0,364.0,person,
 scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0099_jpg.rf.e5c16ae280132a1d27c1818b47261006.jpg,false positive,298.0,343.0,315.0,379.0,person,
-scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0100_jpg.rf.2323c9c24a2778e33df52b2c14fcb0f2.jpg,false positive,20.0,102.0,33.0,125.0,person,
-scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0104_jpg.rf.6695ea303a8dd87a57302fb7c722ee74.jpg,false positive,22.0,102.0,33.0,124.0,person,
-scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0107_jpg.rf.ac64afc6076727798941eddf3c00c032.jpg,false positive,21.0,102.0,33.0,125.0,person,
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0100_jpg.rf.2323c9c24a2778e33df52b2c14fcb0f2.jpg,false positive,20.0,102.0,33.0,125.0,person,spectator in an orange shirt
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0104_jpg.rf.6695ea303a8dd87a57302fb7c722ee74.jpg,false positive,22.0,102.0,33.0,124.0,person,spectator in an orange shirt
+scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0107_jpg.rf.ac64afc6076727798941eddf3c00c032.jpg,false positive,21.0,102.0,33.0,125.0,person,spectator in an orange shirt
 scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0107_jpg.rf.ac64afc6076727798941eddf3c00c032.jpg,false positive,38.0,348.0,51.0,364.0,person,yellow hat
 scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0111_jpg.rf.23e12b0a577f102a52c3cf9d59eb0625.jpg,false positive,37.0,348.0,52.0,364.0,person,
 scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0119_jpg.rf.d34884e1dbdc379d226f2adfc0ebd7ac.jpg,false positive,37.0,347.0,52.0,364.0,person,
@@ -95,8 +95,8 @@ scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-
 scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0154_jpg.rf.d88a6c462a40027742d3255a594feb2d.jpg,false positive,38.0,348.0,51.0,364.0,person,
 scorekeeper,Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0157_jpg.rf.6b5f153b6c9324d9bad06a3a7952828d.jpg,false positive,276.0,351.0,293.0,381.0,person,
 scorekeeper,frame_0238_jpg.rf.709791023f03580c82c8b993d6537fdf.jpg,false positive,292.0,120.0,312.0,152.0,unlabeled fuel,"ball behind another, no label"
-scorekeeper,frame_0384_jpg.rf.7bf14483bb17c298466b8f860c5370ad.jpg,false positive,173.0,209.0,196.0,251.0,unlabeled fuel,
-scorekeeper,frame_0394_jpg.rf.a4c2b14841ab6f32c1087116bac8df33.jpg,false positive,261.0,183.0,283.0,220.0,unlabeled fuel,
+scorekeeper,frame_0384_jpg.rf.7bf14483bb17c298466b8f860c5370ad.jpg,false positive,173.0,209.0,196.0,251.0,unlabeled fuel,"ball in front of the cluster, no label"
+scorekeeper,frame_0394_jpg.rf.a4c2b14841ab6f32c1087116bac8df33.jpg,false positive,261.0,183.0,283.0,220.0,unlabeled fuel,"ball half hidden behind another, no label"
 scorekeeper,frc_train_221_jpg.rf.f0a2a3fa4bcd60370a21f2d11a0e9ea1.jpg,false positive,34.0,1.0,71.0,31.0,person,
 scorekeeper,frc_train_302_jpg.rf.09aab126191b4d07947ef09481f0baa7.jpg,false positive,305.0,4.0,322.0,30.0,ball from another game,2020 power cell
 scorekeeper,frc_train_757_jpg.rf.90155cc15c686ed35e2ee2259d918ad0.jpg,false positive,81.0,244.0,92.0,266.0,ball from another game,2022 cargo
@@ -105,9 +105,9 @@ scorekeeper,mQbklnVHj7k_13_jpg.rf.c834214af7cffc741ab748bedc76bb6c.jpg,false pos
 scorekeeper,mQbklnVHj7k_14_jpg.rf.160625f460744b5de17b5ab30fa852e6.jpg,false positive,218.0,110.0,227.0,130.0,person,
 scorekeeper,mQbklnVHj7k_2_jpg.rf.fd883694342df58b1a9983ca96868f28.jpg,false positive,325.0,314.0,348.0,385.0,person,
 scorekeeper,mQbklnVHj7k_4_jpg.rf.f11753e190e8e0aa2ae4968bd8aecc5a.jpg,false positive,161.0,112.0,169.0,130.0,person,
-scorekeeper,mQbklnVHj7k_4_jpg.rf.f11753e190e8e0aa2ae4968bd8aecc5a.jpg,false positive,236.0,317.0,264.0,385.0,person,
+scorekeeper,mQbklnVHj7k_4_jpg.rf.f11753e190e8e0aa2ae4968bd8aecc5a.jpg,false positive,236.0,317.0,264.0,385.0,person,person in a yellow shirt
 scorekeeper,mQbklnVHj7k_4_jpg.rf.f11753e190e8e0aa2ae4968bd8aecc5a.jpg,false positive,322.0,316.0,351.0,385.0,person,
 scorekeeper,mQbklnVHj7k_7_jpg.rf.38da190ab5086e15a1ea014c86012625.jpg,false positive,171.0,112.0,177.0,127.0,person,
-scorekeeper,mQbklnVHj7k_7_jpg.rf.38da190ab5086e15a1ea014c86012625.jpg,false positive,234.0,320.0,263.0,385.0,person,
+scorekeeper,mQbklnVHj7k_7_jpg.rf.38da190ab5086e15a1ea014c86012625.jpg,false positive,234.0,320.0,263.0,385.0,person,person in a yellow shirt
 scorekeeper,mQbklnVHj7k_9_jpg.rf.2e2452761ec8766698faa358ae653001.jpg,false positive,217.0,111.0,227.0,129.0,person,
 scorekeeper,ncash2023_gopro3-mp4_00805_png.rf.7f96d0520faf1b0c2b32db16fc191ea1.jpg,false positive,31.0,70.0,44.0,93.0,person,
