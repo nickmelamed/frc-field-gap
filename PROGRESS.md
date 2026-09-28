@@ -162,13 +162,13 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     the model disagree on how much to box. Fix or drop C's unlabeled
     clustered fuel. The D-020 limit still counts every predicted class
     before unscored ones are dropped.
-- [ ] Task 9: Draft write-up + v0.1.0 (Tue to Wed Sept 29 to 30)
+- [x] Task 9: Draft write-up + v0.1.0 (Tue to Wed Sept 29 to 30)
   - `docs/WRITEUP.md` covers the baseline, the cross-dataset scores, and
     the diagnosis, and check_numbers checks it. `docs/MODEL_CARD.md` is a
     first draft. `notebooks/reproduce_baseline.ipynb` downloads,
     harmonizes, and rescores the committed predictions on Colab (D-023).
-    The package version is 0.1.0. The tag and the GitHub Release wait for
-    `/release v0.1.0` after the PR merges.
+    The package version is 0.1.0, released as `v0.1.0` on 2026-09-28. The
+    release face check left three `scorekeeper` grid tiles out.
   - Differences from SPEC sections 6 and 7. The notebook is
     `reproduce_baseline.ipynb`, not `train_and_eval.ipynb`, since training
     runs on the platform. It rescores from cache instead of calling the
