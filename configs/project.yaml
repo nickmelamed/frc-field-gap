@@ -68,6 +68,9 @@ inspect:
         - FRC_3_mp4-26_jpg.rf.31bfbd8f50e2dd92f354977e2f850ae9.jpg
         - youtube-32_jpg.rf.ee5c85e6951fac99a8642552d2a9fee6.jpg
         - youtube-56_jpg.rf.a0dcf146f9de78d932ca82ff18152db7.jpg
+        - 20230401_085358-mp4_00570_png.rf.f9e2173175ce62cb507c185e19a8c6e9.jpg
+        - 20230401_085358-mp4_00570_png.rf.efff637aa9f7937adbc0d89e4e69c5c7.jpg
+        - frc_train_456_jpg.rf.ee5204b2b4a4bd9b409ca8ef7b53f978.jpg
 
 # Datasets whose own splits leak are re-split by harmonize. Near duplicates
 # use inspect.near_duplicate_max_distance. See D-013.
