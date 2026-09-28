@@ -30,9 +30,8 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     large-file hook (D-006). Python is capped below 3.14 by `inference`
     (D-005). `configs/project.yaml` waits for its first consumer in Task 2.
 - [x] Task 2: Download + inspect (Sat Sept 26)
-  - Five datasets downloaded and inspected (D-008). `lava` failed because
-    it has no published version, and the reason is in
-    `reports/download_failures.json`.
+  - Five datasets downloaded and inspected (D-008). `lava` has no
+    published version, so it is skipped with a warning (D-024).
   - Differences from SPEC sections 5 and 7. `marswars` also has a
     `red_active` class. `robot-zftp2` holds several projects, so
     `rebuilt-dataset-hcmwl` is `robotzftp2` and `frc-2026-fuel-ndrbj` is an
@@ -177,10 +176,10 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     fresh clone in a new Python 3.11 environment, but its Colab-only cells
     have not been run on Colab.
   - For Nick. Run the notebook on Colab once after tagging, since it clones
-    `v0.1.0`. `frc-download` exits 1 on every run, because `lava` has no
-    pinned version and counts as a failure, so `make download harmonize`
-    stops after the download. The docs say to carry on. Skipping unpinned
-    entries instead of failing them would be a separate fix.
+    `v0.1.0`.
+  - `frc-download` now skips an unpinned dataset such as `lava` with a
+    warning instead of failing, so `make download harmonize` runs through
+    (D-024).
 - [ ] Task 10: Merged-data fix (v0.2.0)
 - [ ] Task 11: Threshold choice (v0.2.0)
 - [ ] Task 12: Edge deployment (v0.3.0, before interviews)

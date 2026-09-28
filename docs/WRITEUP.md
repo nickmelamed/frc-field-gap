@@ -201,14 +201,9 @@ for the download only. On your own machine:
 
 ```bash
 make setup
-make download    # needs ROBOFLOW_API_KEY in .env
-make harmonize
-make report      # rebuilds the tables and figures from reports/
+make download harmonize   # needs ROBOFLOW_API_KEY in .env
+make report               # rebuilds the tables and figures from reports/
 ```
-
-`make download` ends with an error for `lava`, a candidate dataset with no
-published version, and exits with a failure code. The other datasets are
-still downloaded, so carry on with `make harmonize`.
 
 `docs/EVALUATION.md` explains how to score a model live, and
 `docs/RETRAINING.md` how the baseline was trained. The datasets are
