@@ -450,3 +450,26 @@ def test_false_positive_kinds_are_split_by_whether_images_have_labels() -> None:
     assert "| alpha | all | 0 | 1 | 0 | 4 |" in text
     assert "| alpha | with labeled fuel | 0 | 1 | 0 | 1 |" in text
     assert "| alpha | without labeled fuel | 0 | 1 | 0 | 2 |" in text
+
+
+def test_main_draws_figures_for_each_diagnosis(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "configs").mkdir()
+    shutil.copy(REPO_ROOT / "configs" / "project.yaml", tmp_path / "configs" / "project.yaml")
+    write_run(tmp_path / "reports" / "runs", result("r1"), "2026-09-27T10:00:00+00:00")
+    write_diagnosis_file(tmp_path / "reports", diagnosis().model_copy(update={"gallery": []}))
+    Path("README.md").write_text("{}\n{}\n".format(*RESULTS_MARKERS), "utf-8")
+    Path("docs").mkdir()
+    markers = [*EVALUATION_MARKERS, *DIAGNOSIS_MARKERS]
+    Path("docs/EVALUATION.md").write_text("\n".join(markers) + "\n", "utf-8")
+    assert main(["--project-config", "configs/project.yaml"]) == 0
+    assert Path("docs/assets/diagnosis_m_size.png").is_file()
+    text = Path("docs/EVALUATION.md").read_text(encoding="utf-8")
+    assert "### Where m's errors fall" in text
+    assert "The failure gallery" not in text
+
+
+def test_no_diagnosis_says_so() -> None:
+    assert diagnosis_sections([]) == "No model has been diagnosed yet."

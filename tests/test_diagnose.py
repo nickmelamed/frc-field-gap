@@ -1,7 +1,9 @@
 import json
 from collections import Counter
+from collections.abc import Callable
 from itertools import count
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pytest
@@ -26,8 +28,10 @@ from frc_xdata.diagnose import (
     ErrorKind,
     ImageErrors,
     SliceScorer,
+    SplitCases,
     bin_index,
     bin_names,
+    check_run_totals,
     count_names,
     crop_box,
     draw_errors,
@@ -49,7 +53,7 @@ from frc_xdata.diagnose import (
     source_of,
 )
 from frc_xdata.errors import ConfigError, CountMismatchError, DirtyTreeError
-from frc_xdata.evaluate import compute_metrics
+from frc_xdata.evaluate import RunResult, compute_metrics
 from frc_xdata.harmonize import to_coco
 from frc_xdata.inspect_datasets import Box, ImageRecord, ImageRef
 
@@ -551,3 +555,128 @@ def test_main_fails_when_the_matching_disagrees_with_the_published_run(diagnosed
     path.write_text(json.dumps(metrics), "utf-8")
     with pytest.raises(CountMismatchError, match="run1 fuel"):
         diagnose.main(["m", "--project-config", "configs/project.yaml"])
+
+
+def _set_config(root: Path, change: Callable[[dict[str, Any]], None]) -> None:
+    path = root / "configs" / "project.yaml"
+    data = yaml.safe_load(path.read_text("utf-8"))
+    change(data)
+    path.write_text(yaml.safe_dump(data), "utf-8")
+
+
+def _add_false_positive(root: Path) -> None:
+    """Give c.jpg a confident box on empty ground, and count it in the run."""
+    run = root / "reports" / "runs" / "run1"
+    cache = json.loads((run / "predictions.json").read_text("utf-8"))
+    cache["images"]["c.jpg"].append(["fuel", 0.9, 40.0, 40.0, 50.0, 50.0])
+    (run / "predictions.json").write_text(json.dumps(cache), "utf-8")
+    metrics = json.loads((run / "metrics.json").read_text("utf-8"))
+    metrics["metrics"]["classes"][0]["false_positives"] += 1
+    (run / "metrics.json").write_text(json.dumps(metrics), "utf-8")
+
+
+def _slice_by_source(data: dict[str, Any]) -> None:
+    d = data["diagnose"]
+    d["sources"] = {"alpha": [{"name": "first two", "pattern": "^[ab]"}]}
+    d["gallery"]["per_dataset"] = {"alpha": 2}
+    d["gallery"]["exclude"] = {}
+    d["gallery"]["exclude_sources"] = {}
+    # A recording pattern the fixture's names do not match, so frames are unknown.
+    data["splits"]["datasets"]["alpha"] = {
+        "method": "temporal",
+        "recording_pattern": r"^(?P<recording>.+?)_(?P<frame>\d+)\.jpg$",
+    }
+
+
+def test_a_false_positive_reaches_the_slices_gallery_and_review(
+    diagnosed: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _add_false_positive(diagnosed)
+    _set_config(diagnosed, _slice_by_source)
+    args = ["m", "--project-config", "configs/project.yaml"]
+    assert diagnose.main(args) == 0
+    result = load_diagnosis(diagnosed / "reports" / "diagnosis" / "m" / "diagnosis.json")
+    (fuel,) = result.splits[0].classes
+    source = next(s for s in fuel.slicings if s.by == "source")
+    assert [(x.name, x.images, x.false_positives) for x in source.slices] == [
+        ("first two", 2, 0),
+        ("other", 1, 1),
+    ]
+    assert [(t.file_name, t.kind, t.source) for t in result.gallery] == [
+        ("c.jpg", "false positive", "other")
+    ]
+    # main configures logging itself, which replaces pytest's log capture.
+    assert "the gallery shows 1 of 2 alpha tiles" in capsys.readouterr().err
+    assert result.review == []
+
+    assert diagnose.main([*args, "--review-sheet"]) == 0
+    template = diagnosed / "data" / "contact_sheets" / "review_template.csv"
+    (row,) = template.read_text("utf-8").splitlines()[1:]
+    review = diagnosed / "reports" / "diagnosis" / "review.csv"
+    review.write_text(
+        template.read_text("utf-8").replace(row, row.replace(",,", ",other,")), "utf-8"
+    )
+    assert diagnose.main(args) == 0
+    result = load_diagnosis(diagnosed / "reports" / "diagnosis" / "m" / "diagnosis.json")
+    (count,) = result.review
+    assert (count.kind, count.total, count.sampled, count.verdicts) == (
+        "false positive",
+        1,
+        1,
+        {"other": 1},
+    )
+
+
+def test_the_run_check_counts_boxes_matched_to_another_class(diagnosed: Path) -> None:
+    run = RunResult.model_validate_json(
+        (diagnosed / "reports" / "runs" / "run1" / "metrics.json").read_text("utf-8")
+    )
+    (fuel,) = run.metrics.classes
+    robot = fuel.model_copy(update={"name": "robot"})
+
+    def published(fuel_counts: tuple[int, int, int]) -> RunResult:
+        tp, fp, fn = fuel_counts
+        classes = [
+            fuel.model_copy(
+                update={"true_positives": tp, "false_positives": fp, "false_negatives": fn}
+            ),
+            robot.model_copy(
+                update={"true_positives": 0, "false_positives": 1, "false_negatives": 0}
+            ),
+        ]
+        metrics = run.metrics.model_copy(update={"classes": classes})
+        return run.model_copy(update={"scored_classes": ["fuel", "robot"], "metrics": metrics})
+
+    # A robot box on the labeled ball is a confusion: a false positive for
+    # robot and a miss for fuel. The fuel box on empty ground is a false positive.
+    labels = [dets([(0, 0, 10, 10)], [FUEL])]
+    preds = [dets([(0, 0, 10, 10), (50, 50, 60, 60)], [ROBOT, FUEL], [0.9, 0.9])]
+
+    def cases(result: RunResult) -> SplitCases:
+        return SplitCases(result, diagnosed, [], ["fuel", "robot"], preds, labels)
+
+    check_run_totals(cases(published((0, 1, 1))))
+    with pytest.raises(CountMismatchError, match="fuel"):
+        check_run_totals(cases(published((1, 1, 0))))
+
+
+def test_a_missing_cache_is_an_error(diagnosed: Path) -> None:
+    (diagnosed / "reports" / "runs" / "run1" / "predictions.json").unlink()
+    with pytest.raises(ConfigError, match="which is missing"):
+        diagnose.main(["m", "--project-config", "configs/project.yaml"])
+
+
+def test_an_unknown_model_is_an_error(diagnosed: Path) -> None:
+    with pytest.raises(ConfigError, match="is not in"):
+        diagnose.main(["nope", "--project-config", "configs/project.yaml"])
+
+
+def test_edges_need_values_and_no_edges_make_one_bin() -> None:
+    with pytest.raises(ValueError, match="no values"):
+        quantile_edges([], 3)
+    assert bin_names([]) == ["all"]
+
+
+def test_a_source_pattern_must_compile() -> None:
+    with pytest.raises(ValidationError):
+        SourcePattern(name="bad", pattern="(")
