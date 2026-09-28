@@ -82,3 +82,5 @@ uses [Semantic Versioning](https://semver.org/).
   and draws the diagnosis figures in `docs/assets/`.
 - matplotlib is a declared dependency.
 - The package version is 0.1.0.
+- `frc-download` skips a dataset with no pinned project or version with a
+  warning, instead of recording a failure and exiting 1 (D-024).
