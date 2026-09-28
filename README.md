@@ -72,6 +72,11 @@ make report
 `docs/EVALUATION.md` explains the metrics and where each run's
 predictions, scores, and metadata are kept.
 
+To check the published scores without installing anything locally, open
+`notebooks/reproduce_baseline.ipynb` in Colab. It downloads and harmonizes
+the datasets, rescores the committed predictions, and compares them with
+the published ones. It needs a Roboflow API key for the download only.
+
 ## Datasets and attribution
 
 These Roboflow Universe datasets are downloaded and inspected by the
