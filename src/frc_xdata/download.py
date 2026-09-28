@@ -243,7 +243,9 @@ def download_all(
     Each download goes to a staging directory and is moved into place only
     after its manifest is written, so an interrupted run never leaves a
     directory that looks finished. A failure is recorded and the remaining
-    datasets still run.
+    datasets still run. A dataset with no pinned project or version is
+    skipped with a warning and is not a failure, since it has nothing to
+    export (D-024).
 
     Args:
         datasets: Specs by key.
@@ -263,7 +265,6 @@ def download_all(
     for key, spec in datasets.items():
         dest = raw_dir / key
         if not spec.pinned:
-            failures.append(Failure(key=key, reason="project or version not pinned"))
             logger.warning("%s: skipped, project or version not pinned", key)
             continue
         existing = None if force else verified_manifest(dest, spec)

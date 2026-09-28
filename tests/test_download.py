@@ -198,10 +198,11 @@ def test_failure_is_recorded_redacted_and_others_continue(tmp_path: Path) -> Non
     fetch = FakeFetch(fail_for={"broken"})
     broken = PINNED.model_copy(update={"project": "broken"})
     failures = run(tmp_path, {"bad": broken, "good": PINNED, "later": UNPINNED}, fetch)
-    assert [f.key for f in failures] == ["bad", "later"]
+    assert [f.key for f in failures] == ["bad"]
     assert SECRET not in failures[0].reason
     assert "<redacted>" in failures[0].reason
-    assert failures[1].reason == "project or version not pinned"
+    assert fetch.calls == ["broken", "rebuilt"]
+    assert not (tmp_path / "raw" / "later").exists()
     assert not (tmp_path / "raw" / "bad").exists()
     assert not (tmp_path / "raw" / ".bad.partial").exists()
     assert verified_manifest(tmp_path / "raw" / "good", PINNED) is not None
@@ -334,16 +335,21 @@ def cli(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> list[str]:
     return write_configs(tmp_path)
 
 
-def test_main_downloads_pinned_and_exits_nonzero_for_unpinned(
-    cli: list[str], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+def test_main_downloads_pinned_and_skips_unpinned(
+    cli: list[str],
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
     fetch = FakeFetch()
     monkeypatch.setattr(download, "_roboflow_fetch", lambda key: fetch)
-    assert download.main(cli) == 1
+    assert download.main(cli) == 0
     assert fetch.calls == ["rebuilt"]
     assert (tmp_path / "reports" / "data_manifests" / "a.sha256").is_file()
+    assert not (tmp_path / "reports" / "data_manifests" / "b.sha256").exists()
     failures = json.loads((tmp_path / "reports" / "download_failures.json").read_text())
-    assert failures == [{"key": "b", "reason": "project or version not pinned"}]
+    assert failures == []
+    assert "b: skipped, project or version not pinned" in capsys.readouterr().err
 
 
 def test_main_only_limits_the_run(

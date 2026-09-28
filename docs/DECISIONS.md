@@ -617,6 +617,27 @@ Consequences. The notebook checks the data pipeline and the scoring, not
 the model's predictions, which only the training workspace can make again.
 From a fresh clone in a new Python 3.11 environment, all three published
 runs matched. The Colab-only cells (secrets and the Colab runtime) have not
-been run on Colab. `frc-download` exits with a failure for `lava`, which
-has no published version, so the notebook and the write-up say to carry on
-after it.
+been run on Colab.
+
+## D-024: Skip unpinned datasets instead of failing the download (2026-09-27)
+
+Context. D-008 left `lava` in `configs/datasets.yaml` without a version,
+since it has none published, and `make download` recorded it as a failure.
+`frc-download` returned 1 on every run, so `make download harmonize`
+stopped before harmonizing, and the Colab notebook showed an error that
+meant nothing had gone wrong.
+
+Decision. Nick chose on 2026-09-27 that a dataset with no pinned project or
+version is skipped with a warning and is not a failure.
+`reports/download_failures.json` now lists only datasets that were tried
+and failed, and is empty on a clean run.
+
+Why. An unpinned entry is a candidate kept for the record, with nothing to
+export, so it is not an error. Keeping it in the config documents why it was
+not used (`docs/DATASETS.md`). A real failure, such as a network error or a
+bad key, still exits 1.
+
+Consequences. The warning is the only trace of a skipped dataset in a run.
+A dataset unpinned by mistake would also be skipped without stopping the
+run, and `frc-harmonize` only warns about a dataset with no manifest, so
+the two warnings and the missing harmonized dataset are what would show it.
