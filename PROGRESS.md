@@ -139,7 +139,30 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     of those games used balls. This came from a quick look at the cached
     predictions, so Task 8 should measure it. Why B is no harder than A is
     also open.
-- [ ] Task 8: Diagnosis (Sun to Mon Sept 27 to 28)
+- [x] Task 8: Diagnosis (Sun to Mon Sept 27 to 28)
+  - `frc-diagnose` (`make diagnose MODEL=baseline-a`) slices the published
+    runs' errors from their caches, writes `reports/diagnosis/`, and draws
+    the failure gallery. `make report` renders the tables and figures into
+    `docs/EVALUATION.md`, which has the write-up (D-021).
+  - Findings. C's false positives fall on photos without fuel, and the
+    review finds mostly people and balls from earlier games. B is easy
+    because its balls are large and few. Most of A's misses, including its
+    small-box misses, are balls cut off by the frame edge, and none is a
+    clearly visible ball. C's clustered fuel has unlabeled balls.
+  - Differences from SPEC section 7. Boxes are matched by IoU order, as
+    supervision's confusion matrix does, so slices reproduce the runs'
+    counts. matplotlib is now a declared dependency. Run selection moved
+    to `runs.py`. `frc-report` draws the figures. The gallery has 15
+    tiles (D-021).
+  - For Nick. Check the verdicts in `reports/diagnosis/review.csv` and look
+    at `docs/assets/failures.png` before the PR merges, especially tiles 8,
+    11, and 15, which show distant people. The lockbox dataset
+    waits until after v0.1.0 (D-022).
+  - For Task 10. Add negatives with people and other games' balls, set a
+    label rule for balls cut off by the frame edge, where A's labels and
+    the model disagree on how much to box, and fix or drop
+    C's unlabeled clustered fuel. The D-020 limit still counts every
+    predicted class before unscored ones are dropped.
 - [ ] Task 9: Draft write-up + v0.1.0 (Tue to Wed Sept 29 to 30)
 - [ ] Task 10: Merged-data fix (v0.2.0)
 - [ ] Task 11: Threshold choice (v0.2.0)
