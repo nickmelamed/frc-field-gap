@@ -7,8 +7,10 @@ crowding, and source. It never calls the model.
 """
 
 import argparse
+import csv
 import json
 import logging
+import random
 import re
 import sys
 from collections import Counter
@@ -28,8 +30,10 @@ from pydantic import BaseModel, ConfigDict
 from frc_xdata.config import (
     AreaBuckets,
     DiagnoseConfig,
+    GalleryConfig,
     ModelsFile,
     ProjectConfig,
+    ReviewConfig,
     SourcePattern,
     load_yaml,
 )
@@ -51,7 +55,9 @@ from frc_xdata.inspect_datasets import (
     Box,
     ImageRecord,
     area_bucket,
+    encode_png,
     load_split,
+    tile,
 )
 from frc_xdata.logging_utils import add_log_level_argument, setup_logging
 from frc_xdata.provenance import (
@@ -67,11 +73,21 @@ from frc_xdata.splits import recording_key
 
 DIAGNOSIS_NAME = "diagnosis.json"
 META_NAME = "meta.json"
+GALLERY_NAME = "failures.png"
+REVIEW_SHEET_PREFIX = "review_"
 # Brightness and blur are on scales of tens to thousands, so one decimal
 # is enough to name a bin.
 FEATURE_DECIMALS = 1
 SIZE_BUCKETS = ("small", "medium", "large")
 OTHER_SOURCE = "other"
+ErrorKind = Literal["false positive", "miss"]
+ERROR_KINDS: tuple[ErrorKind, ...] = ("false positive", "miss")
+# Labeled boxes, false positives, and misses, in colors that stay apart for
+# the common kinds of color blindness.
+LABEL_COLOR = sv.Color(0, 158, 115)
+FALSE_POSITIVE_COLOR = sv.Color(213, 94, 0)
+MISS_COLOR = sv.Color(86, 180, 233)
+REVIEW_FIELDS = ("dataset", "file_name", "kind", "x1", "y1", "x2", "y2", "verdict", "note")
 
 logger = logging.getLogger(__name__)
 
@@ -272,6 +288,7 @@ class ImageErrors:
     matched_labels: tuple[int, ...]
     missed_labels: tuple[int, ...]
     false_positive_boxes: npt.NDArray[np.float64]
+    false_positive_scores: tuple[float, ...]
     false_positive_kinds: tuple[FalsePositiveKind, ...]
 
 
@@ -297,10 +314,12 @@ def image_errors(
     match = match_boxes(kept, labels, iou)
     matched = tuple(label for _, label in match.hits)
     boxes = _xyxy(kept)[list(match.false_positives)].reshape(-1, 4)
+    scores = np.asarray(kept.confidence, dtype=np.float64)[list(match.false_positives)]
     return ImageErrors(
         matched_labels=matched,
         missed_labels=match.misses,
         false_positive_boxes=boxes,
+        false_positive_scores=tuple(float(c) for c in scores),
         false_positive_kinds=tuple(
             false_positive_kind(b, labels, matched, unscored, iou, localization_floor)
             for b in boxes
@@ -380,6 +399,27 @@ class FeatureSummary(_Record):
     boxes_per_image: list[float]
 
 
+class GalleryTile(_Record):
+    """One tile of the failure gallery, row by row from the top left."""
+
+    dataset: str
+    file_name: str
+    kind: str
+    source: str
+
+
+class ReviewCount(_Record):
+    """Verdicts on the sampled errors of one kind in one dataset."""
+
+    dataset: str
+    kind: str
+    total: int
+    sampled: int
+    verdicts: dict[str, int]
+    # Verdicts by the automatic false positive kind, for false positives.
+    by_automatic_kind: dict[str, dict[str, int]]
+
+
 class Diagnosis(_Record):
     """Everything ``diagnosis.json`` holds for one model."""
 
@@ -394,6 +434,8 @@ class Diagnosis(_Record):
     sharpness_edges: list[float]
     splits: list[SplitDiagnosis]
     domain: list[FeatureSummary]
+    gallery: list[GalleryTile]
+    review: list[ReviewCount]
 
 
 def _share(part: int, whole: int) -> float | None:
@@ -632,8 +674,37 @@ def _check_run_totals(result: RunResult, overall: SliceScore) -> None:
         raise CountMismatchError(f"{result.run_id}: rebuilt {got}, but the run published {want}")
 
 
+@dataclass(frozen=True)
+class ClassErrors:
+    """One scored class's detections and per-image errors in one split."""
+
+    name: str
+    predictions: list[sv.Detections]
+    labels: list[sv.Detections]
+    errors: list[ImageErrors]
+
+
+def class_errors(cases: SplitCases, localization_floor: float) -> list[ClassErrors]:
+    """Match each scored class on its own, at the run's threshold and IoU."""
+    r = cases.result
+    scored_ids = [cases.classes.index(c) for c in r.scored_classes]
+    other_ids = [i for i in range(len(cases.classes)) if i not in scored_ids]
+    unscored = [_xyxy(restrict(lab, other_ids)) for lab in cases.labels]
+    found = []
+    for name, cid in zip(r.scored_classes, scored_ids, strict=True):
+        preds = [restrict(p, [cid]) for p in cases.predictions]
+        labels = [restrict(lab, [cid]) for lab in cases.labels]
+        errors = [
+            image_errors(p, lab, u, r.metrics.confidence, r.metrics.iou, localization_floor)
+            for p, lab, u in zip(preds, labels, unscored, strict=True)
+        ]
+        found.append(ClassErrors(name, preds, labels, errors))
+    return found
+
+
 def diagnose_split(
     cases: SplitCases,
+    found: Sequence[ClassErrors],
     features: Sequence[tuple[float, float]],
     sources: tuple[list[str], list[str]] | None,
     brightness_edges: Sequence[float],
@@ -644,19 +715,11 @@ def diagnose_split(
     """Slice every scored class's errors in one run."""
     r = cases.result
     confidence, iou = r.metrics.confidence, r.metrics.iou
-    scored_ids = [cases.classes.index(c) for c in r.scored_classes]
-    other_ids = [i for i in range(len(cases.classes)) if i not in scored_ids]
-    unscored = [_xyxy(restrict(lab, other_ids)) for lab in cases.labels]
     brightness_names, sharpness_names = bin_names(brightness_edges), bin_names(sharpness_edges)
     crowd_names = count_names(cfg.crowding_edges)
     classes = []
-    for name, cid in zip(r.scored_classes, scored_ids, strict=True):
-        preds = [restrict(p, [cid]) for p in cases.predictions]
-        labels = [restrict(lab, [cid]) for lab in cases.labels]
-        errors = [
-            image_errors(p, lab, u, confidence, iou, cfg.localization_floor)
-            for p, lab, u in zip(preds, labels, unscored, strict=True)
-        ]
+    for ce in found:
+        name, preds, labels, errors = ce.name, ce.predictions, ce.labels, ce.errors
         score = SliceScorer(preds, labels, errors, cases.classes, name, confidence, iou)
         overall = score("all", range(len(preds)))
         counts = [len(lab) for lab in labels]
@@ -736,11 +799,367 @@ def feature_summary(
     )
 
 
-def diagnose_model(project: ProjectConfig, model: str) -> Diagnosis:
-    """Diagnose every published run of ``model`` and compare its training data with each split.
+@dataclass(frozen=True)
+class ErrorItem:
+    """One false positive or missed label, located well enough to find it again."""
+
+    dataset: str
+    split: str
+    file_name: str
+    source: str
+    kind: ErrorKind
+    # The automatic kind of a false positive, empty for a miss.
+    automatic_kind: str
+    # Confidence of a false positive, 0 for a miss.
+    score: float
+    xyxy: tuple[float, float, float, float]
+    # Frame number within the recording, for datasets cut by frame order.
+    frame: int | None = None
+
+    @property
+    def key(self) -> tuple[str, str, str, tuple[float, float, float, float]]:
+        """Identify the box in the review file."""
+        return (self.dataset, self.file_name, self.kind, self.xyxy)
+
+
+def _rounded(xyxy: npt.NDArray[np.float64]) -> tuple[float, float, float, float]:
+    x1, y1, x2, y2 = (round(float(v), 1) for v in xyxy)
+    return (x1, y1, x2, y2)
+
+
+def error_items(
+    cases: SplitCases,
+    errors: Sequence[ClassErrors],
+    sources: Sequence[str] | None,
+    frames: Sequence[int | None],
+) -> list[ErrorItem]:
+    """List every false positive and missed label in one split, image by image."""
+    items = []
+    r = cases.result
+    for ce in errors:
+        for i, (record, lab, e) in enumerate(zip(cases.records, ce.labels, ce.errors, strict=True)):
+            src = OTHER_SOURCE if sources is None else sources[i]
+            base = (r.dataset, r.split, record.ref.file_name, src)
+            for box, kind, score in zip(
+                e.false_positive_boxes, e.false_positive_kinds, e.false_positive_scores, strict=True
+            ):
+                items.append(
+                    ErrorItem(*base, "false positive", kind, score, _rounded(box), frames[i])
+                )
+            for m in e.missed_labels:
+                items.append(ErrorItem(*base, "miss", "", 0.0, _rounded(_xyxy(lab)[m]), frames[i]))
+    return items
+
+
+def image_frames(
+    project: ProjectConfig, dataset: str, records: Sequence[ImageRecord]
+) -> list[int | None]:
+    """Return each image's frame number, or None where the dataset has no recordings."""
+    method = project.splits.datasets.get(dataset)
+    if method is None or method.method != "temporal":
+        return [None] * len(records)
+    found = [re.match(method.recording_pattern, r.source_name) for r in records]
+    return [None if m is None else int(m.group("frame")) for m in found]
+
+
+def _near(item: ErrorItem, picks: Sequence[ErrorItem], gap: int) -> bool:
+    return item.frame is not None and any(
+        p.source == item.source and p.frame is not None and abs(p.frame - item.frame) < gap
+        for p in picks
+    )
+
+
+def _spread(items: Sequence[ErrorItem]) -> list[ErrorItem]:
+    """Order items so each source gives one before any gives a second."""
+    by_source: dict[str, list[ErrorItem]] = {}
+    for item in items:
+        by_source.setdefault(item.source, []).append(item)
+    queues = list(by_source.values())
+    spread = []
+    for depth in range(max((len(q) for q in queues), default=0)):
+        spread += [q[depth] for q in queues if depth < len(q)]
+    return spread
+
+
+def gallery_picks(
+    items: Sequence[ErrorItem], count: int, exclude: Sequence[str], min_frame_gap: int = 0
+) -> list[ErrorItem]:
+    """Pick ``count`` images for the gallery, one error each.
+
+    Picks alternate between the most confident false positives and the
+    images with the most misses, spread over sources, with one tile per
+    image. Frames of one recording closer than ``min_frame_gap`` look alike,
+    so the second is skipped. If one kind runs out, the other fills the
+    rest. Excluded images are skipped, so the next one in order takes their
+    place.
+    """
+    shown = [i for i in items if i.file_name not in set(exclude)]
+    misses_per_image = Counter(i.file_name for i in shown if i.kind == "miss")
+    firsts: dict[tuple[str, str], ErrorItem] = {}
+    for i in shown:
+        # One error stands for its image: the most confident false positive,
+        # or the first miss.
+        key = (i.file_name, i.kind)
+        if key not in firsts or i.score > firsts[key].score:
+            firsts[key] = i
+    ranked = {
+        "false positive": _spread(
+            sorted(
+                (i for i in firsts.values() if i.kind == "false positive"),
+                key=lambda i: (-i.score, i.file_name),
+            )
+        ),
+        "miss": _spread(
+            sorted(
+                (i for i in firsts.values() if i.kind == "miss"),
+                key=lambda i: (-misses_per_image[i.file_name], i.file_name),
+            )
+        ),
+    }
+    picks: list[ErrorItem] = []
+    used: set[str] = set()
+    sources: Counter[str] = Counter()
+    kinds = [k for k in ERROR_KINDS if ranked[k]]
+    turn = 0
+    while len(picks) < count and kinds:
+        kind = kinds[turn % len(kinds)]
+        turn += 1
+        left = [
+            i
+            for i in ranked[kind]
+            if i.file_name not in used and not _near(i, picks, min_frame_gap)
+        ]
+        if not left:
+            kinds.remove(kind)
+            continue
+        # The least shown source goes first, across both kinds, so two
+        # frames of one recording rarely sit side by side.
+        item = min(left, key=lambda i: sources[i.source])
+        picks.append(item)
+        used.add(item.file_name)
+        sources[item.source] += 1
+    return picks
+
+
+def _annotator(color: sv.Color, thickness: int) -> sv.BoxAnnotator:
+    return sv.BoxAnnotator(color=color, thickness=thickness)
+
+
+def _detections(boxes: npt.NDArray[np.float64]) -> sv.Detections:
+    return sv.Detections(xyxy=boxes.reshape(-1, 4), class_id=np.zeros(len(boxes), dtype=int))
+
+
+def draw_errors(
+    image: Image.Image,
+    labels: npt.NDArray[np.float64],
+    false_positives: npt.NDArray[np.float64],
+    misses: npt.NDArray[np.float64],
+    side: int,
+    thickness: int = 2,
+) -> Image.Image:
+    """Draw labeled boxes, false positives, and misses on ``image`` scaled to fit ``side``."""
+    scale = side / max(image.size)
+    shown = image.convert("RGB").resize(
+        (max(1, round(image.width * scale)), max(1, round(image.height * scale)))
+    )
+    for boxes, color, width in (
+        (labels, LABEL_COLOR, 1),
+        (misses, MISS_COLOR, thickness),
+        (false_positives, FALSE_POSITIVE_COLOR, thickness),
+    ):
+        if len(boxes):
+            shown = _annotator(color, width).annotate(shown, _detections(boxes * scale))
+    return shown
+
+
+def _image_boxes(
+    item: ErrorItem, items: Sequence[ErrorItem], labels: npt.NDArray[np.float64]
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    same = [i for i in items if i.file_name == item.file_name]
+    fps = np.array([i.xyxy for i in same if i.kind == "false positive"]).reshape(-1, 4)
+    misses = np.array([i.xyxy for i in same if i.kind == "miss"]).reshape(-1, 4)
+    return fps, misses
+
+
+def gallery_image(
+    picks: Sequence[tuple[ErrorItem, Path, npt.NDArray[np.float64]]],
+    items: Sequence[ErrorItem],
+    cfg: GalleryConfig,
+) -> Image.Image:
+    """Tile each pick's whole image with all of its errors drawn.
+
+    Args:
+        picks: Each pick with its image path and its labeled boxes.
+        items: Every error in the diagnosed splits.
+        cfg: Gallery layout.
+    """
+    tiles, captions = [], []
+    for item, path, labels in picks:
+        fps, misses = _image_boxes(item, items, labels)
+        with Image.open(path) as image:
+            tiles.append(draw_errors(image, labels, fps, misses, cfg.tile_px))
+        captions.append(f"{item.dataset}: {item.kind}")
+    return tile(tiles, captions, cfg)
+
+
+def review_sample(
+    items: Sequence[ErrorItem], per_kind: int, seed: str
+) -> dict[tuple[str, str], list[ErrorItem]]:
+    """Draw a seeded sample of up to ``per_kind`` errors of each kind in each dataset."""
+    groups: dict[tuple[str, str], list[ErrorItem]] = {}
+    for i in items:
+        groups.setdefault((i.dataset, i.kind), []).append(i)
+    sample = {}
+    for (dataset, kind), group in sorted(groups.items()):
+        ordered = sorted(group, key=lambda i: (i.file_name, i.xyxy))
+        rng = random.Random(f"{seed}:{dataset}:{kind}")
+        chosen = ordered if len(ordered) <= per_kind else rng.sample(ordered, per_kind)
+        sample[(dataset, kind)] = sorted(chosen, key=lambda i: (i.file_name, i.xyxy))
+    return sample
+
+
+def crop_box(
+    image: Image.Image, xyxy: Sequence[float], context: float, min_px: int
+) -> tuple[Image.Image, tuple[float, float]]:
+    """Crop a square around a box with ``context`` box widths of margin.
+
+    Returns:
+        The crop and its top left corner in the image, to move boxes into it.
+    """
+    x1, y1, x2, y2 = xyxy
+    side = max(context * max(x2 - x1, y2 - y1), min_px)
+    cx, cy = (x1 + x2) / 2, (y1 + y2) / 2
+    left = min(max(cx - side / 2, 0), max(image.width - side, 0))
+    top = min(max(cy - side / 2, 0), max(image.height - side, 0))
+    box = (round(left), round(top), round(left + side), round(top + side))
+    return image.crop(box), (box[0], box[1])
+
+
+def review_sheet(
+    sample: Sequence[ErrorItem],
+    paths: dict[str, Path],
+    labels: dict[str, npt.NDArray[np.float64]],
+    cfg: ReviewConfig,
+) -> Image.Image:
+    """Tile a numbered crop around each sampled error, numbered from 1 row by row."""
+    tiles, captions = [], []
+    for n, item in enumerate(sample, start=1):
+        with Image.open(paths[item.file_name]) as image:
+            crop, (left, top) = crop_box(
+                image.convert("RGB"), item.xyxy, cfg.context, cfg.min_crop_px
+            )
+        offset = np.array([left, top, left, top], dtype=np.float64)
+        box = np.array([item.xyxy], dtype=np.float64) - offset
+        fps, misses = (
+            (box, np.zeros((0, 4))) if item.kind == "false positive" else (np.zeros((0, 4)), box)
+        )
+        tiles.append(draw_errors(crop, labels[item.file_name] - offset, fps, misses, cfg.tile_px))
+        captions.append(f"{n} {item.score:.2f}" if item.kind == "false positive" else str(n))
+    return tile(tiles, captions, cfg)
+
+
+def read_review(
+    path: Path, verdicts: Sequence[str]
+) -> dict[tuple[str, str, str, tuple[float, float, float, float]], str]:
+    """Read the verdicts judged by eye, keyed like :attr:`ErrorItem.key`.
 
     Raises:
-        ConfigError: If the model is unknown or has no published run.
+        ConfigError: If a row has a verdict outside ``verdicts`` or appears twice.
+    """
+    found = {}
+    with path.open(encoding="utf-8", newline="") as f:
+        for row in csv.DictReader(f):
+            key = (
+                row["dataset"],
+                row["file_name"],
+                row["kind"],
+                (float(row["x1"]), float(row["y1"]), float(row["x2"]), float(row["y2"])),
+            )
+            if row["verdict"] not in verdicts:
+                raise ConfigError(f"{path}: {row['verdict']!r} is not one of {list(verdicts)}")
+            if key in found:
+                raise ConfigError(f"{path}: {key} is reviewed twice")
+            found[key] = row["verdict"]
+    return found
+
+
+def review_counts(
+    sample: dict[tuple[str, str], list[ErrorItem]],
+    totals: Counter[tuple[str, str]],
+    verdicts: dict[tuple[str, str, str, tuple[float, float, float, float]], str],
+    allowed: Sequence[str],
+) -> list[ReviewCount]:
+    """Count verdicts for each sampled group.
+
+    Raises:
+        ConfigError: If a sampled error has no verdict, or a verdict matches
+            no sampled error, which means the sample or the data changed
+            since the review.
+    """
+    wanted = {i.key for group in sample.values() for i in group}
+    if stale := sorted(set(verdicts) - wanted):
+        raise ConfigError(f"{len(stale)} reviewed errors are not in the sample, such as {stale[0]}")
+    counts = []
+    for (dataset, kind), group in sample.items():
+        if missing := [i for i in group if i.key not in verdicts]:
+            raise ConfigError(
+                f"{len(missing)} sampled {kind}s in {dataset} have no verdict, "
+                f"such as {missing[0].file_name} {missing[0].xyxy}"
+            )
+        tally = Counter(verdicts[i.key] for i in group)
+        by_kind: dict[str, Counter[str]] = {}
+        for i in group:
+            if i.automatic_kind:
+                by_kind.setdefault(i.automatic_kind, Counter())[verdicts[i.key]] += 1
+        counts.append(
+            ReviewCount(
+                dataset=dataset,
+                kind=kind,
+                total=totals[(dataset, kind)],
+                sampled=len(group),
+                verdicts={v: tally[v] for v in allowed if tally[v]},
+                by_automatic_kind={
+                    k: {v: c[v] for v in allowed if c[v]}
+                    for k in FALSE_POSITIVE_KINDS
+                    if (c := by_kind.get(k))
+                },
+            )
+        )
+    return counts
+
+
+def write_review_template(path: Path, sample: dict[tuple[str, str], list[ErrorItem]]) -> None:
+    """Write a review file with an empty verdict for every sampled error."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as f:
+        writer = csv.writer(f, lineterminator="\n")
+        writer.writerow(REVIEW_FIELDS)
+        for group in sample.values():
+            for i in group:
+                writer.writerow([i.dataset, i.file_name, i.kind, *i.xyxy, "", ""])
+
+
+@dataclass(frozen=True)
+class DiagnosisRun:
+    """A diagnosis and what drawing its images needs."""
+
+    diagnosis: Diagnosis
+    cases: list[SplitCases]
+    errors: list[list[ClassErrors]]
+    items: list[ErrorItem]
+    picks: list[ErrorItem]
+    review_sample: dict[tuple[str, str], list[ErrorItem]]
+
+
+def diagnose_model(project: ProjectConfig, model: str) -> DiagnosisRun:
+    """Diagnose every published run of ``model`` and compare its training data with each split.
+
+    Verdicts are counted when the review file exists. Without it, the review
+    is left empty so the sample can be drawn and judged first.
+
+    Raises:
+        ConfigError: If the model is unknown or has no published run, or the
+            review file does not match the sample.
     """
     cfg = project.diagnose
     ev = project.evaluate
@@ -766,18 +1185,49 @@ def diagnose_model(project: ProjectConfig, model: str) -> Diagnosis:
     brightness_edges = quantile_edges([b for b, _ in pooled], cfg.feature_bins)
     sharpness_edges = quantile_edges([s for _, s in pooled], cfg.feature_bins)
 
-    splits = [
-        diagnose_split(
-            c,
-            fs,
-            image_sources(project, c.result.dataset, c.records),
-            brightness_edges,
-            sharpness_edges,
-            cfg,
-            project.inspect.area_buckets,
+    splits, all_errors, items = [], [], []
+    for c, fs in zip(all_cases, features, strict=True):
+        errors = class_errors(c, cfg.localization_floor)
+        sources = image_sources(project, c.result.dataset, c.records)
+        splits.append(
+            diagnose_split(
+                c,
+                errors,
+                fs,
+                sources,
+                brightness_edges,
+                sharpness_edges,
+                cfg,
+                project.inspect.area_buckets,
+            )
         )
-        for c, fs in zip(all_cases, features, strict=True)
+        all_errors.append(errors)
+        frames = image_frames(project, c.result.dataset, c.records)
+        items += error_items(c, errors, None if sources is None else sources[0], frames)
+
+    picks = [
+        pick
+        for dataset, count in cfg.gallery.per_dataset.items()
+        for pick in gallery_picks(
+            [
+                i
+                for i in items
+                if i.dataset == dataset
+                and i.source not in cfg.gallery.exclude_sources.get(dataset, [])
+            ],
+            count,
+            cfg.gallery.exclude.get(dataset, []),
+            cfg.gallery.min_frame_gap,
+        )
     ]
+    sample = review_sample(items, cfg.review.per_kind, str(project.seed))
+    review: list[ReviewCount] = []
+    if cfg.review.file.is_file():
+        totals: Counter[tuple[str, str]] = Counter((i.dataset, i.kind) for i in items)
+        verdicts = read_review(cfg.review.file, cfg.review.verdicts)
+        review = review_counts(sample, totals, verdicts, cfg.review.verdicts)
+    else:
+        logger.warning("%s does not exist, so no verdicts are counted", cfg.review.file)
 
     trained_on = entries[model].dataset
     train_dir = project.paths.harmonized_dir / trained_on / "train"
@@ -807,7 +1257,7 @@ def diagnose_model(project: ProjectConfig, model: str) -> Diagnosis:
             for c, fs in zip(all_cases, features, strict=True)
         ),
     ]
-    return Diagnosis(
+    diagnosis = Diagnosis(
         model=model,
         confidence=confidence,
         iou=iou,
@@ -819,7 +1269,66 @@ def diagnose_model(project: ProjectConfig, model: str) -> Diagnosis:
         sharpness_edges=sharpness_edges,
         splits=splits,
         domain=domain,
+        gallery=[
+            GalleryTile(dataset=i.dataset, file_name=i.file_name, kind=i.kind, source=i.source)
+            for i in picks
+        ],
+        review=review,
     )
+    return DiagnosisRun(diagnosis, all_cases, all_errors, items, picks, sample)
+
+
+def _image_labels(run: DiagnosisRun) -> dict[tuple[str, str], tuple[Path, npt.NDArray[np.float64]]]:
+    """Map each image to its path and its labeled boxes of the scored classes."""
+    found = {}
+    for cases, errors in zip(run.cases, run.errors, strict=True):
+        for n, r in enumerate(cases.records):
+            boxes = [_xyxy(ce.labels[n]) for ce in errors]
+            found[(r.ref.dataset, r.ref.file_name)] = (
+                cases.split_dir / r.ref.file_name,
+                np.concatenate(boxes).reshape(-1, 4),
+            )
+    return found
+
+
+def write_gallery(run: DiagnosisRun, cfg: GalleryConfig, path: Path) -> None:
+    """Write the gallery PNG and log the file behind each tile for the face check.
+
+    Positions read ``r<row>c<col>``, counted from 1 at the top left.
+    """
+    images = _image_labels(run)
+    picks = [(i, *images[(i.dataset, i.file_name)]) for i in run.picks]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(encode_png(gallery_image(picks, run.items, cfg), cfg.max_bytes))
+    for n, i in enumerate(run.picks):
+        row, col = divmod(n, cfg.cols)
+        logger.info("gallery r%dc%d %s/%s %s", row + 1, col + 1, i.dataset, i.file_name, i.kind)
+    logger.info("wrote %s, which must pass the face check before it is committed", path)
+
+
+def write_review_sheets(run: DiagnosisRun, cfg: ReviewConfig, out_dir: Path) -> None:
+    """Write one numbered crop sheet per sampled group, and a review file to fill in.
+
+    The sheets are not face-checked, so they go under the gitignored
+    contact sheet directory.
+    """
+    images = _image_labels(run)
+    per_sheet = cfg.rows * cfg.cols
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for (dataset, kind), group in run.review_sample.items():
+        paths = {i.file_name: images[(dataset, i.file_name)][0] for i in group}
+        labels = {i.file_name: images[(dataset, i.file_name)][1] for i in group}
+        for start in range(0, len(group), per_sheet):
+            sheet = review_sheet(group[start : start + per_sheet], paths, labels, cfg)
+            stem = f"{REVIEW_SHEET_PREFIX}{dataset}_{kind.replace(' ', '_')}"
+            name = f"{stem}_{start // per_sheet + 1}.jpg"
+            sheet.save(out_dir / name)
+            logger.info(
+                "wrote %s (%s, %s, numbered from %d)", out_dir / name, dataset, kind, start + 1
+            )
+    template = out_dir / f"{REVIEW_SHEET_PREFIX}template.csv"
+    write_review_template(template, run.review_sample)
+    logger.info("fill in %s by eye and save it as %s", template, cfg.file)
 
 
 def diagnosis_meta(
@@ -882,6 +1391,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("model", help="run name in reports/models.yaml, such as baseline-a")
     parser.add_argument("--allow-dirty", action="store_true", help="run from a dirty tree")
+    parser.add_argument(
+        "--review-sheet",
+        action="store_true",
+        help="write crop sheets of the review sample under data/contact_sheets/ and nothing else",
+    )
     parser.add_argument("--project-config", type=Path, default=PROJECT_CONFIG)
     add_log_level_argument(parser)
     raw_args = sys.argv[1:] if argv is None else argv
@@ -893,7 +1407,11 @@ def main(argv: list[str] | None = None) -> int:
     if dirty and not args.allow_dirty:
         raise DirtyTreeError("commit or stash changes first, or pass --allow-dirty")
     project = load_yaml(args.project_config, ProjectConfig)
-    diagnosis = diagnose_model(project, args.model)
-    meta = diagnosis_meta(repo, project, args.project_config, diagnosis, raw_args, dirty)
-    write_diagnosis(project.diagnose.output_dir / args.model, diagnosis, meta)
+    run = diagnose_model(project, args.model)
+    if args.review_sheet:
+        write_review_sheets(run, project.diagnose.review, project.paths.contact_sheet_dir)
+        return 0
+    meta = diagnosis_meta(repo, project, args.project_config, run.diagnosis, raw_args, dirty)
+    write_diagnosis(project.diagnose.output_dir / args.model, run.diagnosis, meta)
+    write_gallery(run, project.diagnose.gallery, project.paths.assets_dir / GALLERY_NAME)
     return 0

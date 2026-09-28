@@ -167,3 +167,64 @@ diagnose:
         pattern: '^frc_train_'
       - name: YouTube frames
         pattern: '^(?:[A-Za-z0-9_-]{11}_\d+|youtube-\d+)\.'
+  # Failure gallery at docs/assets/failures.png. Picks alternate between
+  # false positives and misses, spread over sources. Excluded files show a
+  # face (face-check skill), and a replacement is picked in their place.
+  gallery:
+    rows: 4
+    cols: 4
+    tile_px: 320
+    max_bytes: 450000
+    per_dataset:
+      marswars: 4
+      robotzftp2: 4
+      scorekeeper: 8
+    # Frames of one recording closer than this look alike, so only one is shown.
+    min_frame_gap: 30
+    # Every frame of this broadcast shows the same front row of spectators
+    # close to the camera.
+    exclude_sources:
+      scorekeeper:
+        - 2024 Milford broadcast
+    exclude:
+      marswars:
+        - Basler_daA1280-54uc__24770352__20260112_180305685_0210_png.rf.b40a0a55f146f485842e11df2ce40771.jpg
+        - Basler_daA1280-54uc__24770352__20260112_180305685_0199_png.rf.2836889989fe4bd868b82d1805a22d67.jpg
+      scorekeeper:
+        - PXL_20220219_190751379_jpg.rf.f67de0751a2245e075ee6d9b63c5c2bf.jpg
+        - frc_train_612_jpg.rf.154710d49abc64e36c0024a44abb0196.jpg
+        - Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0068_jpg.rf.9353b82ca8a7d81c85954f6aa544c1dc.jpg
+        - -Q97WO6Zc_U_2_jpg.rf.145d637161a1eb8f552490511cd13501.jpg
+        - frc_train_486_jpg.rf.6fea1a9968929ab2e2108349a4621082.jpg
+        - z6S7XrF5CI0_3_jpg.rf.85300f901b2993feebb5fddfe1875caf.jpg
+        - youtube-47_jpg.rf.8146c5006d3ba11719ee2c95df2c4b6d.jpg
+        - youtube-129_jpg.rf.e44f2aae349ff2bd94fb58615ffb4a94.jpg
+        - FRC_3_mp4-4_jpg.rf.6d996c77f6f9102953c59b9d026cf8fb.jpg
+        - youtube-19_jpg.rf.a56715b9c2890fe929978c5a6d1cb548.jpg
+        - ncash2023_gopro3-mp4_00805_png.rf.7f96d0520faf1b0c2b32db16fc191ea1.jpg
+        - youtube-15_jpg.rf.a81798214470ddbd444c348ab9b29c1b.jpg
+        - FRC_3_mp4-26_jpg.rf.31bfbd8f50e2dd92f354977e2f850ae9.jpg
+        - youtube-32_jpg.rf.ee5c85e6951fac99a8642552d2a9fee6.jpg
+        - youtube-56_jpg.rf.a0dcf146f9de78d932ca82ff18152db7.jpg
+  # A seeded sample of false positives and of misses per dataset, cropped
+  # onto sheets under data/contact_sheets/ (frc-diagnose --review-sheet) and
+  # judged by eye into the file below. The sheets can show faces, so they
+  # stay out of docs/.
+  review:
+    rows: 5
+    cols: 8
+    tile_px: 160
+    per_kind: 40
+    context: 4
+    min_crop_px: 96
+    file: reports/diagnosis/review.csv
+    verdicts:
+      - unlabeled fuel
+      - ball from another game
+      - robot part
+      - field or venue element
+      - loose or offset label
+      - misplaced prediction
+      - barely visible fuel
+      - clear fuel
+      - other
