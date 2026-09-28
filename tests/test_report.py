@@ -443,3 +443,10 @@ def test_write_report_needs_diagnosis_markers_when_a_diagnosis_exists(tmp_path: 
     evaluation.write_text("{}\n{}\n".format(*EVALUATION_MARKERS), "utf-8")
     with pytest.raises(ConfigError):
         write_report(runs, readme, evaluation, write_diagnosis_file(tmp_path, diagnosis()))
+
+
+def test_false_positive_kinds_are_split_by_whether_images_have_labels() -> None:
+    text = diagnosis_section(diagnosis())
+    assert "| alpha | all | 0 | 1 | 0 | 4 |" in text
+    assert "| alpha | with labeled fuel | 0 | 1 | 0 | 1 |" in text
+    assert "| alpha | without labeled fuel | 0 | 1 | 0 | 2 |" in text
