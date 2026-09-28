@@ -31,3 +31,7 @@ class UploadCheckError(FrcXdataError):
 
 class PredictionCacheTooLargeError(FrcXdataError):
     """Cached predictions would be too large to commit under reports/."""
+
+
+class CountMismatchError(FrcXdataError):
+    """Box counts rebuilt from cached predictions differ from the ones a run published."""

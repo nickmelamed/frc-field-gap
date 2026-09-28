@@ -74,6 +74,8 @@ COORD_DECIMALS = 1
 PREDICTIONS_NAME = "predictions.json"
 METRICS_NAME = "metrics.json"
 META_NAME = "meta.json"
+# ``predictions_from`` for a run that called the model itself.
+THIS_RUN = "this run"
 LOG_EVERY = 25
 
 logger = logging.getLogger(__name__)
@@ -982,7 +984,7 @@ def run_evaluation(
         # cache reproduces this run exactly.
         predictions = parse_predictions(cache_text)
         server = predictor.server
-        source = "this run"
+        source = THIS_RUN
     else:
         predictions, source_dirty = _cached_run(cfg.runs_dir / from_cache, model, dataset, split)
         source = from_cache
