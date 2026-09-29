@@ -169,10 +169,21 @@ class SplitsConfig(_Frozen):
 
 
 class PlatformConfig(_Frozen):
-    """The Roboflow project that harmonized training data is uploaded to."""
+    """The Roboflow project each harmonized dataset is uploaded to, by dataset key."""
 
-    project: Slug
+    projects: dict[DatasetKey, Slug]
     upload_retries: Annotated[int, Field(ge=0)]
+
+    def project(self, key: str) -> str:
+        """Return the project for dataset ``key``.
+
+        Raises:
+            ConfigError: If ``key`` has no project, so nothing is uploaded to
+                a project meant for another dataset.
+        """
+        if key not in self.projects:
+            raise ConfigError(f"platform.projects has no project for {key}")
+        return self.projects[key]
 
 
 Probability = Annotated[float, Field(gt=0, lt=1)]

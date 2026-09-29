@@ -35,7 +35,8 @@ and note the reason in `reports/models.yaml`.
 ### 2. Create the project
 
 In the web app, create an object detection project in the workspace your API
-key belongs to. Name it after `platform.project` in `configs/project.yaml`.
+key belongs to. Name it after the dataset's entry under `platform.projects`
+in `configs/project.yaml`.
 Pick the CC BY 4.0 license, since the source datasets are CC BY 4.0. The
 upload command refuses to run if the project does not exist, because the SDK
 would otherwise create one under an MIT license.
