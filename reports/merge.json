@@ -30,7 +30,7 @@
       },
       "splits": {
         "train": {
-          "images": 6638
+          "images": 6629
         },
         "valid": {
           "images": 652
@@ -51,12 +51,12 @@
           "test": 286
         },
         "scorekeeper": {
-          "train": 1078,
+          "train": 1074,
           "valid": 263,
           "test": 314
         },
         "testingfrfr": {
-          "train": 3465,
+          "train": 3460,
           "valid": 0,
           "test": 0
         }
@@ -66,10 +66,12 @@
           "excluded": 140
         },
         "scorekeeper": {
+          "exact_duplicate": 4,
           "excluded": 439
         },
         "testingfrfr": {
           "copy": 6333,
+          "exact_duplicate": 5,
           "near_protected": 21,
           "same_scene": 895,
           "source_name": 2251

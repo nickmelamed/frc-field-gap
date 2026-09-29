@@ -15,7 +15,8 @@ from frc_xdata.config import ClassMapConfig, MergeConfig, ProjectConfig
 from frc_xdata.errors import DataLeakError, SplitLeakError
 from frc_xdata.harmonize import to_coco
 from frc_xdata.inspect_datasets import ANNOTATIONS_NAME, Box, ImageRecord, ImageRef
-from frc_xdata.merge import dihedral, dihedral_hashes, near_any, run_merge
+from frc_xdata.merge import dihedral, dihedral_hashes, merged_name, near_any, run_merge
+from frc_xdata.upload import match_key
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CLASS_MAP = ClassMapConfig(classes=["fuel", "robot"], datasets={})
@@ -244,6 +245,29 @@ def test_a_kept_train_image_close_to_its_own_valid_split_is_allowed(
     shutil.copy("data/harmonized/alpha/valid/av.png", "data/harmonized/alpha/train/a1.png")
     run_merge(project, CLASS_MAP)
     assert "alpha__a1.png" in merged_names("train")
+
+
+def test_merged_names_keep_the_roboflow_hash_through_an_upload() -> None:
+    first = merged_name("c", "FRC_3_mp4-0_jpg.rf." + "a" * 32 + ".jpg")
+    second = merged_name("c", "FRC_3_mp4-0_jpg.rf." + "b" * 32 + ".jpg")
+    assert first == "c__FRC_3_mp4-0_jpg_rf_" + "a" * 32 + ".jpg"
+    assert match_key(first) != match_key(second)
+    assert merged_name("c", "plain.png") == "c__plain.png"
+
+
+def test_a_byte_copy_in_train_is_dropped_once(project: ProjectConfig) -> None:
+    shutil.copy("data/harmonized/beta/train/b1.png", "data/harmonized/beta/train/b0.png")
+    coco_path = Path("data/harmonized/beta/train") / ANNOTATIONS_NAME
+    coco = json.loads(coco_path.read_text(encoding="utf-8"))
+    coco["images"].append(
+        {"id": 99, "file_name": "b0.png", "width": 64, "height": 64, "extra": {"name": "b0.jpg"}}
+    )
+    coco_path.write_text(json.dumps(coco), encoding="utf-8")
+    run_merge(project, CLASS_MAP)
+    train = merged_names("train")
+    assert "beta__b0.png" in train
+    assert "beta__b1.png" not in train
+    assert report()["datasets"]["merged"]["dropped"]["beta"]["exact_duplicate"] == 1
 
 
 def test_merge_settings_keep_sources_and_protected_datasets_apart() -> None:

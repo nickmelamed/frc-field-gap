@@ -135,6 +135,35 @@ def test_a_dataset_without_a_platform_project_is_refused(project: ProjectConfig)
         project.platform.project("beta")
 
 
+def test_check_before_upload_refuses_names_that_collide_after_upload(
+    project: ProjectConfig,
+) -> None:
+    dataset = project.paths.harmonized_dir / "alpha"
+    for name in ("x_jpg.rf." + "a" * 32 + ".jpg", "x_jpg.rf." + "b" * 32 + ".jpg"):
+        (dataset / "train" / name).write_bytes(name.encode())
+    records = [ImageRecord(ImageRef("alpha", "train", "a.png"), "a.png", 64, 64, (FUEL,))]
+    records += [
+        ImageRecord(ImageRef("alpha", "train", n), n, 64, 64, ())
+        for n in ("x_jpg.rf." + "a" * 32 + ".jpg", "x_jpg.rf." + "b" * 32 + ".jpg")
+    ]
+    write_split(dataset / "train", to_coco(records, ["fuel", "robot"]))
+    write_splits_report(project, {"train": 3, "valid": 1, "test": 1})
+    with pytest.raises(UploadCheckError, match="differ only in the suffix"):
+        check_before_upload(dataset, "alpha", project)
+
+
+def test_check_before_upload_refuses_byte_identical_images(project: ProjectConfig) -> None:
+    dataset = project.paths.harmonized_dir / "alpha"
+    shutil.copy(dataset / "train" / "a.png", dataset / "train" / "a2.png")
+    records = [
+        ImageRecord(ImageRef("alpha", "train", n), n, 64, 64, (FUEL,)) for n in ("a.png", "a2.png")
+    ]
+    write_split(dataset / "train", to_coco(records, ["fuel", "robot"]))
+    write_splits_report(project, {"train": 2, "valid": 1, "test": 1})
+    with pytest.raises(UploadCheckError, match="1 images are byte-identical"):
+        check_before_upload(dataset, "alpha", project)
+
+
 def test_upload_splits_names_every_split_in_its_own_call(tmp_path: Path) -> None:
     calls: list[tuple[Path, str]] = []
     upload_splits(tmp_path, lambda path, split: calls.append((path, split)))

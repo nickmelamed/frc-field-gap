@@ -118,8 +118,13 @@ class MergedImage:
 
 
 def merged_name(key: str, file_name: str) -> str:
-    """Return the file name an image gets in the merged dataset."""
-    return f"{key}{NAME_SEPARATOR}{file_name}"
+    """Return the file name an image gets in the merged dataset.
+
+    Roboflow drops a ``.rf.<hash>`` suffix on upload, and some sources hold
+    different photos that differ only in that suffix. Writing it as
+    ``_rf_<hash>`` keeps every uploaded name unique.
+    """
+    return f"{key}{NAME_SEPARATOR}{file_name.replace('.rf.', '_rf_')}"
 
 
 def excluded(record: ImageRecord, pattern: str | None) -> bool:
@@ -195,8 +200,9 @@ def same_scene(
 class MergePlan:
     """Where every source image goes, and why the others were dropped.
 
-    ``dropped`` maps an image to ``copy``, ``excluded``, or the reason it
-    was blocked (see :func:`plan_merge`).
+    ``dropped`` maps an image to ``copy``, ``excluded``,
+    ``exact_duplicate``, or the reason it was blocked (see
+    :func:`plan_merge`).
     """
 
     images: dict[str, list[MergedImage]]
@@ -251,6 +257,26 @@ def plan_merge(
                 ref = ImageRef(cfg.name, target, merged_name(key, r.ref.file_name))
                 images[target].append(MergedImage(replace(r, ref=ref), r.ref))
     return MergePlan(dict(images), dropped)
+
+
+def drop_exact_duplicates(plan: MergePlan, digests: Mapping[ImageRef, str]) -> MergePlan:
+    """Keep one of each set of byte-identical train images, the first by merged name.
+
+    Roboflow keeps one of two identical uploads, so a second copy would go
+    missing from the version, and its labels may differ from the first's.
+    ``digests`` maps each train image's harmonized file to its SHA256.
+    """
+    seen: set[str] = set()
+    train: list[MergedImage] = []
+    dropped = dict(plan.dropped)
+    for m in sorted(plan.images.get("train", []), key=lambda m: m.record.ref.file_name):
+        digest = digests[m.origin]
+        if digest in seen:
+            dropped[m.origin] = "exact_duplicate"
+        else:
+            seen.add(digest)
+            train.append(m)
+    return MergePlan({**plan.images, "train": train}, dropped)
 
 
 def check_field_test(
@@ -450,6 +476,9 @@ def run_merge(project: ProjectConfig, class_map: ClassMapConfig) -> MergePlan:
             blocked[r.ref] = "near_protected"
 
     plan = plan_merge(sources, cfg, blocked)
+    plan = drop_exact_duplicates(
+        plan, {m.origin: sha256(_path(harmonized, m.origin)) for m in plan.images.get("train", [])}
+    )
     by_origin = dict(zip((r.ref for r in candidates), map(tuple, candidate_hashes), strict=True))
     kept_train = [m.origin for m in plan.images.get("train", []) if m.origin not in by_origin]
     logger.info("hashing %d kept-split train images under 8 transforms", len(kept_train))
