@@ -793,3 +793,31 @@ sees fuel mostly from A and B. The pHash check still misses heavier edits,
 such as a strong crop. `make harmonize` rewrites
 `reports/class_coverage.json` without the merged entry, so run `make merge`
 after it.
+
+## D-029: Train the merged model twice, without and with augmentation (2026-09-28)
+
+Context. SPEC section 7 asks for merged data plus augmentation aimed at the
+diagnosed failure modes. Changing both at once would leave no way to say
+which one moved the scores. The baseline used 0.71 credits.
+
+Decision. The merged data is uploaded once and trained as two versions with
+the baseline's architecture, checkpoint, and 384x384 stretch.
+`merged-noaug` has no augmentation. `merged-aug` adds a horizontal flip, a
+crop of 0 to 20 percent, and brightness of -25 to +25 percent, on train
+only. If credits allow one run, it is `merged-aug`, and the write-up says the
+two changes are confounded. `frc-verify-upload --augmented` checks the
+augmented version. Train copies may repeat within train and their boxes are
+not compared, while valid and test are checked in full.
+
+Why. Crops make balls cut off by the frame edge, which caused most of A's
+and all of B's misses. Brightness covers B's dark misses. The false
+positives on people and other games' balls are addressed by the merged
+negatives, not by augmentation. Hue and saturation shifts would weaken the
+color cue that separates fuel from other balls, and rotation loosens boxes,
+as seen in `scorekeeper`'s copies (D-014).
+
+Consequences. Two runs cost about twice the credits of one. The crop and
+brightness ranges were chosen from the diagnosis, not tuned, and
+Roboflow's random augmentation is not reproducible bit for bit. The edge
+rule of D-027 leaves labels at the frame edge out of scoring, so gains from
+the crop on cut-off balls will not show in the scores.
