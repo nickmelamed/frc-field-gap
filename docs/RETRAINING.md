@@ -151,7 +151,10 @@ the augmentation cannot be told apart.
 1. Check your credits. The merged train split is about seven times the
    size of the baseline's, and the training page shows an estimate before
    the run starts. Write it down.
-2. Create `frc-rebuilt-merged` in the web app with the `CC BY 4.0` license.
+2. Create `frc-rebuilt-merged` in the web app with the `CC BY 4.0` license,
+   using hyphens, not underscores. Roboflow builds the project ID from the
+   name and may add a suffix. Copy the ID from the project's URL into
+   `platform.projects.merged` in `configs/project.yaml`.
 3. Build, check, and upload:
 
    ```bash
