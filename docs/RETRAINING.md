@@ -104,7 +104,7 @@ image to its harmonized file by file name, ignoring the `.rf.<hash>` suffix
 and `_jpg` tag that Roboflow drops, and writes
 `reports/platform_upload_marswars.json`. It fails if an image is missing,
 appears twice, sits in a different split, or has a different number of
-boxes. The report also holds the preprocessing and augmentation Roboflow
+boxes of any class. The report also holds the preprocessing and augmentation Roboflow
 reports for the version. Do not train on a version that fails this check.
 The command refuses to run from a working tree with uncommitted changes,
 since the report records the commit it was made from.

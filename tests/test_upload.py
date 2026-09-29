@@ -49,7 +49,7 @@ def write_splits_report(project: ProjectConfig, sizes: dict[str, int]) -> None:
     (project.paths.reports_dir / "splits.json").write_text(json.dumps(report), encoding="utf-8")
 
 
-def write_export(root: Path, images: dict[str, list[tuple[str, int]]]) -> None:
+def write_export(root: Path, images: dict[str, list[tuple[str, int]]], category: int = 1) -> None:
     """Write a Roboflow-style export whose file names differ from the upload names it records."""
     for split, entries in images.items():
         split_dir = root / split
@@ -57,7 +57,7 @@ def write_export(root: Path, images: dict[str, list[tuple[str, int]]]) -> None:
         for image_id, (name, boxes) in enumerate(entries):
             exported = f"{Path(name).stem}_png.rf.{image_id}.png"
             records.append(image_entry(image_id, exported, source=name))
-            anns += [(image_id, 1, [4.0, 4.0, 8.0, 8.0])] * boxes
+            anns += [(image_id, category, [4.0, 4.0, 8.0, 8.0])] * boxes
         write_split(split_dir, coco(records, anns))
 
 
@@ -138,8 +138,17 @@ def test_compare_export_lists_every_kind_of_mismatch(
     assert result.missing == []
     assert result.extra == ["b.png", "stranger.png"]
     assert result.moved == [("b.png", "valid", "train")]
-    assert result.box_count_changed == ["c.png"]
+    assert result.boxes_changed == ["c.png"]
     assert result.exported == {"train": 3, "valid": 1, "test": 1}
+
+
+def test_compare_export_catches_a_swapped_class_with_the_same_box_count(
+    project: ProjectConfig, tmp_path: Path
+) -> None:
+    write_export(tmp_path / "export", MATCHING, category=2)
+    result = compare_export(tmp_path / "export", project.paths.harmonized_dir / "alpha", "alpha")
+    assert not result.ok
+    assert result.boxes_changed == ["a.png", "c.png"]
 
 
 def test_compare_export_lists_missing_images(project: ProjectConfig, tmp_path: Path) -> None:
@@ -289,7 +298,7 @@ def test_compare_export_matches_the_names_roboflow_rebuilds(
         },
     )
     result = compare_export(tmp_path / "export", dataset, "alpha")
-    assert (result.missing, result.extra, result.moved, result.box_count_changed) == (
+    assert (result.missing, result.extra, result.moved, result.boxes_changed) == (
         [],
         [],
         [],
