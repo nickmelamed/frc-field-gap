@@ -1,6 +1,7 @@
 import csv
 import io
 import json
+import re
 import shutil
 from pathlib import Path
 
@@ -8,6 +9,7 @@ import numpy as np
 import pytest
 from conftest import coco, image_entry, smooth_image
 from PIL import Image
+from pydantic import ValidationError
 
 from frc_xdata import inspect_datasets
 from frc_xdata.config import GridConfig, ProjectConfig, TileLayout, load_yaml
@@ -250,6 +252,20 @@ def test_excluding_one_image_keeps_the_others(
     )
     assert opened[0] == before[1]
     assert before[0] not in opened
+
+
+def test_grid_order_leaves_out_source_names_matching_a_pattern(raw_dir: Path) -> None:
+    records, _ = alpha_records(raw_dir)
+    everything = grid_order(records, grid_config(rows=4, cols=4), "1:alpha")
+    first = everything[0].source_name
+    config = grid_config(rows=4, cols=4, exclude_patterns={"alpha": [f"^{re.escape(first)}$"]})
+    shown = grid_order(records, config, "1:alpha")
+    assert shown == [r for r in everything if r.source_name != first]
+
+
+def test_grid_exclude_patterns_must_compile() -> None:
+    with pytest.raises(ValidationError, match="does not compile"):
+        grid_config(exclude_patterns={"alpha": ["^(x"]})
 
 
 def test_encode_png_fits_the_limit_by_shrinking() -> None:

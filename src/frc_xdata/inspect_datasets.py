@@ -365,13 +365,20 @@ def _fit(
 def grid_order(records: Sequence[ImageRecord], grid: GridConfig, seed: str) -> list[ImageRecord]:
     """Return the images a sample grid shows, row by row.
 
-    Excluding a file swaps in the next image in the seeded order, so the
-    rest of the grid stays the same.
+    Excluding a file, or the source names matching a pattern, swaps in the
+    next image in the seeded order, so the rest of the grid stays the same.
     """
-    excluded = set(grid.exclude.get(records[0].ref.dataset, [])) if records else set()
+    dataset = records[0].ref.dataset if records else ""
+    excluded = set(grid.exclude.get(dataset, []))
+    patterns = [re.compile(p) for p in grid.exclude_patterns.get(dataset, [])]
     order = sorted(records, key=lambda r: str(r.ref))
     random.Random(seed).shuffle(order)
-    return [r for r in order if r.ref.file_name not in excluded][: grid.rows * grid.cols]
+    shown = [
+        r
+        for r in order
+        if r.ref.file_name not in excluded and not any(p.match(r.source_name) for p in patterns)
+    ]
+    return shown[: grid.rows * grid.cols]
 
 
 def sample_grid(
