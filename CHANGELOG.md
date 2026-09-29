@@ -11,7 +11,8 @@ uses [Semantic Versioning](https://semver.org/).
 - `frc-merge` (`make merge`) builds the merged training set from A, B, C,
   and `testingfrfr`. It keeps each source's test split whole and drops any
   training image that matches a valid, test, or lockbox image by source
-  name or by perceptual hash under flips and 90 degree rotations. A
+  name, by recording, or by perceptual hash under flips and 90 degree
+  rotations. A
   field-test match stops the run.
 - `pankratz` as a lockbox dataset, scored only, with an `eval_only` split
   method and attribution in the README.

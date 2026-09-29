@@ -328,10 +328,11 @@ duplicates with each other.
 It holds the train, valid, and test splits of A, B, and C as harmonize wrote
 them, less A's official-video frames and C's fuel photos in train and valid,
 plus one copy of each `testingfrfr` photo in train. A `testingfrfr` image is
-dropped when it matches a valid, test, or lockbox image by source name or by
-perceptual hash under any flip or 90 degree rotation. The field test set is
-checked the same way, and a match stops the run. The merged train split has
-6816 images, valid 652, and test 771. `reports/merge.json` counts what each
+dropped when it matches a valid, test, or lockbox image by source name, by
+recording, or by perceptual hash under any flip or 90 degree rotation. Every
+merged image is checked against the field test set by file hash and by
+perceptual hash, and a match stops the run. The merged train split has
+6638 images, valid 652, and test 771. `reports/merge.json` counts what each
 source brought and what was dropped, and why. File names in the merged
 dataset start with the source key, such as `marswars__`, and each image
 records its source dataset and split.

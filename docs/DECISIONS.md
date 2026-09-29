@@ -765,8 +765,13 @@ have no robot labels and a two-class model would learn them as background.
 C's fuel photos go, since their clusters have unlabeled balls (D-021). And
 `testingfrfr` keeps one augmented copy per photo, chosen as in D-014. A
 `testingfrfr` image is also dropped when its source name belongs to any
-valid, test, or lockbox image, or when its pHash under any of the 8 flips
-and 90 degree rotations is within 4 bits of one. The run fails on a
+valid, test, or lockbox image, when it is a frame of a recording those
+images come from, or when its pHash under any of the 8 flips and 90 degree
+rotations is within 4 bits of one. A frame counts when harmonize would have
+kept it out of train: any frame of a held-out recording in a dataset split
+by groups, and in one cut in frame order, any frame at or after the first
+held-out frame less the 5 frame buffer (D-013). A photo whose copy is
+dropped for any of these reasons loses all its copies. The run fails on a
 field-test image anywhere in the output, and on a merged train image within
 4 bits of any test or lockbox image under any transform. Counts are in
 `reports/merge.json`, and the merged classes in
@@ -780,10 +785,14 @@ source names repeat the other datasets' files, so matching names catches
 copies that shear or exposure changes put out of pHash reach. Train frames
 close to their own valid split are allowed, as they were for the baseline
 (D-013). The first run found 16 such pairs in A and B, all within one
-recording and none needing a transform, and no train image near any test or
-lockbox image. Keeping every augmented copy would have made most training
-images `testingfrfr` copies, about three per photo, some with broadcast
-frames on their side.
+recording and none needing a transform. A review of that run found that
+pHash alone let in frames from recordings in C-test, such as the Milford
+broadcast behind half of it, and B frames inside the buffer before a test
+cut, since other frames of one scene are not near duplicates. It also found
+photos whose dropped copy matched a held-out image while the kept copy did
+not. The recording and copy-group rules close both. Keeping every
+augmented copy would have made most training images `testingfrfr` copies,
+about three per photo, some with broadcast frames on their side.
 
 Consequences. Matching by source name is coarse. Names such as `frame_12`
 are shared by unrelated photos, so some clean images are dropped. The

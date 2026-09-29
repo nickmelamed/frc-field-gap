@@ -30,7 +30,7 @@
       },
       "splits": {
         "train": {
-          "images": 6816
+          "images": 6638
         },
         "valid": {
           "images": 652
@@ -56,7 +56,7 @@
           "test": 314
         },
         "testingfrfr": {
-          "train": 3643,
+          "train": 3465,
           "valid": 0,
           "test": 0
         }
@@ -69,9 +69,10 @@
           "excluded": 439
         },
         "testingfrfr": {
-          "copy": 8294,
-          "near_protected": 170,
-          "source_name": 858
+          "copy": 6333,
+          "near_protected": 21,
+          "same_scene": 895,
+          "source_name": 2251
         }
       }
     }
