@@ -29,6 +29,7 @@ MERGE = {
     "protected": ["lock"],
 }
 FUEL = (Box("fuel", 4, 4, 10, 10),)
+FRAMES = r"^(?P<recording>.+?)[_-](?P<frame>\d+)\.jpg$"
 
 
 def put(key: str, split: str, images: dict[str, tuple[Image.Image, str, tuple[Box, ...]]]) -> None:
@@ -50,12 +51,16 @@ def project(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> ProjectConfig:
 
     beta's train holds a clean image, a mirrored copy of alpha's test image,
     a rotated copy of the lockbox image, a new image sharing a source name
-    with alpha's test image, and two copies of one photo. beta's valid image
-    joins train.
+    with alpha's test image, and two copies of one photo. Two more copies
+    of another photo differ in that only the one dropped as a copy matches
+    alpha's valid image. Of three video frames, one comes before alpha's
+    valid frame by more than the buffer, one within it, and one is from the
+    lockbox's recording. beta's valid image joins train.
     """
     monkeypatch.chdir(tmp_path)
     test_image = smooth_image(4)
     lock_image = smooth_image(6)
+    valid_image = smooth_image(3)
     put(
         "alpha",
         "train",
@@ -64,7 +69,7 @@ def project(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> ProjectConfig:
             "a2.png": (smooth_image(2), "skip_a2.jpg", ()),
         },
     )
-    put("alpha", "valid", {"av.png": (smooth_image(3), "av.jpg", FUEL)})
+    put("alpha", "valid", {"av.png": (valid_image, "run_0010.jpg", FUEL)})
     put("alpha", "test", {"at.png": (test_image, "shared.jpg", FUEL)})
     put(
         "beta",
@@ -77,16 +82,26 @@ def project(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> ProjectConfig:
             # Two augmented copies of one photo. The rotated one has the larger box.
             "b6a.png": (smooth_image(9), "b6.jpg", (Box("fuel", 4, 4, 20, 20),)),
             "b6b.png": (smooth_image(10), "b6.jpg", FUEL),
+            "b7a.png": (ImageOps.flip(valid_image), "b7.jpg", (Box("fuel", 4, 4, 20, 20),)),
+            "b7b.png": (smooth_image(11), "b7.jpg", FUEL),
+            "b8.png": (smooth_image(12), "run_0004.jpg", ()),
+            "b9.png": (smooth_image(13), "run_0005.jpg", ()),
+            "b10.png": (smooth_image(14), "clip_mov-0050.jpg", ()),
         },
     )
     put("beta", "valid", {"b5.png": (smooth_image(8), "b5.jpg", (Box("robot", 0, 0, 30, 30),))})
-    put("lock", "test", {"l1.png": (lock_image, "l1.jpg", FUEL)})
+    put("lock", "test", {"l1.png": (lock_image, "clip_mov-0001.jpg", FUEL)})
     Path("reports").mkdir()
     Path("reports/class_coverage.json").write_text(
         json.dumps({"alpha": {"labeled": ["fuel"]}}), encoding="utf-8"
     )
     data = yaml.safe_load((REPO_ROOT / "configs/project.yaml").read_text(encoding="utf-8"))
     data["merge"] = MERGE
+    data["splits"]["buffer_frames"] = 5
+    data["splits"]["datasets"] = {
+        "alpha": {"method": "temporal", "recording_pattern": FRAMES},
+        "lock": {"method": "eval_only", "recording_pattern": r"^(?P<recording>.+_mov)-\d+\.jpg$"},
+    }
     return ProjectConfig.model_validate(data)
 
 
@@ -139,20 +154,21 @@ def test_merge_keeps_test_splits_and_drops_every_kind_of_match(project: ProjectC
         "beta__b1.png",
         "beta__b5.png",
         "beta__b6b.png",
+        "beta__b8.png",
     ]
     assert merged_names("valid") == ["alpha__av.png"]
     assert merged_names("test") == ["alpha__at.png"]
     merged = report()["datasets"]["merged"]
     assert merged["dropped"] == {
         "alpha": {"excluded": 1},
-        "beta": {"copy": 1, "near_protected": 2, "source_name": 1},
+        "beta": {"copy": 1, "near_protected": 4, "same_scene": 2, "source_name": 1},
     }
     assert merged["splits"] == {
-        "train": {"images": 4},
+        "train": {"images": 5},
         "valid": {"images": 1},
         "test": {"images": 1},
     }
-    assert merged["from_source"]["beta"] == {"train": 3, "valid": 0, "test": 0}
+    assert merged["from_source"]["beta"] == {"train": 4, "valid": 0, "test": 0}
 
 
 def test_merged_test_images_are_the_harmonized_files(project: ProjectConfig) -> None:

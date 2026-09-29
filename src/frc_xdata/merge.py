@@ -22,7 +22,7 @@ import re
 import shutil
 import sys
 from collections import Counter, defaultdict
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -36,6 +36,7 @@ from frc_xdata.config import (
     ClassMapConfig,
     MergeConfig,
     ProjectConfig,
+    SplitMethod,
     load_yaml,
 )
 from frc_xdata.download import PROJECT_CONFIG
@@ -127,11 +128,75 @@ def excluded(record: ImageRecord, pattern: str | None) -> bool:
 
 
 @dataclass(frozen=True)
+class HeldOutScenes:
+    """The recordings that held-out images come from, per dataset.
+
+    ``first_frame`` gives, for a recording cut in frame order, the first
+    frame that is not in train. ``recordings`` lists the recordings of
+    datasets split by groups, whose held-out recordings have no frame in
+    train.
+    """
+
+    first_frame: dict[tuple[str, str], int]
+    recordings: set[tuple[str, str]]
+
+
+def held_out_scenes(
+    held_out: Iterable[ImageRecord], methods: Mapping[str, SplitMethod]
+) -> HeldOutScenes:
+    """Collect the recordings behind valid, test, and protected images.
+
+    ``methods`` holds the split method of each dataset that has one.
+    """
+    first_frame: dict[tuple[str, str], int] = {}
+    recordings: set[tuple[str, str]] = set()
+    for r in held_out:
+        method = methods.get(r.ref.dataset)
+        if method is None or (m := re.match(method.recording_pattern, r.source_name)) is None:
+            continue
+        scene = (r.ref.dataset, m["recording"])
+        if method.method == "temporal":
+            frame = int(m["frame"])
+            first_frame[scene] = min(first_frame.get(scene, frame), frame)
+        else:
+            recordings.add(scene)
+    return HeldOutScenes(first_frame, recordings)
+
+
+def same_scene(
+    record: ImageRecord,
+    scenes: HeldOutScenes,
+    methods: Mapping[str, SplitMethod],
+    buffer_frames: int,
+) -> bool:
+    """Return True if a training-only image is a frame of a held-out recording.
+
+    Its source name is read with each dataset's recording pattern. For a
+    recording cut in frame order, a frame counts when harmonize would have
+    kept it out of train, meaning it is within ``buffer_frames`` of the
+    first held-out frame or later (D-013). For a grouped dataset, any frame
+    of a held-out recording counts.
+    """
+    for dataset, method in methods.items():
+        m = re.match(method.recording_pattern, record.source_name)
+        if m is None:
+            continue
+        scene = (dataset, m["recording"])
+        if method.method == "temporal":
+            first = scenes.first_frame.get(scene)
+            if first is not None and int(m["frame"]) >= first - buffer_frames:
+                return True
+        elif scene in scenes.recordings:
+            return True
+    return False
+
+
+@dataclass(frozen=True)
 class MergePlan:
     """Where every source image goes, and why the others were dropped.
 
-    ``dropped`` maps an image to ``copy``, ``excluded``, ``source_name``,
-    or ``near_protected``.
+    ``dropped`` maps an image to ``copy``, ``excluded``, or the reason it
+    was blocked (see :func:`plan_merge`).
     """
 
     images: dict[str, list[MergedImage]]
@@ -141,17 +206,18 @@ class MergePlan:
 def plan_merge(
     sources: Mapping[str, Mapping[str, Sequence[ImageRecord]]],
     cfg: MergeConfig,
-    protected_names: set[str],
-    near_protected: set[ImageRef],
+    blocked: Mapping[ImageRef, str],
 ) -> MergePlan:
     """Decide the merged split of every image, from matches found beforehand.
+
+    A copy group of a source that keeps one copy per photo is dropped whole
+    when any copy is blocked, since its copies show the same photo.
 
     Args:
         sources: Each source's records by harmonized split.
         cfg: The merge settings.
-        protected_names: Source names of every protected image.
-        near_protected: Images of training-only sources that match a
-            protected image under some transform.
+        blocked: Training-only images that match a held-out image, with the
+            reason: ``source_name``, ``same_scene``, or ``near_protected``.
 
     Raises:
         ConfigError: If a source kept with its splits lacks one of them.
@@ -165,6 +231,10 @@ def plan_merge(
         if source.dedupe_copies:
             everything = [r for records in by_split.values() for r in records]
             for copies in copy_groups(everything).values():
+                reasons = sorted(blocked[c.ref] for c in copies if c.ref in blocked)
+                if reasons:
+                    dropped.update({c.ref: blocked.get(c.ref, reasons[0]) for c in copies})
+                    continue
                 keep = pick_copy(copies)
                 dropped.update({c.ref: "copy" for c in copies if c is not keep})
         for split, records in sorted(by_split.items()):
@@ -175,13 +245,9 @@ def plan_merge(
                 if target != "test" and excluded(r, source.exclude_pattern):
                     dropped[r.ref] = "excluded"
                     continue
-                if source.role == "train_only":
-                    if r.source_name in protected_names:
-                        dropped[r.ref] = "source_name"
-                        continue
-                    if r.ref in near_protected:
-                        dropped[r.ref] = "near_protected"
-                        continue
+                if source.role == "train_only" and r.ref in blocked:
+                    dropped[r.ref] = blocked[r.ref]
+                    continue
                 ref = ImageRef(cfg.name, target, merged_name(key, r.ref.file_name))
                 images[target].append(MergedImage(replace(r, ref=ref), r.ref))
     return MergePlan(dict(images), dropped)
@@ -348,6 +414,12 @@ def run_merge(project: ProjectConfig, class_map: ClassMapConfig) -> MergePlan:
     for key in cfg.protected:
         held_out += [("test", r) for records in _load(harmonized, key).values() for r in records]
     protected_names = {r.source_name for _, r in held_out}
+    methods = {
+        key: method
+        for key, method in project.splits.datasets.items()
+        if key in cfg.sources or key in cfg.protected
+    }
+    scenes = held_out_scenes((r for _, r in held_out), methods)
     logger.info("hashing %d valid, test, and protected images", len(held_out))
     held_hashes = [h[0] for h in _hash_all([_path(harmonized, r.ref) for _, r in held_out])]
     protected = np.array(held_hashes, dtype=np.uint64)
@@ -368,9 +440,16 @@ def run_merge(project: ProjectConfig, class_map: ClassMapConfig) -> MergePlan:
         _hash_all([_path(harmonized, r.ref) for r in candidates]), dtype=np.uint64
     ).reshape(len(candidates), -1)
     hits = near_any(candidate_hashes, protected, max_distance)
-    near = {r.ref for r, hit in zip(candidates, hits, strict=True) if hit}
+    blocked: dict[ImageRef, str] = {}
+    for r, hit in zip(candidates, hits, strict=True):
+        if r.source_name in protected_names:
+            blocked[r.ref] = "source_name"
+        elif same_scene(r, scenes, methods, project.splits.buffer_frames):
+            blocked[r.ref] = "same_scene"
+        elif hit:
+            blocked[r.ref] = "near_protected"
 
-    plan = plan_merge(sources, cfg, protected_names, near)
+    plan = plan_merge(sources, cfg, blocked)
     by_origin = dict(zip((r.ref for r in candidates), map(tuple, candidate_hashes), strict=True))
     kept_train = [m.origin for m in plan.images.get("train", []) if m.origin not in by_origin]
     logger.info("hashing %d kept-split train images under 8 transforms", len(kept_train))
