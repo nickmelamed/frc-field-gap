@@ -49,9 +49,9 @@ def project(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> ProjectConfig:
     """Harmonized alpha (kept splits), beta (train only), and lock (protected).
 
     beta's train holds a clean image, a mirrored copy of alpha's test image,
-    a rotated copy of the lockbox image, and a new image that shares a
-    source name with alpha's test image, and two copies of one photo.
-    beta's valid image joins train.
+    a rotated copy of the lockbox image, a new image sharing a source name
+    with alpha's test image, and two copies of one photo. beta's valid image
+    joins train.
     """
     monkeypatch.chdir(tmp_path)
     test_image = smooth_image(4)
