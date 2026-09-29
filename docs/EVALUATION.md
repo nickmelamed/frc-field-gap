@@ -200,7 +200,7 @@ labels too (D-019). A robot prediction on a fuel-only dataset is neither a
 hit nor a false positive. A fuel-only model is not scored on robot boxes,
 and the run's section says which classes were left out.
 
-Runs made after Task 10's changes also leave out fuel labels that touch the
+Runs that record an edge rule also leave out fuel labels that touch the
 edge of the frame, since labels and model disagree on how much of a cut-off
 ball to box (D-027). Such a ball is neither a hit nor a miss, and a
 prediction that mostly overlaps it is dropped unless it hits another label.

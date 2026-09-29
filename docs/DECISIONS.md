@@ -665,11 +665,11 @@ which boxes are kept either. Dropping those boxes before caching also keeps
 the cache smaller.
 
 Consequences. baseline-a predicts only fuel, so every published run keeps
-exactly the same boxes under this rule, which was checked on every cache
-under `reports/runs/`, and its scores are unchanged. A two-class model's
+the same boxes under this rule, as rescoring every cache under
+`reports/runs/` shows, and its scores are unchanged. A two-class model's
 cache can hold up to twice as many boxes per image. The size limit still
 stops a run before it writes anything, so a cache too large for C would
-show up as a failed run, not as a silently cut one. Robot predictions on a
+fail the run rather than be cut silently. Robot predictions on a
 fuel-only dataset are not cached, so they cannot be studied later without
 calling the model again.
 
@@ -704,10 +704,10 @@ on carpet.
 Consequences. The lockbox was picked knowing that people and balls from
 other games cause most of the baseline's false positives on C. Its main
 scene is a person close to the camera holding and tossing fuel, so it tests
-exactly that failure, and a better score on it cannot be read as an
+that failure, and a better score on it cannot be read as an
 unbiased sample of new footage. It is small, 320 by 240, and from one team's
 workshop, and the webcam frames make up most of it, so it adds one new
-domain, not many. It labels fuel only, so robots are not scored on it.
+domain. It labels fuel only, so robots are not scored on it.
 
 ## D-027: Score fuel labels at the frame edge as neither hits nor misses (2026-09-28)
 
@@ -735,8 +735,7 @@ keeps every label.
 Why. Ignoring needs no threshold chosen by looking at results, so the same
 rule applies to every dataset. The overlap over the smaller box, rather than
 IoU, is what lets a prediction that is much larger or smaller than a thin
-edge label still be dropped, which is exactly the disagreement being set
-aside. A hit on a scored ball is never dropped, so the rule cannot hide a
+edge label still be dropped, which is the disagreement being set aside. A hit on a scored ball is never dropped, so the rule cannot hide a
 correct detection. A robot on the frame's edge still counts, since the
 diagnosis found no problem there.
 
@@ -782,9 +781,9 @@ copies that shear or exposure changes put out of pHash reach. Train frames
 close to their own valid split are allowed, as they were for the baseline
 (D-013). The first run found 16 such pairs in A and B, all within one
 recording and none needing a transform, and no train image near any test or
-lockbox image. Keeping every augmented copy would have made 10530 of 13703
-training images `testingfrfr`, from 3550 photos, with broadcast frames on
-their side.
+lockbox image. Keeping every augmented copy would have made most training
+images `testingfrfr` copies, about three per photo, some with broadcast
+frames on their side.
 
 Consequences. Matching by source name is coarse. Names such as `frame_12`
 are shared by unrelated photos, so some clean images are dropped. The
@@ -811,8 +810,8 @@ not compared, while valid and test are checked in full.
 
 Why. Crops make balls cut off by the frame edge, which caused most of A's
 and all of B's misses. Brightness covers B's dark misses. The false
-positives on people and other games' balls are addressed by the merged
-negatives, not by augmentation. Hue and saturation shifts would weaken the
+positives on people and other games' balls are left to the merged
+negatives. Hue and saturation shifts would weaken the
 color cue that separates fuel from other balls, and rotation loosens boxes,
 as seen in `scorekeeper`'s copies (D-014).
 

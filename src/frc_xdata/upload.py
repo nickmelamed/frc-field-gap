@@ -10,9 +10,11 @@ an MIT license.
 
 ``frc-verify-upload`` downloads a generated version in COCO format and matches
 every image to its harmonized file by the file name recorded at upload. It
-writes ``reports/platform_upload_<key>.json``, with the preprocessing and
-augmentation Roboflow reports for the version, and fails if an image is
-missing, extra, in another split, or has a different number of boxes of any class.
+writes ``reports/platform_upload_<key>_v<version>.json``, with the
+preprocessing and augmentation Roboflow reports for the version, and fails
+if an image is missing, extra, in another split, or has a different number
+of boxes of any class. With ``--augmented``, extra copies of train images may
+stay in train.
 """
 
 import argparse
@@ -46,7 +48,6 @@ from frc_xdata.logging_utils import add_log_level_argument, setup_logging
 from frc_xdata.provenance import git_commit, git_is_dirty, utc_timestamp
 from frc_xdata.splits import SPLITS
 
-# The baseline's report predates the version in the name, and keeps its name.
 REPORT_NAME = "platform_upload_{key}_v{version}.json"
 EXPORT_FORMAT = "coco"
 

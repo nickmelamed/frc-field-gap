@@ -111,8 +111,8 @@ boxes of any class. For a version with augmentation, add
 `ARGS=--augmented`, which allows extra copies of train images as long as
 they stay in train, and skips their box counts, since a crop can change
 them. Valid and test are still checked in full. The report also holds the
-preprocessing and augmentation Roboflow reports for the version. Do not train on a version that fails this check.
-The command refuses to run from a working tree with uncommitted changes,
+preprocessing and augmentation Roboflow reports for the version. Do not
+train on a version that fails this check. The command refuses to run from a working tree with uncommitted changes,
 since the report records the commit it was made from.
 
 ### 6. Train

@@ -6,6 +6,29 @@ uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- `frc-merge` (`make merge`) builds the merged training set from A, B, C,
+  and `testingfrfr`. It keeps each source's test split whole and drops any
+  training image that matches a valid, test, or lockbox image by source
+  name or by perceptual hash under flips and 90 degree rotations. A
+  field-test match stops the run.
+- `pankratz` as a lockbox dataset, scored only, with an `eval_only` split
+  method and attribution in the README.
+- Scoring leaves fuel labels at the frame edge out, with the predictions
+  that mostly overlap them, and each run records the counts.
+- `frc-verify-upload --augmented` checks versions with augmented train
+  copies.
+- Sample grids can leave out source names matching a pattern.
+
+### Changed
+
+- The prediction limit applies to each scored class after unscored classes
+  are dropped. Published baseline scores are unchanged.
+- The version check compares boxes per class, not only their total.
+- `platform.project` is now `platform.projects`, one project per dataset
+  key. Upload reports carry the version in their name.
+
 ## [0.1.0] - 2026-09-28
 
 ### Added

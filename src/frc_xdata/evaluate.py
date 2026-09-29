@@ -228,7 +228,7 @@ class IgnoredAtEdge(_Record):
     """Labels at the frame edge a run left out of scoring, and the predictions dropped with them.
 
     The settings are kept with the counts so a later rescore or diagnosis
-    applies exactly the same rule.
+    applies the same rule.
     """
 
     classes: list[str]
@@ -712,10 +712,9 @@ def image_units(
     """Return the recording or group of each image, the same way the split made them.
 
     A temporal dataset's unit is the recording in the source name. A grouped
-    dataset's unit is its related-image group, rebuilt from the images alone,
-    and so is an eval-only dataset's.
-    Whole groups went to one split, so rebuilding them from one split gives
-    the same groups. A dataset that was not re-split has one unit per image.
+    or eval-only dataset's unit is its related-image group, rebuilt from the
+    images alone. Whole groups went to one split, so rebuilding them from one
+    split gives the same groups. A dataset that was not re-split has one unit per image.
 
     Args:
         records: The images of one split.
@@ -943,8 +942,7 @@ class HostedPredictor:
 class PerImageLimit(_Record):
     """How often the prediction limit per image and class was reached in one run."""
 
-    # The limit applies to each class separately. Runs of one-class models
-    # are unaffected, so the name is kept for the runs already published.
+    # Counted per class despite the name (D-025).
     per_image: int
     # Images where some class holds exactly ``per_image`` predictions. The
     # cache cannot tell whether more were dropped, so these are the images

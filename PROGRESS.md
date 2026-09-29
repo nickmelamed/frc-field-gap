@@ -181,6 +181,26 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     warning instead of failing, so `make download harmonize` runs through
     (D-024).
 - [ ] Task 10: Merged-data fix (v0.2.0)
+  - Split into two PRs, since training on the platform falls between
+    them. PR 1 (`feat/merged-data`) prepares and checks the data. PR 2
+    (`eval/merged`) scores the trained models and writes them up.
+  - PR 1. The prediction limit now applies per scored class (D-025). The
+    version check compares boxes per class and accepts augmented versions
+    with `--augmented`. `pankratz` is the lockbox, picked after the
+    diagnosis and put wholly in test by a new `eval_only` split method
+    (D-026). Fuel labels touching the frame edge are left out of scoring
+    (D-027). `make merge` builds `data/harmonized/merged/` (D-028), and
+    RETRAINING.md has the steps for `merged-noaug` and `merged-aug` (D-029).
+  - Differences from the plan and SPEC section 7. The edge rule became an
+    ignore rule at scoring instead of dropping labels, since dropping thin
+    edge labels would turn 38 hits on A-test into false positives.
+    Rescoring baseline-a under it moves to PR 2, with the prose that cites
+    its numbers. `testingfrfr` keeps one copy per photo. The final leak
+    check guards test and lockbox images, since D-013 allows train frames
+    close to their own valid split. The lockbox grid leaves out its webcam
+    frames, which show a face.
+  - For Nick. Look at `docs/assets/samples_pankratz.png`. Create
+    `frc-rebuilt-merged`, then follow "The merged model" in RETRAINING.md.
 - [ ] Task 11: Threshold choice (v0.2.0)
 - [ ] Task 12: Edge deployment (v0.3.0, before interviews)
 
@@ -192,8 +212,8 @@ Field test set: pending confirmation
   split logic, and run `mutmut` on `harmonize.py`, `splits.py`, and
   `merge.py`.
 - Add a Claude review of every PR in CI.
-- Declare matplotlib to draw the PR curve and confusion matrix as figures.
-  It is only a transitive dependency of supervision today.
+- Draw the PR curve and confusion matrix as figures. matplotlib is already
+  a declared dependency (Task 8).
 - Local weights through `inference.get_model` behind the `Predictor`
   interface in `evaluate.py` (Task 12).
 
