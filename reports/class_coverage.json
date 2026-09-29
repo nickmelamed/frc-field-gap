@@ -230,5 +230,25 @@
         }
       }
     }
+  },
+  "pankratz": {
+    "labeled": [
+      "fuel"
+    ],
+    "splits": {
+      "test": {
+        "images": 363,
+        "classes": {
+          "fuel": {
+            "instances": 985,
+            "images": 363
+          },
+          "robot": {
+            "instances": 0,
+            "images": 0
+          }
+        }
+      }
+    }
   }
 }

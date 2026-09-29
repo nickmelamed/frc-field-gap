@@ -6,7 +6,8 @@
 # Every change to a pinned version needs a line in docs/DECISIONS.md.
 # Versions below were pinned on 2026-09-26, see D-008.
 # Dataset A is marswars, B is robotzftp2, and C is scorekeeper (D-011).
-# testingfrfr and robotzftp2_fuel are not evaluated.
+# testingfrfr and robotzftp2_fuel are not evaluated. pankratz is the lockbox,
+# pinned on 2026-09-28 and never trained on (D-026).
 
 datasets:
   marswars:
@@ -46,3 +47,10 @@ datasets:
     version: 1
     license: CC BY 4.0
     note: The other REBUILT project with a version in this workspace.
+
+  pankratz:
+    workspace: myworkspace-mliyg
+    project: frc-2026-rebuilt-fuel-detection
+    version: 6
+    license: CC BY 4.0
+    note: The lockbox. Scored only, never trained on (D-026).

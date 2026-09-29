@@ -205,6 +205,25 @@ def test_grouped_split_is_the_same_for_shuffled_input() -> None:
     assert first == second
 
 
+def test_eval_only_puts_everything_in_test_and_groups_related_images() -> None:
+    method = SplitMethod(method="eval_only", recording_pattern=r"^(?P<recording>.+_mov)-\d+\.jpg$")
+    records = [
+        *(record(f"v{i}", f"IMG_1_mov-{i}.jpg", split="train") for i in range(3)),
+        record("a", "IMG_2.jpg", split="valid"),
+        record("b", "IMG_3.jpg", split="test"),
+        record("c", "IMG_4.jpg", split="train"),
+    ]
+    hashes = distinct_hashes(records)
+    hashes[records[5].ref] = hashes[records[4].ref] ^ 0b1
+    result = split_dataset(records, hashes, method, cfg(), 4, "s")
+    assert set(result.split.values()) == {"test"}
+    assert len(result.split) == len(records)
+    assert result.dropped == {}
+    units = {r.ref.file_name: result.unit[r.ref] for r in records}
+    assert units["v0"] == units["v1"] == units["v2"]
+    assert units["b"] == units["c"] != units["a"]
+
+
 def test_split_dataset_drops_train_images_near_a_test_image() -> None:
     records = frames("run", range(20))
     hashes = distinct_hashes(records)
@@ -236,7 +255,12 @@ def test_check_no_leak_raises_on_a_planted_leak() -> None:
 def test_committed_split_settings_load() -> None:
     project = load_yaml(REPO_ROOT / "configs" / "project.yaml", ProjectConfig)
     methods = {k: m.method for k, m in project.splits.datasets.items()}
-    assert methods == {"marswars": "temporal", "robotzftp2": "temporal", "scorekeeper": "grouped"}
+    assert methods == {
+        "marswars": "temporal",
+        "robotzftp2": "temporal",
+        "scorekeeper": "grouped",
+        "pankratz": "eval_only",
+    }
 
 
 def test_split_settings_need_three_images_to_cut_a_recording() -> None:

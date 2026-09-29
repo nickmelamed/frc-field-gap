@@ -1,10 +1,12 @@
 """Re-split datasets so no scene lands on both sides of a train/test split.
 
-Two methods, chosen per dataset in ``configs/project.yaml`` (see D-013).
+Three methods, chosen per dataset in ``configs/project.yaml`` (see D-013).
 ``temporal`` cuts each recording in frame order into train, valid, and test,
 so valid sits between train and test in time, and drops frames within a
 buffer of each cut. ``grouped`` joins images that share a recording, a
 source name, or a near-duplicate perceptual hash, and assigns whole groups.
+``eval_only`` puts every image of a dataset that is never trained on in
+test, grouped the same way so that its units can be counted.
 A final pass drops any train or valid image that is a near duplicate of a
 test image. Everything here is pure, and the caller supplies the hashes.
 """
@@ -223,6 +225,24 @@ def grouped_split(
     return SplitResult(split, unit, dropped)
 
 
+def eval_only_split(
+    records: Sequence[ImageRecord],
+    hashes: Mapping[ImageRef, int],
+    method: SplitMethod,
+    max_distance: int,
+) -> SplitResult:
+    """Put every image in test, with the related-image groups of :func:`grouped_split` as units."""
+    groups = leak_groups(
+        records, [hashes[r.ref] for r in records], method.recording_pattern, max_distance
+    )
+    unit: dict[ImageRef, str] = {}
+    for g in groups:
+        label = min(records[i].ref.file_name for i in g)
+        for i in g:
+            unit[records[i].ref] = label
+    return SplitResult({r.ref: "test" for r in records}, unit, {})
+
+
 def near_test_images(
     split: Mapping[ImageRef, str], hashes: Mapping[ImageRef, int], max_distance: int
 ) -> list[ImageRef]:
@@ -261,6 +281,8 @@ def split_dataset(
     """Split one dataset with its configured method, then drop images near test."""
     if method.method == "temporal":
         result = temporal_split(records, method, cfg)
+    elif method.method == "eval_only":
+        result = eval_only_split(records, hashes, method, max_distance)
     else:
         result = grouped_split(records, hashes, method, cfg, max_distance, seed)
     split = {ref: s for ref, s in result.split.items() if ref not in result.dropped}

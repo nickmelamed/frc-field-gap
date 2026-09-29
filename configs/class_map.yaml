@@ -27,3 +27,6 @@ datasets:
 
   robotzftp2_fuel:
     Fuels: fuel
+
+  pankratz:
+    Fuel: fuel

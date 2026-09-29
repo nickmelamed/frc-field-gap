@@ -1,6 +1,6 @@
 # Datasets
 
-The five REBUILT datasets the pipeline downloads from Roboflow Universe, how
+The six REBUILT datasets the pipeline downloads from Roboflow Universe, how
 each one is labeled, and what is wrong with each. Counts come from
 `reports/dataset_stats.csv`, `reports/class_counts.csv`,
 `reports/duplicates.json`, and `reports/dataset_resolution.json`, which `make
@@ -36,6 +36,10 @@ of generalization. `robotzftp2_fuel` holds one large, centered ball per image,
 which is too easy to tell us anything. `testingfrfr` may still be useful as
 extra training data for the merged model, after removing every image that
 matches a test image.
+
+`pankratz` was added on 2026-09-28 as the lockbox, a dataset held back to
+check the merged model of Task 10 (D-026). It was picked after the diagnosis
+of the baseline, so its choice is not blind to what the fix targets.
 
 The main trade-off is the robot class. With `marswars` as A, the baseline
 never sees a robot, so robot results start with the merged model, and only on
@@ -205,6 +209,32 @@ The task is close to trivial, so a detector that fails elsewhere would still
 score well here. Frames of the two videos cross splits (61 near-duplicate
 pairs between test and train), and it overlaps heavily with `testingfrfr` (845
 near-duplicate pairs with its train split).
+
+## pankratz
+
+`myworkspace-mliyg/frc-2026-rebuilt-fuel-detection` by Joshua Pankratz,
+version 6. 286 train, 69 valid, and 8 test images, all 320 by 240, with no
+augmentation. This is the lockbox (D-026). It is only scored, never trained
+on, and harmonize puts every image in test.
+
+![pankratz samples](assets/samples_pankratz.png)
+
+Most images are frames from a webcam at floor level in a team's workshop,
+showing one person sitting or standing close to the camera while holding,
+tossing, and catching balls, with more balls on the floor. The rest are
+phone photos of balls on a workbench, a concrete floor, and taped carpet, and
+frames of one phone video. The photos look squeezed, since they were resized
+to 320 by 240 without keeping their shape. The sample grid leaves out every
+webcam frame, because the person's face can be made out in them.
+
+The label is `Fuel`, mapped to fuel. Boxes are tight. Balls held in a hand,
+in the air, far away, or cut off by the frame edge are all boxed, and no
+image is without a box. There are no robots.
+
+Frames of one video, and webcam frames a moment apart, look alike, so the
+lockbox is scored as 280 groups of related images rather than as independent
+images (`reports/splits.json`). It shares no near duplicate with any other
+dataset, and none turned up under flips and 90 degree rotations either.
 
 ## lava
 

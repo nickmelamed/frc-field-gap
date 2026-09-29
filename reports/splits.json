@@ -142,6 +142,42 @@
           "valid": 77
         }
       }
+    },
+    "pankratz": {
+      "method": "eval_only",
+      "unit": "group",
+      "units": 280,
+      "largest_unit": 22,
+      "dropped": {
+        "copy": 0,
+        "buffer": 0,
+        "near_test": 0
+      },
+      "splits": {
+        "train": {
+          "images": 0,
+          "units": 0
+        },
+        "valid": {
+          "images": 0,
+          "units": 0
+        },
+        "test": {
+          "images": 363,
+          "units": 280
+        }
+      },
+      "from_source_split": {
+        "test": {
+          "test": 8
+        },
+        "train": {
+          "test": 286
+        },
+        "valid": {
+          "test": 69
+        }
+      }
     }
   }
 }
