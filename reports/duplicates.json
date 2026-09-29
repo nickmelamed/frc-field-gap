@@ -163,7 +163,7 @@
     }
   },
   "near": {
-    "pairs": 87193,
+    "pairs": 87308,
     "counts": {
       "cross_dataset": [
         {
@@ -294,6 +294,21 @@
           "pairs": 428
         },
         {
+          "a": "pankratz/test",
+          "b": "pankratz/train",
+          "pairs": 1
+        },
+        {
+          "a": "pankratz/test",
+          "b": "pankratz/valid",
+          "pairs": 1
+        },
+        {
+          "a": "pankratz/train",
+          "b": "pankratz/valid",
+          "pairs": 24
+        },
+        {
           "a": "robotzftp2/train",
           "b": "robotzftp2/valid",
           "pairs": 815
@@ -359,6 +374,16 @@
           "a": "marswars/valid",
           "b": "marswars/valid",
           "pairs": 44
+        },
+        {
+          "a": "pankratz/train",
+          "b": "pankratz/train",
+          "pairs": 84
+        },
+        {
+          "a": "pankratz/valid",
+          "b": "pankratz/valid",
+          "pairs": 5
         },
         {
           "a": "robotzftp2/train",

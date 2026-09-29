@@ -132,9 +132,12 @@ class SplitMethod(_Frozen):
     ``frame`` group, and recordings whose name matches ``train_only_pattern``
     go whole to train. ``grouped`` assigns whole groups of related images,
     and a name the pattern does not match is its own recording.
+    ``eval_only`` puts every image in test, for a dataset that is only
+    scored, and groups related images as ``grouped`` does, so the error bars
+    resample whole groups.
     """
 
-    method: Literal["temporal", "grouped"]
+    method: Literal["temporal", "grouped", "eval_only"]
     recording_pattern: str
     train_only_pattern: str | None = None
     dedupe_copies: bool = False

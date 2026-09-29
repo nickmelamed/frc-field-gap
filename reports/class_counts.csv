@@ -11,6 +11,9 @@ marswars,valid,blue_active,9,9
 marswars,valid,game_piece,1768,182
 marswars,valid,inactive,5,5
 marswars,valid,red_active,6,6
+pankratz,test,Fuel,25,8
+pankratz,train,Fuel,787,286
+pankratz,valid,Fuel,173,69
 robotzftp2,train,fuel,1596,1218
 robotzftp2,valid,fuel,801,604
 robotzftp2_fuel,test,Fuels,49,48

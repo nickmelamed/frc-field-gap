@@ -28,3 +28,6 @@ robotzftp2,valid,fuel,fuel,801
 robotzftp2_fuel,test,Fuels,fuel,49
 robotzftp2_fuel,train,Fuels,fuel,320
 robotzftp2_fuel,valid,Fuels,fuel,96
+pankratz,test,Fuel,fuel,25
+pankratz,train,Fuel,fuel,787
+pankratz,valid,Fuel,fuel,173

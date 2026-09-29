@@ -553,7 +553,8 @@ def image_units(
     """Return the recording or group of each image, the same way the split made them.
 
     A temporal dataset's unit is the recording in the source name. A grouped
-    dataset's unit is its related-image group, rebuilt from the images alone.
+    dataset's unit is its related-image group, rebuilt from the images alone,
+    and so is an eval-only dataset's.
     Whole groups went to one split, so rebuilding them from one split gives
     the same groups. A dataset that was not re-split has one unit per image.
 
@@ -581,7 +582,7 @@ def image_units(
             units.append(recording)
         return units
     if hashes is None:
-        raise ConfigError("grouped datasets need image hashes to rebuild their groups")
+        raise ConfigError(f"{method.method} datasets need image hashes to rebuild their groups")
     labels = [""] * len(records)
     for group in leak_groups(records, hashes, method.recording_pattern, max_distance):
         label = min(records[i].ref.file_name for i in group)
@@ -1001,7 +1002,7 @@ def run_evaluation(
 
     method = project.splits.datasets.get(dataset)
     hashes = (
-        [phash(split_dir / n) for n in names] if method and method.method == "grouped" else None
+        [phash(split_dir / n) for n in names] if method and method.method != "temporal" else None
     )
     units = image_units(records, method, hashes, project.inspect.near_duplicate_max_distance)
     _check_units(units, project, dataset, split, limit)

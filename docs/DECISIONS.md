@@ -672,3 +672,39 @@ stops a run before it writes anything, so a cache too large for C would
 show up as a failed run, not as a silently cut one. Robot predictions on a
 fuel-only dataset are not cached, so they cannot be studied later without
 calling the model again.
+
+## D-026: Use pankratz as the lockbox, picked after the diagnosis (2026-09-28)
+
+Context. D-022 put off choosing a lockbox until after v0.1.0. Task 10 needs
+a dataset that no model is trained on and that no step of the fix was tuned
+on, to check the merged model with. The field test set is still not
+confirmed.
+
+Decision. Nick chose on 2026-09-28 to use version 6 of Joshua Pankratz's
+`myworkspace-mliyg/frc-2026-rebuilt-fuel-detection` as the lockbox, under
+the key `pankratz`. It is harmonized with a new `eval_only` split method,
+which puts every image in test and groups related images the way the
+grouped method does, so its error bars resample whole groups. It is never
+trained on, and `frc-merge` protects it like a test split. The sample grid
+leaves out every source name starting with `WIN_` (a new
+`inspect.grid.exclude_patterns` setting) and one more photo, since the
+webcam frames all show the same person's face close to the camera.
+
+Why. A Universe search on 2026-09-28 found seven more REBUILT fuel
+projects, but all except this one reuse data already in the project. Three
+workspaces share one 2784-image aggregate labeled with `robotzftp2_fuel`'s
+`Fuels` among other names, one has exactly `robotzftp2_fuel`'s split sizes,
+and a fourth and its forks use `Fuels` too. This one has its own label name,
+camera, and venues. Every lockbox image was also hashed under the 8 flips and
+90 degree rotations and compared with every image of the other five
+datasets. None came within 4 bits. Six `testingfrfr` images came within 8
+bits and were checked by eye, and each is a different photo of a single ball
+on carpet.
+
+Consequences. The lockbox was picked knowing that people and balls from
+other games cause most of the baseline's false positives on C. Its main
+scene is a person close to the camera holding and tossing fuel, so it tests
+exactly that failure, and a better score on it cannot be read as an
+unbiased sample of new footage. It is small, 320 by 240, and from one team's
+workshop, and the webcam frames make up most of it, so it adds one new
+domain, not many. It labels fuel only, so robots are not scored on it.

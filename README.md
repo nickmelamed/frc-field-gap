@@ -90,6 +90,7 @@ pinned in `configs/datasets.yaml`.
 | FRC Scorekeeper 2026 | blind-assistant-model | https://universe.roboflow.com/blind-assistant-model/frc-scorekeeper-2026 | `CC BY 4.0` | 1 |
 | Rebuilt Dataset | robot-zftp2 | https://universe.roboflow.com/robot-zftp2/rebuilt-dataset-hcmwl | `CC BY 4.0` | 1 |
 | FRC 2026 Fuel | robot-zftp2 | https://universe.roboflow.com/robot-zftp2/frc-2026-fuel-ndrbj | `CC BY 4.0` | 1 |
+| FRC 2026 ReBuilt Fuel Detection (Joshua Pankratz) | myworkspace-mliyg | https://universe.roboflow.com/myworkspace-mliyg/frc-2026-rebuilt-fuel-detection | `CC BY 4.0` | 6 |
 
 ## License
 
