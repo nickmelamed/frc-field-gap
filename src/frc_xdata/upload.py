@@ -18,6 +18,7 @@ stay in train.
 """
 
 import argparse
+import hashlib
 import json
 import logging
 import re
@@ -177,18 +178,25 @@ def check_before_upload(dataset_dir: Path, key: str, project: ProjectConfig) -> 
         UploadCheckError: If a split is missing or its size differs from the
             report that wrote it, ``reports/splits.json`` or, for the merged
             dataset, ``reports/merge.json``.
+            It is also raised when two images would share a name after
+            upload or are byte-identical, since Roboflow keeps only one of
+            two identical uploads and the version check matches by name.
         DataLeakError: If an image is a near duplicate of a field-test image.
     """
     sizes = split_sizes(dataset_dir)
     check_sizes(sizes, reported_sizes(split_report(project, key), key))
+    records = [r for split in SPLITS for r in load_split(dataset_dir / split, key)]
+    _by_key(records)
+    digests = Counter(
+        hashlib.sha256((dataset_dir / r.ref.split / r.ref.file_name).read_bytes()).hexdigest()
+        for r in records
+    )
+    if copies := sum(n - 1 for n in digests.values() if n > 1):
+        raise UploadCheckError(f"{copies} images are byte-identical to another image")
     field_dir = project.paths.field_test_dir
     if not field_dir.is_dir():
         logger.warning("%s does not exist, so there are no field-test images to check", field_dir)
-    images = [
-        dataset_dir / split / r.ref.file_name
-        for split in SPLITS
-        for r in load_split(dataset_dir / split, key)
-    ]
+    images = [dataset_dir / r.ref.split / r.ref.file_name for r in records]
     leaks = field_test_leaks(images, field_dir, project.inspect.near_duplicate_max_distance)
     if leaks:
         image, test_image = leaks[0]

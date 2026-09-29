@@ -790,7 +790,13 @@ pHash alone let in frames from recordings in C-test, such as the Milford
 broadcast behind half of it, and B frames inside the buffer before a test
 cut, since other frames of one scene are not near duplicates. It also found
 photos whose dropped copy matched a held-out image while the kept copy did
-not. The recording and copy-group rules close both. Keeping every
+not. The recording and copy-group rules close both. The first upload found
+two more problems. Roboflow drops the `.rf.<hash>` suffix on upload, and
+`scorekeeper` and `testingfrfr` hold different photos that differ only in
+that suffix, so merged names now keep it as `_rf_<hash>`. And Roboflow
+keeps one of two byte-identical uploads, so merged train keeps one copy of
+each, the first by name, and `frc-upload` refuses byte-identical images and
+names that would collide. Keeping every
 augmented copy would have made most training images `testingfrfr` copies,
 about three per photo, some with broadcast frames on their side.
 

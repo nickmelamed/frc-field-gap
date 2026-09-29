@@ -258,15 +258,15 @@
     ],
     "splits": {
       "train": {
-        "images": 6638,
+        "images": 6629,
         "classes": {
           "fuel": {
             "instances": 9009,
             "images": 3959
           },
           "robot": {
-            "instances": 7420,
-            "images": 2547
+            "instances": 7387,
+            "images": 2538
           }
         }
       },
