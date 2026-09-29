@@ -11,10 +11,13 @@ from frc_xdata.evaluate import (
     Interval,
     Prediction,
     align,
+    at_edge,
     bootstrap,
+    ignore_edge_labels,
     image_units,
     limit_predictions,
     load_predictions,
+    overlap_of_smaller,
     per_image_limit,
     save_predictions,
     shared_classes,
@@ -272,3 +275,54 @@ def test_per_image_limit_counts_an_image_once_when_any_class_is_full() -> None:
     one_each = [pred(0.9), pred(0.9, "robot")]
     limit = per_image_limit([both_full, one_each], per_image=2, confidence=0.5)
     assert (limit.images_at_limit, limit.images_above_threshold) == (1, 1)
+
+
+def boxes(*xyxy: tuple[float, float, float, float], cls: int = 0) -> sv.Detections:
+    return sv.Detections(
+        xyxy=np.array(xyxy, dtype=float).reshape(-1, 4),
+        confidence=np.full(len(xyxy), 0.9),
+        class_id=np.full(len(xyxy), cls, dtype=int),
+    )
+
+
+def test_at_edge_counts_boxes_within_the_tolerance() -> None:
+    xyxy = np.array([[0, 10, 5, 20], [10, 10, 20, 20], [10, 10, 99, 20], [10, 1.5, 20, 9]])
+    assert at_edge(xyxy, 100, 100, 1).tolist() == [True, False, True, False]
+    assert at_edge(xyxy, 100, 100, 2).tolist() == [True, False, True, True]
+
+
+def test_overlap_of_smaller_is_one_for_a_box_inside_another() -> None:
+    outer, inner, apart = [0, 0, 10, 10], [2, 2, 4, 4], [20, 20, 30, 30]
+    shares = overlap_of_smaller(np.array([outer]), np.array([inner, apart]))
+    assert shares.tolist() == [[1.0, 0.0]]
+
+
+def test_edge_labels_and_the_predictions_on_them_are_left_out() -> None:
+    labels = boxes((0, 40, 6, 60), (40, 40, 60, 60))
+    # A wider box on the edge strip, a hit on the inner ball, and one on nothing.
+    preds = boxes((0, 38, 14, 62), (40, 40, 60, 60), (80, 80, 90, 90))
+    kept_preds, kept_labels, n_labels, n_preds = ignore_edge_labels(
+        [preds], [labels], [(100, 100)], [0], tolerance=1, min_overlap=0.5, iou=0.5
+    )
+    assert (n_labels, n_preds) == (1, 1)
+    assert kept_labels[0].xyxy.tolist() == [[40, 40, 60, 60]]
+    assert kept_preds[0].xyxy.tolist() == [[40, 40, 60, 60], [80, 80, 90, 90]]
+
+
+def test_a_hit_on_a_scored_label_is_kept_even_over_an_edge_label() -> None:
+    labels = boxes((0, 40, 20, 60), (2, 40, 22, 60))
+    preds = boxes((2, 40, 22, 60))
+    kept_preds, _, n_labels, n_preds = ignore_edge_labels(
+        [preds], [labels], [(100, 100)], [0], tolerance=1, min_overlap=0.5, iou=0.5
+    )
+    assert (n_labels, n_preds) == (1, 0)
+    assert len(kept_preds[0]) == 1
+
+
+def test_edge_labels_of_other_classes_are_scored_as_usual() -> None:
+    labels = boxes((0, 40, 6, 60), cls=1)
+    preds = boxes((0, 40, 6, 60), cls=1)
+    kept_preds, kept_labels, n_labels, n_preds = ignore_edge_labels(
+        [preds], [labels], [(100, 100)], [0], tolerance=1, min_overlap=0.5, iou=0.5
+    )
+    assert (n_labels, n_preds, len(kept_labels[0]), len(kept_preds[0])) == (0, 0, 1, 1)

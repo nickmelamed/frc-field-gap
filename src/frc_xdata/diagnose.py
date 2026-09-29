@@ -44,6 +44,7 @@ from frc_xdata.evaluate import (
     RunResult,
     above,
     align,
+    apply_edge_ignore,
     compute_metrics,
     limit_predictions,
     load_predictions,
@@ -611,13 +612,28 @@ def load_cases(project: ProjectConfig, result: RunResult) -> SplitCases:
         n: limit_predictions(p, limit, result.scored_classes)
         for n, p in load_predictions(cache).items()
     }
+    predictions = align(cached, names, ds.classes)
+    labels = [ds.annotations[str(split_dir / n)] for n in names]
+    # A run that ignored labels at the frame edge is diagnosed under the same
+    # rule, so its counts can be reproduced.
+    if (ignore := result.edge_ignore) is not None:
+        predictions, labels, records, _ = apply_edge_ignore(
+            predictions,
+            labels,
+            records,
+            ds.classes,
+            ignore.classes,
+            ignore.tolerance_px,
+            ignore.min_overlap,
+            project.evaluate.iou,
+        )
     return SplitCases(
         result=result,
         split_dir=split_dir,
         records=records,
         classes=list(ds.classes),
-        predictions=align(cached, names, ds.classes),
-        labels=[ds.annotations[str(split_dir / n)] for n in names],
+        predictions=predictions,
+        labels=labels,
     )
 
 

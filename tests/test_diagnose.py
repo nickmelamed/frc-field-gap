@@ -680,3 +680,23 @@ def test_edges_need_values_and_no_edges_make_one_bin() -> None:
 def test_a_source_pattern_must_compile() -> None:
     with pytest.raises(ValidationError):
         SourcePattern(name="bad", pattern="(")
+
+
+def test_main_applies_the_edge_rule_a_run_recorded(
+    workspace: Path, fake: object, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config = workspace / "configs/project.yaml"
+    project = yaml.safe_load(config.read_text(encoding="utf-8"))
+    project["evaluate"]["edge_ignore"]["tolerance_px"] = 5
+    config.write_text(yaml.safe_dump(project), encoding="utf-8")
+    assert evaluate.main(ARGS) == 0
+    for name in ("git_is_dirty", "git_commit", "git_tree"):
+        monkeypatch.setattr(diagnose, name, getattr(evaluate, name))
+    train_dir = workspace / "data" / "harmonized" / "alpha" / "train"
+    records = [ImageRecord(ImageRef("alpha", "train", "t.jpg"), "t.jpg", 64, 64, ())]
+    write_split(train_dir, to_coco(records, ["fuel", "robot"]))
+    smooth_image(9).save(train_dir / "t.jpg")
+    assert diagnose.main(["m", "--project-config", "configs/project.yaml"]) == 0
+    result = load_diagnosis(workspace / "reports" / "diagnosis" / "m" / "diagnosis.json")
+    (fuel,) = result.splits[0].classes
+    assert (fuel.overall.hits, fuel.overall.false_positives, fuel.overall.misses) == (2, 0, 0)

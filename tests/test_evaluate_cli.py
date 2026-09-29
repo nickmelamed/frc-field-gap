@@ -15,7 +15,7 @@ from conftest import smooth_image, write_split
 from frc_xdata import evaluate
 from frc_xdata.config import API_KEY_VAR, ModelEntry
 from frc_xdata.errors import ConfigError, DirtyTreeError
-from frc_xdata.evaluate import Prediction, parse_response
+from frc_xdata.evaluate import Prediction, RunResult, parse_response
 from frc_xdata.harmonize import to_coco
 from frc_xdata.inspect_datasets import Box, ImageRecord, ImageRef
 
@@ -447,3 +447,37 @@ def test_unscored_robot_boxes_do_not_push_fuel_out_of_the_limit(
     assert fuel["recall"] == 1.0
     cached = read("run1", "predictions.json")["images"]
     assert {row[0] for rows in cached.values() for row in rows} == {"fuel"}
+
+
+def test_labels_at_the_frame_edge_are_left_out_and_recorded(
+    workspace: Path, fake: FakePredictor
+) -> None:
+    # a.jpg's first box starts 4 pixels from the edge, so a tolerance of 5
+    # puts it on the edge, and the exact prediction on it goes with it.
+    config = workspace / "configs/project.yaml"
+    project = yaml.safe_load(config.read_text(encoding="utf-8"))
+    project["evaluate"]["edge_ignore"]["tolerance_px"] = 5
+    config.write_text(yaml.safe_dump(project), encoding="utf-8")
+    assert evaluate.main(ARGS) == 0
+    metrics = read("run1", "metrics.json")
+    (fuel,) = metrics["metrics"]["classes"]
+    assert (fuel["instances"], fuel["recall"], fuel["precision"]) == (2, 1.0, 1.0)
+    assert metrics["edge_ignore"] == {
+        "classes": ["fuel"],
+        "tolerance_px": 5.0,
+        "min_overlap": 0.5,
+        "labels": 1,
+        "predictions": 1,
+    }
+    assert sum(sum(u["boxes"].values()) for u in metrics["units"]) == 2
+    assert evaluate.main([*ARGS, "--from-cache", "run1"]) == 0
+    assert read("run2", "metrics.json")["metrics"] == metrics["metrics"]
+
+
+def test_runs_scored_before_the_edge_rule_load_without_it(
+    workspace: Path, fake: FakePredictor
+) -> None:
+    assert evaluate.main(ARGS) == 0
+    metrics = read("run1", "metrics.json")
+    del metrics["edge_ignore"]
+    assert RunResult.model_validate(metrics).edge_ignore is None
