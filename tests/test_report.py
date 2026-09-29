@@ -294,7 +294,7 @@ def test_run_section_says_when_the_per_image_limit_was_reached() -> None:
     assert "reached the limit" not in run_section(clean(result("r1")))
     assert "reached the limit" not in run_section(clean(with_limit(0, 0)))
     reached = run_section(clean(with_limit(3, 0)))
-    assert "3 of 5 images reached the limit of 25 predictions per image" in reached
+    assert "3 of 5 images reached the limit of 25 predictions per image and class" in reached
     assert "lower bound" not in reached
     assert "In 2 of them every kept box" in run_section(clean(with_limit(3, 2)))
 

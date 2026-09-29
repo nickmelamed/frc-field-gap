@@ -175,8 +175,8 @@ Each labeled box can be matched by one prediction at most.
 - mAP50 (mean average precision at IoU 0.5) sorts the predictions by
   confidence and measures how precise the model stays as it finds more of
   the labeled boxes. It is 1 when every labeled box is found before any
-  false positive. It uses each image's 25 most confident predictions down
-  to a confidence of 0.01.
+  false positive. It uses each image's 25 most confident predictions of
+  each class down to a confidence of 0.01.
 - mAP50-95 averages the same score over stricter overlap requirements, from
   IoU 0.5 up to 0.95, so it also rewards boxes that sit tightly on the
   object.
@@ -213,9 +213,10 @@ make report
 ```
 
 Each run writes `reports/runs/<run_id>/` with three files.
-`predictions.json` holds the 25 most confident boxes per image down to the
-confidence floor in `configs/project.yaml` (D-020), rounded as described in
-D-018. The run is scored from those rounded values, so
+`predictions.json` holds the 25 most confident boxes per image and class
+down to the confidence floor in `configs/project.yaml` (D-020, D-025), for
+the classes the run scores, rounded as described in D-018. The run is
+scored from those rounded values, so
 `--from-cache <run_id>` reproduces its scores exactly without calling the
 model again, and can rescore them at another threshold. A rescore must name the same model, dataset, and split as the run
 it reads. `metrics.json` holds the scores, and `meta.json` records the
@@ -263,7 +264,7 @@ Intervals come from 1000 resamples of the split's 6 recordings or groups, and ho
 |---|---|---|---|---|---|---|---|---|---|---|
 | fuel | 455 | 0.936 | 0.923 to 1.0 | 0.623 | 0.963 | 0.927 | 0.908 to 1.0 | 422 | 16 | 33 |
 
-35 of 171 images reached the limit of 25 predictions per image (D-020), so fainter boxes may have been dropped there.
+35 of 171 images reached the limit of 25 predictions per image and class (D-020, D-025), so fainter boxes may have been dropped there.
 
 mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
 
@@ -322,7 +323,7 @@ Intervals come from 1000 resamples of the split's 7 recordings or groups, and ho
 |---|---|---|---|---|---|---|---|---|---|---|
 | fuel | 376 | 0.994 | 0.985 to 1.0 | 0.864 | 0.966 | 0.973 | 0.94 to 1.0 | 366 | 13 | 10 |
 
-122 of 286 images reached the limit of 25 predictions per image (D-020), so fainter boxes may have been dropped there.
+122 of 286 images reached the limit of 25 predictions per image and class (D-020, D-025), so fainter boxes may have been dropped there.
 
 mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
 
@@ -384,7 +385,7 @@ Intervals come from 1000 resamples of the split's 109 recordings or groups, and 
 
 The robot boxes in scorekeeper are not scored, since baseline-a was never trained to find them.
 
-286 of 314 images reached the limit of 25 predictions per image (D-020), so fainter boxes may have been dropped there. In 4 of them every kept box is at or above the threshold, so boxes that would have counted at it were dropped, and the false positive count at the threshold is a lower bound.
+286 of 314 images reached the limit of 25 predictions per image and class (D-020, D-025), so fainter boxes may have been dropped there. In 4 of them every kept box is at or above the threshold, so boxes that would have counted at it were dropped, and the false positive count at the threshold is a lower bound.
 
 mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
 

@@ -420,3 +420,30 @@ def test_rescoring_an_older_cache_applies_the_per_image_limit(
         "images_at_limit": 3,
         "images_above_threshold": 2,
     }
+
+
+def test_unscored_robot_boxes_do_not_push_fuel_out_of_the_limit(
+    workspace: Path, fake: FakePredictor, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config = workspace / "configs/project.yaml"
+    project = yaml.safe_load(config.read_text(encoding="utf-8"))
+    project["evaluate"]["max_predictions_per_image"] = 2
+    config.write_text(yaml.safe_dump(project), encoding="utf-8")
+    coverage = {"alpha": {"labeled": ["fuel"]}, "beta": {"labeled": ["fuel", "robot"]}}
+    (workspace / "reports/class_coverage.json").write_text(json.dumps(coverage), "utf-8")
+    models = {"models": {"m": {**ENTRY.model_dump(), "dataset": "beta"}}}
+    (workspace / "reports/models.yaml").write_text(yaml.safe_dump(models), "utf-8")
+    fuel_only = fake.predict
+
+    def with_robots(image: Path) -> list[Prediction]:
+        robots = [
+            Prediction(class_name="robot", confidence=0.95, xyxy=(40, 40, 60, 60)) for _ in range(3)
+        ]
+        return robots + fuel_only(image)
+
+    monkeypatch.setattr(fake, "predict", with_robots)
+    assert evaluate.main(ARGS) == 0
+    (fuel,) = read("run1", "metrics.json")["metrics"]["classes"]
+    assert fuel["recall"] == 1.0
+    cached = read("run1", "predictions.json")["images"]
+    assert {row[0] for rows in cached.values() for row in rows} == {"fuel"}

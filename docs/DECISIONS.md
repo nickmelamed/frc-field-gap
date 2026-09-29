@@ -641,3 +641,34 @@ Consequences. The warning is the only trace of a skipped dataset in a run.
 A dataset unpinned by mistake would also be skipped without stopping the
 run, and `frc-harmonize` only warns about a dataset with no manifest, so
 the two warnings and the missing harmonized dataset are what would show it.
+
+## D-025: Limit predictions per class, after dropping unscored classes (2026-09-28)
+
+Context. D-020 keeps the 25 most confident predictions per image, counted
+over every class the model predicts, before the classes a run does not
+score are dropped. A model trained on fuel and robots could then lose fuel
+boxes on a fuel-only dataset to confident robot boxes that are never
+scored, and on a dataset with both classes one class could crowd out the
+other.
+
+Decision. Predictions of classes the run does not score are dropped first,
+and then each remaining class keeps its 25 most confident boxes per image.
+The cache, rescores of older caches, and `frc-diagnose` all apply the same
+rule. A run counts an image as reaching the limit when any of its scored
+classes does. The setting keeps its name, `max_predictions_per_image`, and
+so does the `per_image_limit` record in `metrics.json`, so the published
+runs still load.
+
+Why. COCO's own evaluation keeps its limit per image and class. A class the
+run does not score cannot change its scores (D-019), so it should not change
+which boxes are kept either. Dropping those boxes before caching also keeps
+the cache smaller.
+
+Consequences. baseline-a predicts only fuel, so every published run keeps
+exactly the same boxes under this rule, which was checked on every cache
+under `reports/runs/`, and its scores are unchanged. A two-class model's
+cache can hold up to twice as many boxes per image. The size limit still
+stops a run before it writes anything, so a cache too large for C would
+show up as a failed run, not as a silently cut one. Robot predictions on a
+fuel-only dataset are not cached, so they cannot be studied later without
+calling the model again.
