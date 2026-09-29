@@ -12,7 +12,7 @@ an MIT license.
 every image to its harmonized file by the file name recorded at upload. It
 writes ``reports/platform_upload_<key>.json``, with the preprocessing and
 augmentation Roboflow reports for the version, and fails if an image is
-missing, extra, in another split, or has a different number of boxes.
+missing, extra, in another split, or has a different number of boxes of any class.
 """
 
 import argparse
@@ -73,7 +73,9 @@ class UploadComparison:
     Images are matched by the name Roboflow recorded at upload. Entries in
     ``moved`` are ``(file name, harmonized split, exported split)``. A file
     exported more than once is listed in ``extra`` once per copy after the
-    first.
+    first. An image is in ``boxes_changed`` when the number of boxes of any
+    class differs, so a class renamed or swapped on upload is caught even
+    when the total stays the same.
     """
 
     expected: dict[str, int]
@@ -81,12 +83,12 @@ class UploadComparison:
     missing: list[str]
     extra: list[str]
     moved: list[tuple[str, str, str]]
-    box_count_changed: list[str]
+    boxes_changed: list[str]
 
     @property
     def ok(self) -> bool:
-        """Return True if every image arrived once, in its split, with its boxes."""
-        return not (self.missing or self.extra or self.moved or self.box_count_changed)
+        """Return True if every image arrived once, in its split, with its boxes of each class."""
+        return not (self.missing or self.extra or self.moved or self.boxes_changed)
 
 
 def split_sizes(dataset_dir: Path) -> dict[str, int]:
@@ -221,6 +223,10 @@ def _by_key(records: Sequence[ImageRecord]) -> dict[str, ImageRecord]:
     return by_key
 
 
+def _class_counts(record: ImageRecord) -> Counter[str]:
+    return Counter(b.label for b in record.boxes)
+
+
 def compare_export(export_dir: Path, dataset_dir: Path, key: str) -> UploadComparison:
     """Match every image in a downloaded version to its harmonized file.
 
@@ -239,7 +245,7 @@ def compare_export(export_dir: Path, dataset_dir: Path, key: str) -> UploadCompa
     seen: set[str] = set()
     extra = []
     moved = []
-    box_count_changed = []
+    boxes_changed = []
     for r in exported:
         k = match_key(r.source_name)
         original = expected.get(k)
@@ -250,8 +256,8 @@ def compare_export(export_dir: Path, dataset_dir: Path, key: str) -> UploadCompa
         name = original.ref.file_name
         if original.ref.split != r.ref.split:
             moved.append((name, original.ref.split, r.ref.split))
-        if len(original.boxes) != len(r.boxes):
-            box_count_changed.append(name)
+        if _class_counts(original) != _class_counts(r):
+            boxes_changed.append(name)
     exported_sizes = Counter(r.ref.split for r in exported)
     return UploadComparison(
         expected=dict(Counter(r.ref.split for r in expected.values())),
@@ -259,7 +265,7 @@ def compare_export(export_dir: Path, dataset_dir: Path, key: str) -> UploadCompa
         missing=sorted(r.ref.file_name for k, r in expected.items() if k not in seen),
         extra=extra,
         moved=moved,
-        box_count_changed=box_count_changed,
+        boxes_changed=boxes_changed,
     )
 
 
@@ -281,7 +287,7 @@ def upload_report(
         "missing": comparison.missing,
         "extra": comparison.extra,
         "moved": comparison.moved,
-        "box_count_changed": comparison.box_count_changed,
+        "boxes_changed": comparison.boxes_changed,
     }
     return {
         "key": key,
@@ -422,7 +428,7 @@ def verify_main(argv: list[str] | None = None) -> int:
         "wrote %s. Exported %s, expected %s", path, comparison.exported, comparison.expected
     )
     if not comparison.ok:
-        for name in ("missing", "extra", "moved", "box_count_changed"):
+        for name in ("missing", "extra", "moved", "boxes_changed"):
             if report[name]["count"]:
                 logger.error(
                     "%s: %d images, such as %s",
