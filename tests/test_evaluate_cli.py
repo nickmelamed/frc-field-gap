@@ -466,6 +466,7 @@ def test_labels_at_the_frame_edge_are_left_out_and_recorded(
         "classes": ["fuel"],
         "tolerance_px": 5.0,
         "min_overlap": 0.5,
+        "iou": 0.5,
         "labels": 1,
         "predictions": 1,
     }

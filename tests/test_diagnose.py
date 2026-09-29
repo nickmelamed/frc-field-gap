@@ -682,14 +682,18 @@ def test_a_source_pattern_must_compile() -> None:
         SourcePattern(name="bad", pattern="(")
 
 
-def test_main_applies_the_edge_rule_a_run_recorded(
-    workspace: Path, fake: object, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def set_edge_tolerance(workspace: Path, tolerance: float | None) -> None:
+    """Set the edge rule's tolerance in the workspace config, or remove the rule."""
     config = workspace / "configs/project.yaml"
     project = yaml.safe_load(config.read_text(encoding="utf-8"))
-    project["evaluate"]["edge_ignore"]["tolerance_px"] = 5
+    project["evaluate"].pop("edge_ignore", None)
+    if tolerance is not None:
+        rule = {"classes": ["fuel"], "tolerance_px": tolerance, "min_overlap": 0.5}
+        project["evaluate"]["edge_ignore"] = rule
     config.write_text(yaml.safe_dump(project), encoding="utf-8")
-    assert evaluate.main(ARGS) == 0
+
+
+def diagnose_fuel_counts(workspace: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[int, ...]:
     for name in ("git_is_dirty", "git_commit", "git_tree"):
         monkeypatch.setattr(diagnose, name, getattr(evaluate, name))
     train_dir = workspace / "data" / "harmonized" / "alpha" / "train"
@@ -699,4 +703,25 @@ def test_main_applies_the_edge_rule_a_run_recorded(
     assert diagnose.main(["m", "--project-config", "configs/project.yaml"]) == 0
     result = load_diagnosis(workspace / "reports" / "diagnosis" / "m" / "diagnosis.json")
     (fuel,) = result.splits[0].classes
-    assert (fuel.overall.hits, fuel.overall.false_positives, fuel.overall.misses) == (2, 0, 0)
+    return (fuel.overall.hits, fuel.overall.false_positives, fuel.overall.misses)
+
+
+# a.jpg's first box starts 4 pixels from the edge, so a tolerance of 5 puts
+# it on the edge and leaves 2 of the 3 labeled boxes to score.
+@pytest.mark.parametrize("config_after", [1.0, None], ids=["changed", "removed"])
+def test_main_applies_the_edge_rule_the_run_recorded(
+    workspace: Path, fake: object, monkeypatch: pytest.MonkeyPatch, config_after: float | None
+) -> None:
+    set_edge_tolerance(workspace, 5)
+    assert evaluate.main(ARGS) == 0
+    set_edge_tolerance(workspace, config_after)
+    assert diagnose_fuel_counts(workspace, monkeypatch) == (2, 0, 0)
+
+
+def test_main_applies_no_edge_rule_to_a_run_without_one(
+    workspace: Path, fake: object, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    set_edge_tolerance(workspace, None)
+    assert evaluate.main(ARGS) == 0
+    set_edge_tolerance(workspace, 5)
+    assert diagnose_fuel_counts(workspace, monkeypatch) == (3, 0, 0)

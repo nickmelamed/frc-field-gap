@@ -234,6 +234,7 @@ class IgnoredAtEdge(_Record):
     classes: list[str]
     tolerance_px: float
     min_overlap: float
+    iou: float
     labels: int
     predictions: int
 
@@ -338,6 +339,7 @@ def apply_edge_ignore(
         classes=list(ignore),
         tolerance_px=tolerance,
         min_overlap=min_overlap,
+        iou=iou,
         labels=n_labels,
         predictions=n_preds,
     )
@@ -1193,15 +1195,16 @@ def run_evaluation(
     }
     detections = align(predictions, names, ds.classes)
     ignored = None
-    if cfg.edge_ignore is not None:
+    edge = cfg.edge_ignore
+    if edge is not None and (edge_classes := [c for c in edge.classes if c in scored]):
         detections, targets, records, ignored = apply_edge_ignore(
             detections,
             targets,
             records,
             ds.classes,
-            [c for c in cfg.edge_ignore.classes if c in scored],
-            cfg.edge_ignore.tolerance_px,
-            cfg.edge_ignore.min_overlap,
+            edge_classes,
+            edge.tolerance_px,
+            edge.min_overlap,
             cfg.iou,
         )
 
