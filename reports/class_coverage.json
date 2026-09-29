@@ -250,5 +250,52 @@
         }
       }
     }
+  },
+  "merged": {
+    "labeled": [
+      "fuel",
+      "robot"
+    ],
+    "splits": {
+      "train": {
+        "images": 6816,
+        "classes": {
+          "fuel": {
+            "instances": 9076,
+            "images": 4017
+          },
+          "robot": {
+            "instances": 7551,
+            "images": 2635
+          }
+        }
+      },
+      "valid": {
+        "images": 652,
+        "classes": {
+          "fuel": {
+            "instances": 691,
+            "images": 365
+          },
+          "robot": {
+            "instances": 1161,
+            "images": 262
+          }
+        }
+      },
+      "test": {
+        "images": 771,
+        "classes": {
+          "fuel": {
+            "instances": 1206,
+            "images": 436
+          },
+          "robot": {
+            "instances": 1007,
+            "images": 281
+          }
+        }
+      }
+    }
   }
 }

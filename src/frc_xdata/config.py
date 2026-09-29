@@ -305,6 +305,54 @@ class DiagnoseConfig(_Frozen):
         return self
 
 
+class MergeSource(_Frozen):
+    """How one harmonized dataset enters the merged training set.
+
+    ``keep_splits`` keeps the dataset's train, valid, and test as they are,
+    and its valid and test are protected. ``train_only`` puts every image in
+    train, once it matches no protected image. Source names matching
+    ``exclude_pattern`` are left out of train and valid. ``dedupe_copies``
+    keeps one augmented copy of each training photo, as D-014 does.
+    """
+
+    role: Literal["keep_splits", "train_only"]
+    exclude_pattern: str | None = None
+    dedupe_copies: bool = False
+
+    @model_validator(mode="after")
+    def _pattern_compiles(self) -> "MergeSource":
+        if self.exclude_pattern is not None:
+            try:
+                re.compile(self.exclude_pattern)
+            except re.error as e:
+                raise ValueError(f"exclude_pattern does not compile: {e}") from e
+        return self
+
+
+class MergeConfig(_Frozen):
+    """Settings for merging harmonized datasets into one training set (D-028).
+
+    ``protected`` names datasets that are never trained on, such as the
+    lockbox. None of their images, and nothing from the field test set, may
+    match a merged training image.
+    """
+
+    name: DatasetKey
+    sources: dict[DatasetKey, MergeSource]
+    protected: list[DatasetKey] = []
+    report: RelativePath
+
+    @model_validator(mode="after")
+    def _roles_apart(self) -> "MergeConfig":
+        if self.name in self.sources or self.name in self.protected:
+            raise ValueError(f"{self.name} cannot be both the merged dataset and a source")
+        if both := sorted(set(self.sources) & set(self.protected)):
+            raise ValueError(f"{both} are both merged and protected")
+        if not any(s.role == "keep_splits" for s in self.sources.values()):
+            raise ValueError("at least one source must keep its splits, or test would be empty")
+        return self
+
+
 class ProjectConfig(_Frozen):
     """Settings shared by every stage, from ``configs/project.yaml``."""
 
@@ -315,6 +363,7 @@ class ProjectConfig(_Frozen):
     platform: PlatformConfig
     evaluate: EvaluateConfig
     diagnose: DiagnoseConfig
+    merge: MergeConfig | None = None
 
 
 class ModelEntry(BaseModel):

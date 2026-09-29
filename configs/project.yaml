@@ -115,6 +115,33 @@ splits:
       # Frames of one phone video share a unit. Photos are joined by pHash.
       recording_pattern: '^(?P<recording>.+_mov)-\d+\.(?:jpg|jpeg|png)$'
 
+# The merged training set for Task 10, written by frc-merge after
+# frc-harmonize (D-028). Sources that keep their splits bring their own
+# valid and test, which stay identical to the baseline's. testingfrfr goes to
+# train only, once nothing in it matches a protected image.
+merge:
+  name: merged
+  report: reports/merge.json
+  sources:
+    marswars:
+      role: keep_splits
+      # FIRST's official videos show robots with no robot labels, which a
+      # two-class model would learn as background.
+      exclude_pattern: '^2026-FIRST-Robotics-Competition-'
+    robotzftp2:
+      role: keep_splits
+    scorekeeper:
+      role: keep_splits
+      # The fuel photos have unlabeled balls in their clusters (D-021).
+      exclude_pattern: '^frame_\d+\.'
+    testingfrfr:
+      role: train_only
+      # Train holds about three augmented copies of each photo, some turned
+      # on their side. Keep one, as for scorekeeper (D-014).
+      dedupe_copies: true
+  # Never trained on. The field test set is always protected.
+  protected: [pankratz]
+
 # Roboflow project in the API key's workspace that frc-upload sends
 # harmonized training data to. Create it in the web app first, so its
 # license is chosen on purpose (docs/RETRAINING.md).

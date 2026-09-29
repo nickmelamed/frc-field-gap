@@ -748,3 +748,48 @@ hard cases. A false positive at the edge that overlaps no label is still
 counted. The v0.1.0 runs stay committed and published as they were until
 baseline-a is rescored from its caches under this rule, which happens with
 the merged model's runs so that tables and text change together.
+
+## D-028: Build the merged training set with frc-merge (2026-09-28)
+
+Context. Task 10 retrains on merged data aimed at the diagnosed failures,
+which are people and other games' balls taken for fuel. Every source keeps
+its own test split, so the merged model can be compared with the baseline
+on the same images. `testingfrfr` overlaps with B and C and holds flipped
+and rotated copies that a plain pHash check misses (D-011).
+
+Decision. Nick chose on 2026-09-28 to train one two-class model on fuel and
+robots. `frc-merge` writes `data/harmonized/merged/` from A, B, and C with
+their splits as they are, and from `testingfrfr` in train only.
+`robotzftp2_fuel` is left out. Three sets of images are left out of train
+and valid. A's frames from FIRST's official videos go, since their robots
+have no robot labels and a two-class model would learn them as background.
+C's fuel photos go, since their clusters have unlabeled balls (D-021). And
+`testingfrfr` keeps one augmented copy per photo, chosen as in D-014. A
+`testingfrfr` image is also dropped when its source name belongs to any
+valid, test, or lockbox image, or when its pHash under any of the 8 flips
+and 90 degree rotations is within 4 bits of one. The run fails on a
+field-test image anywhere in the output, and on a merged train image within
+4 bits of any test or lockbox image under any transform. Counts are in
+`reports/merge.json`, and the merged classes in
+`reports/class_coverage.json`.
+
+Why. Keeping each source's test split whole is what makes the comparison
+with the baseline fair. `testingfrfr` brings robots from five seasons and
+broadcast frames full of people, which are the negatives the diagnosis asks
+for, including 2020 frames whose yellow balls carry no fuel label. Its
+source names repeat the other datasets' files, so matching names catches
+copies that shear or exposure changes put out of pHash reach. Train frames
+close to their own valid split are allowed, as they were for the baseline
+(D-013). The first run found 16 such pairs in A and B, all within one
+recording and none needing a transform, and no train image near any test or
+lockbox image. Keeping every augmented copy would have made 10530 of 13703
+training images `testingfrfr`, from 3550 photos, with broadcast frames on
+their side.
+
+Consequences. Matching by source name is coarse. Names such as `frame_12`
+are shared by unrelated photos, so some clean images are dropped. The
+merged valid split lacks C's fuel photos, so validation during training
+sees fuel mostly from A and B. The pHash check still misses heavier edits,
+such as a strong crop. `make harmonize` rewrites
+`reports/class_coverage.json` without the merged entry, so run `make merge`
+after it.
