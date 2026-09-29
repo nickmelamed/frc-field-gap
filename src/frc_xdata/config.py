@@ -79,10 +79,25 @@ class TileLayout(_Frozen):
 
 
 class GridConfig(TileLayout):
-    """Layout of the per-dataset sample grid."""
+    """Layout of the per-dataset sample grid.
+
+    ``exclude`` lists file names, and ``exclude_patterns`` holds patterns
+    matched against source names, for a set of images too large to list.
+    """
 
     max_bytes: PositiveInt
     exclude: dict[DatasetKey, list[str]] = {}
+    exclude_patterns: dict[DatasetKey, list[str]] = {}
+
+    @model_validator(mode="after")
+    def _patterns_compile(self) -> "GridConfig":
+        for patterns in self.exclude_patterns.values():
+            for pattern in patterns:
+                try:
+                    re.compile(pattern)
+                except re.error as e:
+                    raise ValueError(f"exclude pattern {pattern!r} does not compile: {e}") from e
+        return self
 
 
 class InspectConfig(_Frozen):
