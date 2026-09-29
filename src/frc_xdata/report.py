@@ -120,8 +120,8 @@ def _limit_note(r: RunResult) -> list[str]:
     lines = [
         "",
         f"{limit.images_at_limit} of {r.metrics.images} images reached the limit of "
-        f"{limit.per_image} predictions per image (D-020), so fainter boxes may have been "
-        "dropped there.",
+        f"{limit.per_image} predictions per image and class (D-020, D-025), so fainter "
+        "boxes may have been dropped there.",
     ]
     if limit.images_above_threshold:
         lines[-1] += (

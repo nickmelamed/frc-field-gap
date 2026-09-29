@@ -45,9 +45,9 @@ from frc_xdata.evaluate import (
     above,
     align,
     compute_metrics,
+    limit_predictions,
     load_predictions,
     restrict,
-    top_k,
 )
 from frc_xdata.harmonize import SPLITS_NAME
 from frc_xdata.inspect_datasets import (
@@ -607,7 +607,10 @@ def load_cases(project: ProjectConfig, result: RunResult) -> SplitCases:
         if result.per_image_limit is None
         else result.per_image_limit.per_image
     )
-    cached = {n: top_k(p, limit) for n, p in load_predictions(cache).items()}
+    cached = {
+        n: limit_predictions(p, limit, result.scored_classes)
+        for n, p in load_predictions(cache).items()
+    }
     return SplitCases(
         result=result,
         split_dir=split_dir,

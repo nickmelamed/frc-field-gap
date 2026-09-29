@@ -19,6 +19,7 @@ import json
 import logging
 import platform
 import sys
+from collections import Counter, defaultdict
 from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -376,12 +377,37 @@ def top_k(predictions: Sequence[Prediction], k: int) -> list[Prediction]:
     return sorted(predictions, key=lambda p: -p.confidence)[:k]
 
 
+def limit_predictions(
+    predictions: Sequence[Prediction], k: int, classes: Sequence[str] | None = None
+) -> list[Prediction]:
+    """Return the ``k`` most confident predictions of each class, most confident first.
+
+    Classes outside ``classes`` are dropped before the limit, so boxes of a
+    class the run does not score never push out boxes of one it does. With
+    ``classes`` left out, every class is kept. Equal confidences keep the
+    given order.
+    """
+    kept: list[Prediction] = []
+    per_class: Counter[str] = Counter()
+    for p in top_k(predictions, len(predictions)):
+        if (classes is None or p.class_name in classes) and per_class[p.class_name] < k:
+            per_class[p.class_name] += 1
+            kept.append(p)
+    return kept
+
+
 def predictions_text(
-    predictions: Mapping[str, Sequence[Prediction]], floor: float, per_image: int, max_bytes: int
+    predictions: Mapping[str, Sequence[Prediction]],
+    floor: float,
+    per_image: int,
+    max_bytes: int,
+    classes: Sequence[str] | None = None,
 ) -> str:
     """Return the cache file text for each image's ``per_image`` most confident predictions.
 
-    Predictions below ``floor`` are left out. Each image is one line keyed by
+    The limit applies to each class in ``classes`` (every class when left
+    out), as in :func:`limit_predictions`. Predictions below ``floor`` are
+    left out. Each image is one line keyed by
     file name, so a diff shows which images changed. An image with no
     predictions is kept with an empty list, which tells it apart from an image
     that was never run.
@@ -391,7 +417,7 @@ def predictions_text(
     """
     lines = []
     for name, preds in predictions.items():
-        kept = top_k([p for p in preds if p.confidence >= floor], per_image)
+        kept = limit_predictions([p for p in preds if p.confidence >= floor], per_image, classes)
         lines.append(f"{json.dumps(name)}: {json.dumps([_row(p) for p in kept])}")
     text = (
         "{\n"
@@ -415,6 +441,7 @@ def save_predictions(
     floor: float,
     per_image: int,
     max_bytes: int,
+    classes: Sequence[str] | None = None,
 ) -> int:
     """Write the cache for :func:`predictions_text` to ``path`` and return its size in bytes.
 
@@ -422,7 +449,7 @@ def save_predictions(
         PredictionCacheTooLargeError: If the file would exceed ``max_bytes``.
             Nothing is written in that case.
     """
-    text = predictions_text(predictions, floor, per_image, max_bytes)
+    text = predictions_text(predictions, floor, per_image, max_bytes, classes)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
     return len(text.encode("utf-8"))
@@ -754,26 +781,36 @@ class HostedPredictor:
 
 
 class PerImageLimit(_Record):
-    """How often the per-image prediction limit was reached in one run."""
+    """How often the prediction limit per image and class was reached in one run."""
 
+    # The limit applies to each class separately. Runs of one-class models
+    # are unaffected, so the name is kept for the runs already published.
     per_image: int
-    # Images holding exactly ``per_image`` predictions. The cache cannot tell
-    # whether more were dropped, so these are the images that may have lost some.
+    # Images where some class holds exactly ``per_image`` predictions. The
+    # cache cannot tell whether more were dropped, so these are the images
+    # that may have lost some.
     images_at_limit: int
-    # Images at the limit whose least confident kept box is at or above the
-    # threshold, so boxes that would have counted at the threshold were dropped.
+    # Images where some class is at the limit and its least confident kept
+    # box is at or above the threshold, so boxes that would have counted at
+    # the threshold were dropped.
     images_above_threshold: int
 
 
 def per_image_limit(
     predictions: Sequence[Sequence[Prediction]], per_image: int, confidence: float
 ) -> PerImageLimit:
-    """Count the images whose predictions reach ``per_image`` after the limit."""
-    full = [p for p in predictions if len(p) >= per_image]
+    """Count the images where some class's predictions reach ``per_image`` after the limit."""
+    at_limit = 0
+    above = 0
+    for preds in predictions:
+        by_class: dict[str, list[float]] = defaultdict(list)
+        for p in preds:
+            by_class[p.class_name].append(p.confidence)
+        full = [c for c in by_class.values() if len(c) >= per_image]
+        at_limit += bool(full)
+        above += any(min(c) >= confidence for c in full)
     return PerImageLimit(
-        per_image=per_image,
-        images_at_limit=len(full),
-        images_above_threshold=sum(min(x.confidence for x in p) >= confidence for p in full),
+        per_image=per_image, images_at_limit=at_limit, images_above_threshold=above
     )
 
 
@@ -979,6 +1016,7 @@ def run_evaluation(
             cfg.confidence_floor,
             cfg.max_predictions_per_image,
             cfg.max_prediction_bytes,
+            scored,
         )
         # Score the rounded predictions the cache keeps, so rescoring the
         # cache reproduces this run exactly.
@@ -989,7 +1027,10 @@ def run_evaluation(
         predictions, source_dirty = _cached_run(cfg.runs_dir / from_cache, model, dataset, split)
         source = from_cache
     # Older caches predate the limit, so rescores apply it too.
-    predictions = {n: top_k(p, cfg.max_predictions_per_image) for n, p in predictions.items()}
+    predictions = {
+        n: limit_predictions(p, cfg.max_predictions_per_image, scored)
+        for n, p in predictions.items()
+    }
     detections = align(predictions, names, ds.classes)
 
     result = RunResult(

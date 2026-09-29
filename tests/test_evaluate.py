@@ -13,6 +13,7 @@ from frc_xdata.evaluate import (
     align,
     bootstrap,
     image_units,
+    limit_predictions,
     load_predictions,
     per_image_limit,
     save_predictions,
@@ -239,3 +240,35 @@ def test_per_image_limit_counts_full_images_and_those_full_above_the_threshold()
     confident = [pred(0.9), pred(0.6)]
     limit = per_image_limit([faint, confident, [pred(0.9)], []], per_image=2, confidence=0.5)
     assert (limit.per_image, limit.images_at_limit, limit.images_above_threshold) == (2, 2, 1)
+
+
+def test_limit_keeps_the_most_confident_boxes_of_each_class() -> None:
+    robots = [pred(0.9, "robot"), pred(0.8, "robot"), pred(0.7, "robot")]
+    fuel = [pred(0.3), pred(0.2), pred(0.1)]
+    kept = limit_predictions([*robots, *fuel], 2)
+    assert kept == [robots[0], robots[1], fuel[0], fuel[1]]
+
+
+def test_limit_drops_unscored_classes_before_counting() -> None:
+    robots = [pred(0.9, "robot"), pred(0.8, "robot")]
+    fuel = [pred(0.3), pred(0.2)]
+    assert limit_predictions([*robots, *fuel], 2, ["fuel"]) == fuel
+
+
+def test_limit_on_one_class_matches_top_k() -> None:
+    preds = [pred(0.1), pred(0.5, box=(0, 0, 1, 1)), pred(0.9), pred(0.5, box=(2, 2, 3, 3))]
+    assert limit_predictions(preds, 3, ["fuel"]) == top_k(preds, 3)
+
+
+def test_cache_limit_applies_per_scored_class(tmp_path: Path) -> None:
+    path = tmp_path / "predictions.json"
+    predictions = {"a.jpg": [pred(0.9, "robot"), pred(0.8, "robot"), pred(0.2), pred(0.1)]}
+    save_predictions(path, predictions, floor=0.01, per_image=1, max_bytes=LIMIT, classes=["fuel"])
+    assert load_predictions(path)["a.jpg"] == [pred(0.2)]
+
+
+def test_per_image_limit_counts_an_image_once_when_any_class_is_full() -> None:
+    both_full = [pred(0.9), pred(0.6), pred(0.9, "robot"), pred(0.3, "robot")]
+    one_each = [pred(0.9), pred(0.9, "robot")]
+    limit = per_image_limit([both_full, one_each], per_image=2, confidence=0.5)
+    assert (limit.images_at_limit, limit.images_above_threshold) == (1, 1)
