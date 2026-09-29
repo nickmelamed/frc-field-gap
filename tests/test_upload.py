@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 from conftest import coco, image_entry, smooth_image, write_split
 
 from frc_xdata import upload
@@ -32,7 +33,9 @@ LAYOUT = {"train": ("a.png", 1, 1), "valid": ("b.png", 2, 0), "test": ("c.png", 
 def project(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> ProjectConfig:
     """Run from ``tmp_path`` with one harmonized dataset and its split report."""
     monkeypatch.chdir(tmp_path)
-    shutil.copy(REPO_ROOT / "configs" / "project.yaml", tmp_path / "project.yaml")
+    data = yaml.safe_load((REPO_ROOT / "configs" / "project.yaml").read_text(encoding="utf-8"))
+    data["platform"]["projects"]["alpha"] = "proj-alpha"
+    (tmp_path / "project.yaml").write_text(yaml.safe_dump(data), encoding="utf-8")
     project = load_yaml(tmp_path / "project.yaml", ProjectConfig)
     dataset = project.paths.harmonized_dir / "alpha"
     for split, (name, seed, boxes) in LAYOUT.items():
@@ -109,6 +112,28 @@ def test_check_before_upload_refuses_a_field_test_near_duplicate(project: Projec
         check_before_upload(project.paths.harmonized_dir / "alpha", "alpha", project)
 
 
+def test_the_merged_dataset_is_checked_against_the_merge_report(project: ProjectConfig) -> None:
+    assert project.merge is not None
+    merged = project.paths.harmonized_dir / project.merge.name
+    shutil.copytree(project.paths.harmonized_dir / "alpha", merged)
+    report = {"datasets": {project.merge.name: {"splits": {s: {"images": 1} for s in LAYOUT}}}}
+    project.merge.report.write_text(json.dumps(report), encoding="utf-8")
+    assert check_before_upload(merged, project.merge.name, project) == {
+        "train": 1,
+        "valid": 1,
+        "test": 1,
+    }
+    report["datasets"][project.merge.name]["splits"]["test"]["images"] = 2
+    project.merge.report.write_text(json.dumps(report), encoding="utf-8")
+    with pytest.raises(UploadCheckError, match="test has 1, the report says 2"):
+        check_before_upload(merged, project.merge.name, project)
+
+
+def test_a_dataset_without_a_platform_project_is_refused(project: ProjectConfig) -> None:
+    with pytest.raises(ConfigError, match="no project for beta"):
+        project.platform.project("beta")
+
+
 def test_upload_splits_names_every_split_in_its_own_call(tmp_path: Path) -> None:
     calls: list[tuple[Path, str]] = []
     upload_splits(tmp_path, lambda path, split: calls.append((path, split)))
@@ -175,7 +200,7 @@ def test_upload_main_uploads_each_split_to_the_configured_project(
     calls: list[tuple[str, str]] = []
 
     def fake(api_key: str, slug: str, key: str, retries: int) -> upload.Upload:
-        assert (api_key, slug, key) == (SECRET, project.platform.project, "alpha")
+        assert (api_key, slug, key) == (SECRET, "proj-alpha", "alpha")
         return lambda path, split: calls.append((path.name, split))
 
     monkeypatch.setenv(API_KEY_VAR, SECRET)
@@ -228,7 +253,7 @@ def test_verify_main_writes_a_passing_report(
     report = json.loads((project.paths.reports_dir / "platform_upload_alpha.json").read_text())
     assert report["ok"] is True
     assert (report["project"], report["version"], report["git_commit"]) == (
-        project.platform.project,
+        "proj-alpha",
         4,
         "abc123",
     )

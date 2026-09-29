@@ -146,7 +146,9 @@ merge:
 # harmonized training data to. Create it in the web app first, so its
 # license is chosen on purpose (docs/RETRAINING.md).
 platform:
-  project: frc-rebuilt-fuel-a
+  projects:
+    marswars: frc-rebuilt-fuel-a
+    merged: frc-rebuilt-merged
   # Retries per image. The SDK prints a failed upload instead of raising,
   # so frc-verify-upload is what catches a missing image.
   upload_retries: 3

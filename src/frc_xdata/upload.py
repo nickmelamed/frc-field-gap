@@ -125,6 +125,13 @@ def reported_sizes(splits_report: Path, key: str) -> dict[str, int]:
         raise UploadCheckError(f"{splits_report} has no split sizes for {key}") from e
 
 
+def split_report(project: ProjectConfig, key: str) -> Path:
+    """Return the report that records ``key``'s split sizes."""
+    if project.merge is not None and key == project.merge.name:
+        return project.merge.report
+    return project.paths.reports_dir / SPLITS_NAME
+
+
 def check_sizes(found: Mapping[str, int], expected: Mapping[str, int]) -> None:
     """Check the harmonized split sizes against the split report.
 
@@ -165,12 +172,13 @@ def check_before_upload(dataset_dir: Path, key: str, project: ProjectConfig) -> 
     """Run every local check on a harmonized dataset and return its split sizes.
 
     Raises:
-        UploadCheckError: If a split is missing or its size differs from
-            ``reports/splits.json``.
+        UploadCheckError: If a split is missing or its size differs from the
+            report that wrote it, ``reports/splits.json`` or, for the merged
+            dataset, ``reports/merge.json``.
         DataLeakError: If an image is a near duplicate of a field-test image.
     """
     sizes = split_sizes(dataset_dir)
-    check_sizes(sizes, reported_sizes(project.paths.reports_dir / SPLITS_NAME, key))
+    check_sizes(sizes, reported_sizes(split_report(project, key), key))
     field_dir = project.paths.field_test_dir
     if not field_dir.is_dir():
         logger.warning("%s does not exist, so there are no field-test images to check", field_dir)
@@ -382,7 +390,7 @@ def upload_main(argv: list[str] | None = None) -> int:
         return 0
 
     api_key = redacted_api_key()
-    slug = project.platform.project
+    slug = project.platform.project(args.key)
     try:
         upload_splits(
             dataset_dir,
@@ -409,7 +417,7 @@ def verify_main(argv: list[str] | None = None) -> int:
     if git_is_dirty(repo) and not args.allow_dirty:
         raise DirtyTreeError("commit or stash changes first, or pass --allow-dirty")
     project = load_yaml(args.project_config, ProjectConfig)
-    slug = project.platform.project
+    slug = project.platform.project(args.key)
     api_key = redacted_api_key()
     export_dir = project.paths.platform_dir / f"{slug}-v{args.version}"
     try:
