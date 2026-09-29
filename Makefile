@@ -1,4 +1,4 @@
-.PHONY: help setup setup-infer lint typecheck test check requirements agent-check download inspect harmonize upload verify-upload eval diagnose report
+.PHONY: help setup setup-infer lint typecheck test check requirements agent-check download inspect harmonize merge upload verify-upload eval diagnose report
 
 help:  ## List targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -38,6 +38,9 @@ inspect:  ## Write dataset stats, duplicate report, and sample grids from data/r
 
 harmonize:  ## Map labels to fuel and robot, re-split, and write data/harmonized/
 	uv run frc-harmonize $(ARGS)
+
+merge:  ## Merge harmonized datasets into data/harmonized/merged/ (run after harmonize)
+	uv run frc-merge $(ARGS)
 
 upload:  ## Check harmonized KEY and upload it to Roboflow (ARGS=--dry-run to only check)
 	uv run frc-upload $(KEY) $(ARGS)

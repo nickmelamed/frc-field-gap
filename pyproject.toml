@@ -23,6 +23,7 @@ dependencies = [
 frc-download = "frc_xdata.download:main"
 frc-inspect = "frc_xdata.inspect_datasets:main"
 frc-harmonize = "frc_xdata.harmonize:main"
+frc-merge = "frc_xdata.merge:main"
 frc-upload = "frc_xdata.upload:upload_main"
 frc-verify-upload = "frc_xdata.upload:verify_main"
 frc-evaluate = "frc_xdata.evaluate:main"

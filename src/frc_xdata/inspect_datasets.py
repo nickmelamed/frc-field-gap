@@ -312,11 +312,16 @@ def near_duplicate_pairs(
     return pairs
 
 
-def phash(path: Path) -> int:
-    """Return the 64-bit perceptual hash of an image as an integer."""
-    with Image.open(path) as image:
-        bits = imagehash.phash(image).hash.flatten()
+def phash_image(image: Image.Image) -> int:
+    """Return the 64-bit perceptual hash of an open image as an integer."""
+    bits = imagehash.phash(image).hash.flatten()
     return int("".join("1" if b else "0" for b in bits), 2)
+
+
+def phash(path: Path) -> int:
+    """Return the 64-bit perceptual hash of an image file as an integer."""
+    with Image.open(path) as image:
+        return phash_image(image)
 
 
 def summarize_pairs(

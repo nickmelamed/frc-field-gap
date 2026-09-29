@@ -1,0 +1,79 @@
+{
+  "near_duplicate_max_distance": 4,
+  "field_test_images": 0,
+  "protected": [
+    "pankratz"
+  ],
+  "datasets": {
+    "merged": {
+      "sources": {
+        "marswars": {
+          "role": "keep_splits",
+          "exclude_pattern": "^2026-FIRST-Robotics-Competition-",
+          "dedupe_copies": false
+        },
+        "robotzftp2": {
+          "role": "keep_splits",
+          "exclude_pattern": null,
+          "dedupe_copies": false
+        },
+        "scorekeeper": {
+          "role": "keep_splits",
+          "exclude_pattern": "^frame_\\d+\\.",
+          "dedupe_copies": false
+        },
+        "testingfrfr": {
+          "role": "train_only",
+          "exclude_pattern": null,
+          "dedupe_copies": true
+        }
+      },
+      "splits": {
+        "train": {
+          "images": 6816
+        },
+        "valid": {
+          "images": 652
+        },
+        "test": {
+          "images": 771
+        }
+      },
+      "from_source": {
+        "marswars": {
+          "train": 802,
+          "valid": 140,
+          "test": 171
+        },
+        "robotzftp2": {
+          "train": 1293,
+          "valid": 249,
+          "test": 286
+        },
+        "scorekeeper": {
+          "train": 1078,
+          "valid": 263,
+          "test": 314
+        },
+        "testingfrfr": {
+          "train": 3643,
+          "valid": 0,
+          "test": 0
+        }
+      },
+      "dropped": {
+        "marswars": {
+          "excluded": 140
+        },
+        "scorekeeper": {
+          "excluded": 439
+        },
+        "testingfrfr": {
+          "copy": 8294,
+          "near_protected": 170,
+          "source_name": 858
+        }
+      }
+    }
+  }
+}
