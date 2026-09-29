@@ -46,7 +46,8 @@ from frc_xdata.logging_utils import add_log_level_argument, setup_logging
 from frc_xdata.provenance import git_commit, git_is_dirty, utc_timestamp
 from frc_xdata.splits import SPLITS
 
-REPORT_NAME = "platform_upload_{key}.json"
+# The baseline's report predates the version in the name, and keeps its name.
+REPORT_NAME = "platform_upload_{key}_v{version}.json"
 EXPORT_FORMAT = "coco"
 
 logger = logging.getLogger(__name__)
@@ -235,11 +236,17 @@ def _class_counts(record: ImageRecord) -> Counter[str]:
     return Counter(b.label for b in record.boxes)
 
 
-def compare_export(export_dir: Path, dataset_dir: Path, key: str) -> UploadComparison:
+def compare_export(
+    export_dir: Path, dataset_dir: Path, key: str, augmented: bool = False
+) -> UploadComparison:
     """Match every image in a downloaded version to its harmonized file.
 
     Missing, moved, and changed images are listed by their harmonized file
-    name, and extra ones by their exported name.
+    name, and extra ones by their exported name. With ``augmented``, a
+    version whose train split holds augmented copies passes when every copy
+    of a train image stays in train. Their boxes are not compared, since an
+    augmentation such as a crop can change them. Valid and test are checked
+    in full either way.
 
     Raises:
         UploadCheckError: If two harmonized images share a match key, which
@@ -257,14 +264,19 @@ def compare_export(export_dir: Path, dataset_dir: Path, key: str) -> UploadCompa
     for r in exported:
         k = match_key(r.source_name)
         original = expected.get(k)
-        if original is None or k in seen:
+        train_copy = augmented and original is not None and original.ref.split == "train"
+        if original is None or (k in seen and not train_copy):
             extra.append(r.source_name)
+            continue
+        if k in seen:
+            if r.ref.split != "train":
+                moved.append((original.ref.file_name, original.ref.split, r.ref.split))
             continue
         seen.add(k)
         name = original.ref.file_name
         if original.ref.split != r.ref.split:
             moved.append((name, original.ref.split, r.ref.split))
-        if _class_counts(original) != _class_counts(r):
+        if not train_copy and _class_counts(original) != _class_counts(r):
             boxes_changed.append(name)
     exported_sizes = Counter(r.ref.split for r in exported)
     return UploadComparison(
@@ -285,8 +297,9 @@ def upload_report(
     version: int,
     max_examples: int,
     repo: Path,
+    augmented: bool = False,
 ) -> dict[str, Any]:
-    """Build the record written to ``reports/platform_upload_<key>.json``.
+    """Build the record written to ``reports/platform_upload_<key>_v<version>.json``.
 
     Each mismatch list is cut to ``max_examples`` entries next to its full
     count.
@@ -301,6 +314,7 @@ def upload_report(
         "key": key,
         "project": project_slug,
         "version": version,
+        "augmented": augmented,
         "checked": utc_timestamp(),
         "git_commit": git_commit(repo),
         "dirty": git_is_dirty(repo),
@@ -410,6 +424,11 @@ def verify_main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--allow-dirty", action="store_true", help="write the report from a dirty tree"
     )
+    parser.add_argument(
+        "--augmented",
+        action="store_true",
+        help="allow augmented copies of train images, and skip their box counts",
+    )
     args = parser.parse_args(argv)
     setup_logging(args.log_level)
 
@@ -426,11 +445,20 @@ def verify_main(argv: list[str] | None = None) -> int:
         logger.error("roboflow failed: %s", redact(f"{type(e).__name__}: {e}", api_key))
         return 1
 
-    comparison = compare_export(export_dir, project.paths.harmonized_dir / args.key, args.key)
-    report = upload_report(
-        comparison, info, args.key, slug, args.version, project.inspect.max_examples, repo
+    comparison = compare_export(
+        export_dir, project.paths.harmonized_dir / args.key, args.key, args.augmented
     )
-    path = project.paths.reports_dir / REPORT_NAME.format(key=args.key)
+    report = upload_report(
+        comparison,
+        info,
+        args.key,
+        slug,
+        args.version,
+        project.inspect.max_examples,
+        repo,
+        args.augmented,
+    )
+    path = project.paths.reports_dir / REPORT_NAME.format(key=args.key, version=args.version)
     path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     logger.info(
         "wrote %s. Exported %s, expected %s", path, comparison.exported, comparison.expected

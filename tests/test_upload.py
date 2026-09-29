@@ -176,6 +176,35 @@ def test_compare_export_catches_a_swapped_class_with_the_same_box_count(
     assert result.boxes_changed == ["a.png", "c.png"]
 
 
+def test_an_augmented_version_may_copy_train_images_within_train(
+    project: ProjectConfig, tmp_path: Path
+) -> None:
+    export = {**MATCHING, "train": [("a.png", 1), ("a.png", 1), ("a.png", 0)]}
+    write_export(tmp_path / "export", export)
+    dataset = project.paths.harmonized_dir / "alpha"
+    assert not compare_export(tmp_path / "export", dataset, "alpha").ok
+    assert compare_export(tmp_path / "export", dataset, "alpha", augmented=True).ok
+
+
+def test_an_augmented_version_still_checks_valid_and_test(
+    project: ProjectConfig, tmp_path: Path
+) -> None:
+    export = {
+        "train": [("a.png", 1), ("b.png", 0)],
+        "valid": [("b.png", 0), ("a.png", 1)],
+        "test": [("c.png", 2)],
+    }
+    write_export(tmp_path / "export", export)
+    result = compare_export(
+        tmp_path / "export", project.paths.harmonized_dir / "alpha", "alpha", augmented=True
+    )
+    # b.png's first copy is in train, so it counts as moved, and the one in
+    # valid as extra.
+    assert result.extra == ["b.png"]
+    assert result.moved == [("a.png", "train", "valid"), ("b.png", "valid", "train")]
+    assert result.boxes_changed == ["c.png"]
+
+
 def test_compare_export_lists_missing_images(project: ProjectConfig, tmp_path: Path) -> None:
     write_export(tmp_path / "export", {"train": [("a.png", 1)], "valid": [("b.png", 0)]})
     result = compare_export(tmp_path / "export", project.paths.harmonized_dir / "alpha", "alpha")
@@ -250,7 +279,7 @@ def test_verify_main_writes_a_passing_report(
     project: ProjectConfig, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     assert run_verify(monkeypatch, MATCHING) == 0
-    report = json.loads((project.paths.reports_dir / "platform_upload_alpha.json").read_text())
+    report = json.loads((project.paths.reports_dir / "platform_upload_alpha_v4.json").read_text())
     assert report["ok"] is True
     assert (report["project"], report["version"], report["git_commit"]) == (
         "proj-alpha",
@@ -267,7 +296,7 @@ def test_verify_main_fails_and_reports_a_moved_image(
 ) -> None:
     moved = {"train": [("a.png", 1), ("b.png", 0)], "test": [("c.png", 1)]}
     assert run_verify(monkeypatch, moved) == 1
-    report = json.loads((project.paths.reports_dir / "platform_upload_alpha.json").read_text())
+    report = json.loads((project.paths.reports_dir / "platform_upload_alpha_v4.json").read_text())
     assert report["ok"] is False
     assert report["moved"] == {"count": 1, "examples": [["b.png", "valid", "train"]]}
 
@@ -278,7 +307,7 @@ def test_verify_main_refuses_a_dirty_tree_unless_allowed(
     with pytest.raises(DirtyTreeError):
         run_verify(monkeypatch, MATCHING, dirty=True)
     assert run_verify(monkeypatch, MATCHING, "--allow-dirty", dirty=True) == 0
-    report = json.loads((project.paths.reports_dir / "platform_upload_alpha.json").read_text())
+    report = json.loads((project.paths.reports_dir / "platform_upload_alpha_v4.json").read_text())
     assert report["dirty"] is True
 
 
