@@ -21,6 +21,7 @@ import platform
 import sys
 from collections import Counter, defaultdict
 from collections.abc import Callable, Mapping, Sequence
+from dataclasses import replace
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any, Protocol
@@ -183,6 +184,164 @@ def above(detections: sv.Detections, confidence: float) -> sv.Detections:
     if detections.confidence is None:
         return detections
     return _select(detections, np.asarray(detections.confidence) >= confidence)
+
+
+def at_edge(
+    xyxy: npt.NDArray[np.floating[Any]], width: float, height: float, tolerance: float
+) -> npt.NDArray[np.bool_]:
+    """Return which boxes reach within ``tolerance`` pixels of the image edge."""
+    boxes = np.asarray(xyxy, dtype=np.float64).reshape(-1, 4)
+    return (
+        (boxes[:, 0] <= tolerance)
+        | (boxes[:, 1] <= tolerance)
+        | (boxes[:, 2] >= width - tolerance)
+        | (boxes[:, 3] >= height - tolerance)
+    )
+
+
+def overlap_of_smaller(
+    a: npt.NDArray[np.floating[Any]], b: npt.NDArray[np.floating[Any]]
+) -> npt.NDArray[np.float64]:
+    """Return the intersection of each pair of boxes over the smaller box's area.
+
+    It is 1 when one box lies inside the other, however different their
+    sizes, which IoU would score low.
+    """
+    a = np.asarray(a, dtype=np.float64).reshape(-1, 4)
+    b = np.asarray(b, dtype=np.float64).reshape(-1, 4)
+    w = np.clip(
+        np.minimum(a[:, None, 2], b[None, :, 2]) - np.maximum(a[:, None, 0], b[None, :, 0]), 0, None
+    )
+    h = np.clip(
+        np.minimum(a[:, None, 3], b[None, :, 3]) - np.maximum(a[:, None, 1], b[None, :, 1]), 0, None
+    )
+    area_a = (a[:, 2] - a[:, 0]) * (a[:, 3] - a[:, 1])
+    area_b = (b[:, 2] - b[:, 0]) * (b[:, 3] - b[:, 1])
+    smaller = np.minimum(area_a[:, None], area_b[None, :])
+    shares: npt.NDArray[np.float64] = np.divide(
+        w * h, smaller, out=np.zeros_like(smaller), where=smaller > 0
+    )
+    return shares
+
+
+class IgnoredAtEdge(_Record):
+    """Labels at the frame edge a run left out of scoring, and the predictions dropped with them.
+
+    The settings are kept with the counts so a later rescore or diagnosis
+    applies exactly the same rule.
+    """
+
+    classes: list[str]
+    tolerance_px: float
+    min_overlap: float
+    labels: int
+    predictions: int
+
+
+def ignore_edge_labels(
+    predictions: list[sv.Detections],
+    targets: list[sv.Detections],
+    sizes: Sequence[tuple[int, int]],
+    class_ids: Sequence[int],
+    tolerance: float,
+    min_overlap: float,
+    iou: float,
+) -> tuple[list[sv.Detections], list[sv.Detections], int, int]:
+    """Leave labels at the frame edge out of scoring, with the predictions that match them.
+
+    A label of one of ``class_ids`` within ``tolerance`` pixels of the edge
+    is removed. A prediction of the same class is removed when
+    :func:`overlap_of_smaller` with such a label is above ``min_overlap``,
+    unless its IoU with a remaining label of its class is at least ``iou``,
+    so a hit on a scored ball is never dropped.
+
+    Args:
+        predictions: Per-image predictions.
+        targets: Per-image labels, in the same order.
+        sizes: Each image's width and height in pixels.
+        class_ids: Classes whose edge labels are ignored.
+        tolerance: Pixels from the edge that still count as touching it.
+        min_overlap: Overlap with an ignored label above which a
+            prediction is dropped.
+        iou: IoU with a remaining label at which a prediction is kept.
+
+    Returns:
+        The predictions and labels to score, and how many labels and
+        predictions were removed.
+    """
+    kept_preds: list[sv.Detections] = []
+    kept_targets: list[sv.Detections] = []
+    labels_removed = 0
+    preds_removed = 0
+    for preds, labels, (width, height) in zip(predictions, targets, sizes, strict=True):
+        label_xyxy = np.asarray(labels.xyxy, dtype=np.float64).reshape(-1, 4)
+        pred_xyxy = np.asarray(preds.xyxy, dtype=np.float64).reshape(-1, 4)
+        label_cls = np.asarray(labels.class_id if labels.class_id is not None else [], dtype=int)
+        edge = np.isin(label_cls, class_ids) & at_edge(label_xyxy, width, height, tolerance)
+        pred_cls = np.asarray(preds.class_id if preds.class_id is not None else [], dtype=int)
+        drop = np.zeros(len(preds), dtype=bool)
+        for cid in class_ids:
+            ignored = label_xyxy[edge & (label_cls == cid)]
+            mine = pred_cls == cid
+            if not len(ignored) or not mine.any():
+                continue
+            near = (overlap_of_smaller(pred_xyxy, ignored) > min_overlap).any(axis=1)
+            scored = label_xyxy[~edge & (label_cls == cid)]
+            hit = (
+                (np.asarray(sv.box_iou_batch(pred_xyxy, scored)) >= iou).any(axis=1)
+                if len(scored) and len(preds)
+                else np.zeros(len(preds), dtype=bool)
+            )
+            drop |= mine & near & ~hit
+        labels_removed += int(edge.sum())
+        preds_removed += int(drop.sum())
+        kept_targets.append(_select(labels, ~edge) if edge.any() else labels)
+        kept_preds.append(_select(preds, ~drop) if drop.any() else preds)
+    return kept_preds, kept_targets, labels_removed, preds_removed
+
+
+def apply_edge_ignore(
+    predictions: list[sv.Detections],
+    targets: list[sv.Detections],
+    records: Sequence[ImageRecord],
+    classes: Sequence[str],
+    ignore: Sequence[str],
+    tolerance: float,
+    min_overlap: float,
+    iou: float,
+) -> tuple[list[sv.Detections], list[sv.Detections], list[ImageRecord], IgnoredAtEdge]:
+    """Run :func:`ignore_edge_labels` on a split and drop the same labels from its records.
+
+    ``records`` are the split's images in the order of ``targets``, and
+    ``classes`` the dataset's class names by id. The returned records keep
+    only the scored boxes, so counts per recording agree with the scores.
+    """
+    class_ids = [classes.index(c) for c in ignore]
+    preds, kept, n_labels, n_preds = ignore_edge_labels(
+        predictions,
+        targets,
+        [(r.width, r.height) for r in records],
+        class_ids,
+        tolerance,
+        min_overlap,
+        iou,
+    )
+    kept_records = []
+    for r in records:
+        xyxy = np.array([(b.x, b.y, b.x + b.w, b.y + b.h) for b in r.boxes]).reshape(-1, 4)
+        edge = at_edge(xyxy, r.width, r.height, tolerance)
+        boxes = zip(r.boxes, edge, strict=True)
+        kept_records.append(
+            replace(r, boxes=tuple(b for b, e in boxes if not (e and b.label in ignore)))
+        )
+    summary = IgnoredAtEdge(
+        classes=list(ignore),
+        tolerance_px=tolerance,
+        min_overlap=min_overlap,
+        labels=n_labels,
+        predictions=n_preds,
+    )
+    return preds, kept, kept_records, summary
 
 
 def _round(value: float) -> float:
@@ -829,6 +988,8 @@ class RunResult(_Record):
     unscored_classes: list[str] = []
     # None in runs scored before the limit was recorded.
     per_image_limit: PerImageLimit | None = None
+    # None in runs scored without ignoring labels at the frame edge (D-027).
+    edge_ignore: IgnoredAtEdge | None = None
     metrics: EvalMetrics
     units: list[UnitCount]
     bootstrap: BootstrapResult
@@ -1033,6 +1194,18 @@ def run_evaluation(
         for n, p in predictions.items()
     }
     detections = align(predictions, names, ds.classes)
+    ignored = None
+    if cfg.edge_ignore is not None:
+        detections, targets, records, ignored = apply_edge_ignore(
+            detections,
+            targets,
+            records,
+            ds.classes,
+            [c for c in cfg.edge_ignore.classes if c in scored],
+            cfg.edge_ignore.tolerance_px,
+            cfg.edge_ignore.min_overlap,
+            cfg.iou,
+        )
 
     result = RunResult(
         run_id=run_id,
@@ -1055,6 +1228,7 @@ def run_evaluation(
         per_image_limit=per_image_limit(
             [predictions[n] for n in names], cfg.max_predictions_per_image, cfg.confidence
         ),
+        edge_ignore=ignored,
         units=unit_counts(records, units, scored),
         bootstrap=bootstrap(
             detections,

@@ -25,6 +25,7 @@ from frc_xdata.evaluate import (
     ClassMetrics,
     ConfusionTable,
     EvalMetrics,
+    IgnoredAtEdge,
     Interval,
     PerImageLimit,
     PRPoint,
@@ -303,6 +304,17 @@ def test_limit_note_numbers_are_stored_in_the_run() -> None:
     r = with_limit(3, 2)
     reported = {n for line in run_section(clean(r)).splitlines() for n in NUMBER.findall(line)}
     assert reported <= set(NUMBER.findall(r.model_dump_json())) | {"95%"}
+
+
+def test_run_section_says_how_many_edge_labels_were_left_out() -> None:
+    assert "frame edge" not in run_section(clean(result("r1")))
+    ignore = IgnoredAtEdge(
+        classes=["fuel"], tolerance_px=1, min_overlap=0.5, labels=12, predictions=7
+    )
+    r = result("r1").model_copy(update={"edge_ignore": ignore})
+    section = run_section(clean(r))
+    assert "12 labeled fuel boxes touch the frame edge" in section
+    assert "7 predictions that mostly overlap" in section
 
 
 def score(name: str, images: int, labeled: int, hits: int, fps: int) -> SliceScore:

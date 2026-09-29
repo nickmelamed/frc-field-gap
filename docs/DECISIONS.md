@@ -708,3 +708,43 @@ exactly that failure, and a better score on it cannot be read as an
 unbiased sample of new footage. It is small, 320 by 240, and from one team's
 workshop, and the webcam frames make up most of it, so it adds one new
 domain, not many. It labels fuel only, so robots are not scored on it.
+
+## D-027: Score fuel labels at the frame edge as neither hits nor misses (2026-09-28)
+
+Context. The diagnosis found that most of A's misses, all of B's, and half
+of A's false positives are balls cut off by the frame edge, where the label
+and the model disagree on how much of the ball to box (D-021). The Task 10
+plan was to drop thin edge labels in every split. On A-test, dropping fuel
+labels that touch the edge and are less than half as wide as they are long
+would remove 15 of the 24 edge-cut misses, but also 38 edge labels the model
+already hits, which would then count as false positives. The edge-cut misses
+range from very thin strips to nearly square boxes, so no aspect ratio
+separates them from the hits.
+
+Decision. Nick chose on 2026-09-28 to leave the labels alone and change the
+scoring instead, the way COCO treats crowd regions. A fuel label within 1
+pixel of the image edge is left out of scoring, so it is neither a hit nor a
+miss. A fuel prediction is dropped with it when their overlap, divided by
+the smaller box's area, is above 0.5, unless the prediction has IoU of at
+least 0.5 with a fuel label that is scored. Settings are under
+`evaluate.edge_ignore` in `configs/project.yaml`. Each run records the
+settings and how many labels and predictions were left out, and
+`frc-diagnose` applies the rule only to runs that recorded it. Training data
+keeps every label.
+
+Why. Ignoring needs no threshold chosen by looking at results, so the same
+rule applies to every dataset. The overlap over the smaller box, rather than
+IoU, is what lets a prediction that is much larger or smaller than a thin
+edge label still be dropped, which is exactly the disagreement being set
+aside. A hit on a scored ball is never dropped, so the rule cannot hide a
+correct detection. A robot on the frame's edge still counts, since the
+diagnosis found no problem there.
+
+Consequences. Scores say nothing about balls cut off by the frame edge,
+which a robot does see. Recall and precision are measured on the balls fully
+in view. The rule also sets aside large balls that only touch the edge,
+which the model mostly finds, so it removes some easy hits along with the
+hard cases. A false positive at the edge that overlaps no label is still
+counted. The v0.1.0 runs stay committed and published as they were until
+baseline-a is rescored from its caches under this rule, which happens with
+the merged model's runs so that tables and text change together.

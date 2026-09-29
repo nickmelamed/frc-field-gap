@@ -205,6 +205,21 @@ class BootstrapConfig(_Frozen):
     level: Probability
 
 
+class EdgeIgnoreConfig(_Frozen):
+    """Labels at the frame edge that are left out of scoring (D-027).
+
+    A label of one of ``classes`` within ``tolerance_px`` of the image edge
+    counts as neither a hit nor a miss. A prediction of the same class whose
+    overlap with it, divided by the smaller box's area, is above
+    ``min_overlap`` is dropped too, unless it is a hit on a label that is
+    scored.
+    """
+
+    classes: list[str]
+    tolerance_px: Annotated[float, Field(ge=0)]
+    min_overlap: Probability
+
+
 class EvaluateConfig(_Frozen):
     """Settings for scoring a model on a harmonized split."""
 
@@ -219,6 +234,7 @@ class EvaluateConfig(_Frozen):
     pr_thresholds: ThresholdRange
     max_prediction_bytes: PositiveInt
     bootstrap: BootstrapConfig
+    edge_ignore: EdgeIgnoreConfig | None = None
 
     @model_validator(mode="after")
     def _floor_below_thresholds(self) -> "EvaluateConfig":

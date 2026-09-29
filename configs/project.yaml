@@ -152,6 +152,14 @@ evaluate:
   bootstrap:
     resamples: 1000
     level: 0.95
+  # Labels and model disagree on how much of a ball cut off by the frame
+  # edge to box, so fuel labels touching the edge are neither hits nor
+  # misses, and predictions mostly overlapping one are dropped unless they
+  # hit a scored label (D-027). The tolerance matches inspect's.
+  edge_ignore:
+    classes: [fuel]
+    tolerance_px: 1
+    min_overlap: 0.5
 
 # Slicing a model's errors with frc-diagnose, from its cached predictions (D-021).
 diagnose:

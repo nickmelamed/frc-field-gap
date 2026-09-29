@@ -132,6 +132,19 @@ def _limit_note(r: RunResult) -> list[str]:
     return lines
 
 
+def _edge_note(r: RunResult) -> list[str]:
+    ignore = r.edge_ignore
+    if ignore is None:
+        return []
+    names = " and ".join(ignore.classes)
+    return [
+        "",
+        f"{ignore.labels} labeled {names} boxes touch the frame edge and are neither hits nor "
+        f"misses, and {ignore.predictions} predictions that mostly overlap one of them are "
+        "left out too (D-027).",
+    ]
+
+
 def run_section(run: PublishedRun) -> str:
     """Return the EVALUATION.md section for one run."""
     r, m = run.result, run.result.metrics
@@ -149,6 +162,7 @@ def run_section(run: PublishedRun) -> str:
         *_class_table(m.classes, run),
         *_unscored_note(r),
         *_limit_note(r),
+        *_edge_note(r),
         "",
         "mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels "
         "and large when it is over 96x96, measured on the original image.",
