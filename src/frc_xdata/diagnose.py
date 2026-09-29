@@ -625,7 +625,7 @@ def load_cases(project: ProjectConfig, result: RunResult) -> SplitCases:
             ignore.classes,
             ignore.tolerance_px,
             ignore.min_overlap,
-            project.evaluate.iou,
+            ignore.iou,
         )
     return SplitCases(
         result=result,

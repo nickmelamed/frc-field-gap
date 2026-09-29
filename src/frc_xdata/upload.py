@@ -245,9 +245,9 @@ def compare_export(
     Missing, moved, and changed images are listed by their harmonized file
     name, and extra ones by their exported name. With ``augmented``, a
     version whose train split holds augmented copies passes when every copy
-    of a train image stays in train. Their boxes are not compared, since an
-    augmentation such as a crop can change them. Valid and test are checked
-    in full either way.
+    of a train image stays in train and labels no class the original lacks.
+    Their box counts are not compared, since an augmentation such as a crop
+    can change them. Valid and test are checked in full either way.
 
     Raises:
         UploadCheckError: If two harmonized images share a match key, which
@@ -269,6 +269,8 @@ def compare_export(
         if original is None or (k in seen and not train_copy):
             extra.append(r.source_name)
             continue
+        if train_copy and not set(_class_counts(r)) <= set(_class_counts(original)):
+            boxes_changed.append(original.ref.file_name)
         if k in seen:
             if r.ref.split != "train":
                 moved.append((original.ref.file_name, original.ref.split, r.ref.split))

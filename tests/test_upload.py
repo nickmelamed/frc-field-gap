@@ -52,15 +52,16 @@ def write_splits_report(project: ProjectConfig, sizes: dict[str, int]) -> None:
     (project.paths.reports_dir / "splits.json").write_text(json.dumps(report), encoding="utf-8")
 
 
-def write_export(root: Path, images: dict[str, list[tuple[str, int]]], category: int = 1) -> None:
+def write_export(root: Path, images: dict[str, list[tuple[Any, ...]]], category: int = 1) -> None:
     """Write a Roboflow-style export whose file names differ from the upload names it records."""
     for split, entries in images.items():
         split_dir = root / split
         records, anns = [], []
-        for image_id, (name, boxes) in enumerate(entries):
+        # Each entry is (name, boxes) or (name, boxes, class id).
+        for image_id, (name, boxes, *cls) in enumerate(entries):
             exported = f"{Path(name).stem}_png.rf.{image_id}.png"
             records.append(image_entry(image_id, exported, source=name))
-            anns += [(image_id, category, [4.0, 4.0, 8.0, 8.0])] * boxes
+            anns += [(image_id, cls[0] if cls else category, [4.0, 4.0, 8.0, 8.0])] * boxes
         write_split(split_dir, coco(records, anns))
 
 
@@ -184,6 +185,17 @@ def test_an_augmented_version_may_copy_train_images_within_train(
     dataset = project.paths.harmonized_dir / "alpha"
     assert not compare_export(tmp_path / "export", dataset, "alpha").ok
     assert compare_export(tmp_path / "export", dataset, "alpha", augmented=True).ok
+
+
+def test_an_augmented_copy_with_a_class_the_original_lacks_is_flagged(
+    project: ProjectConfig, tmp_path: Path
+) -> None:
+    export = {**MATCHING, "train": [("a.png", 1), ("a.png", 1, 2)]}
+    write_export(tmp_path / "export", export)
+    result = compare_export(
+        tmp_path / "export", project.paths.harmonized_dir / "alpha", "alpha", augmented=True
+    )
+    assert result.boxes_changed == ["a.png"]
 
 
 def test_an_augmented_version_still_checks_valid_and_test(

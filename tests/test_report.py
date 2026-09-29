@@ -309,7 +309,7 @@ def test_limit_note_numbers_are_stored_in_the_run() -> None:
 def test_run_section_says_how_many_edge_labels_were_left_out() -> None:
     assert "frame edge" not in run_section(clean(result("r1")))
     ignore = IgnoredAtEdge(
-        classes=["fuel"], tolerance_px=1, min_overlap=0.5, labels=12, predictions=7
+        classes=["fuel"], tolerance_px=1, min_overlap=0.5, iou=0.5, labels=12, predictions=7
     )
     r = result("r1").model_copy(update={"edge_ignore": ignore})
     section = run_section(clean(r))
