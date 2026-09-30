@@ -36,7 +36,10 @@ Two models trained on merged data, `merged-noaug` and `merged-aug`, are
 scored in `docs/EVALUATION.md` next to baseline-a. They draw far fewer
 fuel boxes on people and past games, but at a confidence of 0.5 they miss
 about half of the balls in a held-back dataset where a person holds them,
-so this card still describes baseline-a.
+so this card still describes baseline-a. `docs/EVALUATION.md` also picks
+a threshold for each model on a robot, pricing a false positive at three
+misses. baseline-a's is 0.78 (`deploy_confidence` in `reports/models.yaml`).
+The scores on this card are at 0.5.
 
 ## Intended use
 

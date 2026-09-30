@@ -892,3 +892,60 @@ person. baseline-a's diagnosis describes its runs before the edge rule
 (D-027), and its false positive kinds and slices are not rescored. The
 review and gallery for the merged models can be added later with
 `/publish-diagnosis` and `/face-check`.
+
+## D-031: Choose the deploy threshold by cost, without rescoring the runs (2026-09-30)
+
+Context. SPEC section 7 asks for one confidence threshold for the robot,
+chosen from cached predictions. A missed ball and a wasted pickup cost
+different things. Every run scores at 0.5 (D-017), and the Task 10
+write-up compares models at that threshold.
+
+Decision. On 2026-09-30 Nick set a false positive to cost three misses.
+`frc-threshold` counts fuel hits, false positives, and misses from each
+model's published test caches at every threshold from 0.05 to 0.95 in
+steps of 0.01, using the same box matching as `frc-evaluate` (D-021). Each tuning set's cost is
+its false positives times three plus its misses, per image, and the
+threshold with the lowest mean over the tuning sets wins. A tie goes to
+the higher threshold. The result is written to
+`reports/thresholds/<model>/threshold.json` and copied into
+`deploy_confidence` in `reports/models.yaml`. `evaluate.confidence` stays
+0.5, and no run was rescored.
+
+Why. Fuel is plentiful in REBUILT, and a ball missed in one frame is
+usually found a few frames later, while a confident false positive repeats
+every frame and sends the robot after nothing. Averaging per-image costs
+over the sets keeps C, the largest, from deciding alone. Rescoring through
+`frc-evaluate` at the new threshold would replace the 0.5 runs the Task 10
+write-up cites, because the report keeps one run per model, dataset, and
+split. It would also score the lockbox on images that helped choose.
+
+Consequences. The results tables still compare models at 0.5, and the
+threshold section in `docs/EVALUATION.md` gives each model's scores at its
+own threshold. The cost ratio is a judgment, and no model was scored on
+video, so the frame-to-frame argument is untested. Robot boxes are not
+costed. They share the threshold unless the edge pipeline filters by class.
+
+## D-032: Split the lockbox into a tuning half and a held-out half (2026-09-30)
+
+Context. The lockbox (D-026) is where the merged models fall short, so a
+threshold chosen without it would ignore the case that matters most. But a
+threshold chosen on the whole lockbox would leave no result free of the
+choice. The merged valid split, the usual place to tune, holds no frames of
+people holding fuel, and scoring it would take hosted calls.
+
+Decision. On 2026-09-30, at Nick's choice, the lockbox's 280 units
+(recordings and photo groups, grouped the same way as in the evaluation
+runs) were cut in two within each kind of image: webcam frames, phone
+video, and phone photos. Within a kind, units are ordered by a hash of the seed and the
+unit name, and the first half goes to tuning. The tuning half is 165
+images and the held-out half 198, with 140 units each. The unit lists are
+in each `threshold.json`. A, B, and C test are also tuning sets.
+
+Why. Cutting by unit keeps frames of one recording on one side, as the
+splits do (D-013). Cutting within each kind keeps webcam frames on both
+sides, since they hold nearly all the misses.
+
+Consequences. Only the held-out half is scored free of the choice, and it
+is 198 images from one workshop, so its recall interval is wide. Scores at
+the chosen threshold on A, B, and C test are slightly optimistic. The
+whole-lockbox runs at 0.5 are unchanged and still published.
