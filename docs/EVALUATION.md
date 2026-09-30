@@ -22,10 +22,12 @@ label, and `merged-noaug` draws 69. Precision rises from 0.257 to 0.844,
 and every labeled fuel box is still found (recall 1.0). mAP50 moves from
 0.836 to 0.886, but the intervals overlap (0.773 to 0.895 against 0.87 to
 0.928), so precision, not mAP50, is where the change shows. None of the 69
-false positives is on a pit photo or a match broadcast. All of them fall on
-the 31 photos of fuel on floors and tables, 2.226 per image, whose
-clusters are known to hold unlabeled balls (D-021), so some of them may be
-real fuel. baseline-a had 632 on the Milford broadcast alone.
+false positives is on a pit photo or a match broadcast, where baseline-a
+had 632 on the Milford broadcast alone. All of them fall on the 31 photos
+of fuel on floors and tables, 2.226 per image. Of the 69, 59 overlap a
+labeled ball without matching it closely enough, a loose or offset box,
+and 10 touch no label. Those 10 may include some of the unlabeled balls
+in these photos' clusters (D-021).
 
 Robots are scored for the first time, on C only, since no other test
 split labels them. `merged-noaug` finds 846 of the 1007 robot boxes
@@ -42,13 +44,16 @@ positives). The misses are nearly all on one kind of image. On the 314
 webcam frames, which show one person holding and tossing balls close to
 the camera, recall is 0.393, and they hold 472 of the 473 misses. On the
 phone photos recall is 1.0, and on the phone video 0.972. By box size, the
-model finds 24 of the 270 small balls (recall 0.089). The webcam frames
-hold the lockbox's small balls and its people together, so these slices
-cannot say whether the model misses balls because they are small, because
-they are in someone's hands, or both. One likely reading is that the
-negatives that stopped the false positives on C also taught the model to
-pass over fuel next to a person. A-test has only a few balls held in a
-hand, so the lockbox is the first test split where that case is common.
+model finds 24 of the 270 small balls (recall 0.089). The diagnosis does
+not cross box size with the kind of image, so it cannot say whether the
+model misses these balls because they are small, because they are near a
+person, or both. Part of the drop is confidence rather than balls the
+model never sees. At a threshold of 0.05, `merged-noaug`'s recall is 0.808
+with precision 0.658, against baseline-a's 0.971 with precision 0.282, so
+many of the missed balls get a box with a low score. Choosing the
+threshold is Task 11. One reading worth testing is that the negatives that
+stopped the false positives on C also taught the model to score fuel next
+to a person low.
 
 On A and B the three models are close. `merged-noaug` scores fuel mAP50
 0.979 on A and 1.0 on B, and baseline-a 0.967 and 1.0, with overlapping
@@ -1493,22 +1498,6 @@ The model's training split next to each test split. Each cell gives the quantile
 
 No errors have been reviewed by eye yet.
 
-The failure gallery, tile by tile from the top left:
-
-| Tile | Dataset | Error | Source |
-|---|---|---|---|
-| 1 | marswars | false positive | `Basler_daA1280-54uc__24770352__20260112_181311364` |
-| 2 | marswars | miss | `Basler_daA1280-54uc__24770352__20260112_180745507` |
-| 3 | marswars | false positive | `Basler_daA1280-54uc__24770352__20260112_181311364` |
-| 4 | scorekeeper | false positive | `fuel photos` |
-| 5 | scorekeeper | miss | `YouTube frames` |
-| 6 | scorekeeper | false positive | `other` |
-| 7 | scorekeeper | miss | `frc_train photos` |
-| 8 | scorekeeper | false positive | `frc_train photos` |
-| 9 | scorekeeper | miss | `other` |
-| 10 | scorekeeper | false positive | `YouTube frames` |
-| 11 | scorekeeper | miss | `YouTube frames` |
-
 ### Where merged-noaug's errors fall
 
 Hits, false positives, and misses count predictions with confidence of at least 0.5, matched to labels the way supervision's confusion matrix matches them (see Limits). Brightness is the mean gray level from 0 to 255 and sharpness the variance of the Laplacian, both measured on the image stretched to 384 pixels square, as the model sees it. Their bins hold equal numbers of images, pooled over every test split, so a bin can hold few images of one dataset.
@@ -1685,20 +1674,4 @@ The model's training split next to each test split. Each cell gives the quantile
 | scorekeeper test | test | 314 | 1381 | 93.041 / 114.773 / 126.0 | 97.835 / 1995.108 / 2400.531 | 0.047 / 0.063 / 0.162 | 1.0 / 4.0 / 10.0 |
 
 No errors have been reviewed by eye yet.
-
-The failure gallery, tile by tile from the top left:
-
-| Tile | Dataset | Error | Source |
-|---|---|---|---|
-| 1 | marswars | false positive | `Basler_daA1280-54uc__24770352__20260112_181311364` |
-| 2 | marswars | miss | `Basler_daA1280-54uc__24770352__20260112_180745507` |
-| 3 | robotzftp2 | false positive | `IMG_5838_MOV` |
-| 4 | scorekeeper | false positive | `fuel photos` |
-| 5 | scorekeeper | miss | `YouTube frames` |
-| 6 | scorekeeper | false positive | `frc_train photos` |
-| 7 | scorekeeper | miss | `other` |
-| 8 | scorekeeper | false positive | `other` |
-| 9 | scorekeeper | miss | `frc_train photos` |
-| 10 | scorekeeper | false positive | `fuel photos` |
-| 11 | scorekeeper | miss | `YouTube frames` |
 <!-- DIAGNOSIS:END -->
