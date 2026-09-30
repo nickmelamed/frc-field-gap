@@ -218,26 +218,26 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     `/publish-diagnosis` and `/face-check`.
 - [x] Task 11: Threshold choice (v0.2.0)
   - `frc-threshold` (`make threshold`) chooses each model's threshold from
-    its cached test predictions, pricing a fuel false positive at three
-    misses (D-031), and writes `reports/thresholds/<model>/`. The lockbox
-    is cut by unit into a tuning half and a held-out half (D-032). The
-    choices are `deploy_confidence` in `reports/models.yaml`, and
-    `make report` writes the tables and the cost figure into
-    `docs/EVALUATION.md`.
-  - Result. `merged-noaug` runs best at 0.34, where its held-out lockbox
-    recall rises from 0.52 to 0.6 and its C precision barely moves, since
-    its false positives on C are confident. baseline-a runs best at 0.78.
-    The tuning sets favor `merged-noaug` narrowly, but on the held-out
-    half baseline-a's errors cost far less (0.49 against 1.303 per image),
-    so the choice of model is left to Nick.
-  - Differences from SPEC section 7. Runs were not
-    rescored at the new threshold, since that would replace the 0.5 runs
-    the Task 10 write-up cites (D-031). A, B, and C test helped choose, so
-    only the held-out lockbox half is free of the choice. Robot boxes were
-    not costed.
-  - For Task 12. Run the chosen model at its `deploy_confidence` for fuel,
-    and consider keeping robot boxes at 0.5 by filtering per class. The next
-    data to add is still labeled images of people holding fuel.
+    its cached test predictions on A, B, and C, pricing a fuel false
+    positive at three misses (D-031), and writes
+    `reports/thresholds/<model>/`. The lockbox is scored only at the chosen
+    threshold, with its webcam frames of held balls reported as out of
+    scope (D-032). The choices are `deploy_confidence` in
+    `reports/models.yaml`, and `make report` writes the tables and the cost
+    figure into `docs/EVALUATION.md`.
+  - Result. Nick chose `merged-noaug` for the robot (D-033). Its threshold
+    is 0.49, in a flat stretch from 0.35 to 0.72, and on the lockbox's
+    photos and video of balls on the ground it finds 0.98 of the balls.
+    baseline-a needs 0.83 to hold down its false positives on C, which
+    costs it recall on A.
+  - Differences from SPEC section 7. Runs were not rescored at the new
+    threshold, since that would replace the 0.5 runs the Task 10 write-up
+    cites (D-031). A, B, and C test helped choose, so only the lockbox is
+    free of the choice. Robot boxes were not costed.
+  - For Task 12. Deploy `merged-noaug` at its `deploy_confidence` for
+    fuel, and consider keeping robot boxes at 0.5 by filtering per class.
+    Move `docs/MODEL_CARD.md` to `merged-noaug`. If held balls ever matter,
+    the next data to add is labeled images of people holding fuel.
 - [ ] Task 12: Edge deployment (v0.3.0, before interviews)
 
 Field test set: pending confirmation

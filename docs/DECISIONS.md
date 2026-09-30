@@ -924,34 +924,59 @@ threshold section in `docs/EVALUATION.md` gives each model's scores at its
 own threshold. The cost ratio is a judgment, and no model was scored on
 video, so the frame-to-frame argument is untested. Robot boxes are not
 costed. They share the threshold unless the edge pipeline filters by class.
-The choice sets each model's threshold but does not pick the model. The
-tuning sets favor `merged-noaug` narrowly (0.476 against 0.502 per image),
-while the held-out lockbox half favors baseline-a (0.49 against 1.303), so
-which model runs on the robot is left to Nick.
+The tuning sets are A, B, and C test (D-032), so each model's scores
+there at its own threshold are slightly optimistic.
 
-## D-032: Split the lockbox into a tuning half and a held-out half (2026-09-30)
+## D-032: Choose on A, B, and C, and hold the lockbox out (2026-09-30)
 
-Context. The lockbox (D-026) is where the merged models fall short, so a
-threshold chosen without it would ignore the case that matters most. But a
-threshold chosen on the whole lockbox would leave no result free of the
-choice. The merged valid split, the usual place to tune, holds no frames of
-people holding fuel, and scoring it would take hosted calls.
+Context. The robot has to find fuel on the field and must not chase
+people, spectators, robots, or balls from past games, which is what C
+tests. It never picks up a ball a person is holding. Most of the lockbox
+(D-026), 314 of its 363 images, is webcam frames of one person holding and
+tossing balls, and nearly all of the merged models' lockbox misses are
+there. The merged valid split holds no such frames, and scoring it would
+take hosted calls.
 
-Decision. On 2026-09-30, at Nick's choice, the lockbox's 280 units
-(recordings and photo groups, grouped the same way as in the evaluation
-runs) were cut in two within each kind of image: webcam frames, phone
-video, and phone photos. Within a kind, units are ordered by a hash of the seed and the
-unit name, and the first half goes to tuning. The tuning half is 165
-images and the held-out half 198, with 140 units each. The unit lists are
-in each `threshold.json`. A, B, and C test are also tuning sets.
+Decision. On 2026-09-30 Nick ruled balls held by a person out of scope for
+the robot. The threshold is chosen on A, B, and C test alone. The lockbox
+is scored only at the chosen threshold, cut by kind of image. Its phone
+photos and phone video, balls on the ground, are the held-out check. Its
+webcam frames are reported apart as out of scope (`held_out` in
+`configs/project.yaml`).
 
-Why. Cutting by unit keeps frames of one recording on one side, as the
-splits do (D-013). Cutting within each kind keeps webcam frames on both
-sides, since they hold nearly all the misses. The plan asked for every
-kind in both halves, but the phone video is a single unit, and half of one
-rounds to none, so it went whole to the held-out half.
+Why. Tuning on the webcam frames would lower the threshold to catch balls
+the robot never acts on, and every extra box it lets through elsewhere is
+a possible wasted pickup. Keeping the lockbox out of the choice leaves one
+set scored free of it. An earlier version on this branch cut the lockbox
+into a tuning half and a held-out half by unit, which pulled
+`merged-noaug`'s threshold down to 0.34 mostly for the webcam frames, and
+was dropped for this reason.
 
-Consequences. Only the held-out half is scored free of the choice, and it
-is 198 images from one workshop, so its recall interval is wide. Scores at
-the chosen threshold on A, B, and C test are slightly optimistic. The
-whole-lockbox runs at 0.5 are unchanged and still published.
+Consequences. The held-out check is small, 49 images in 28 units from one
+workshop, so its recall interval says little. A, B, and C test helped
+choose, so their scores at the chosen threshold are slightly optimistic.
+How the models do on held balls is still reported, so a use that needs
+them can see the gap. The whole-lockbox runs at 0.5 are unchanged and
+still published.
+
+## D-033: Run merged-noaug on the robot (2026-09-30)
+
+Context. Task 12 deploys one model. At its own threshold, `merged-noaug`
+has the lowest cost over A, B, and C test of the three models. baseline-a
+does better on the lockbox's webcam frames, which D-032 puts out of scope.
+`merged-aug` scores about the same as `merged-noaug`, and its training
+cannot isolate augmentation (D-029).
+
+Decision. On 2026-09-30 Nick chose `merged-noaug` for the robot, run at
+its `deploy_confidence` in `reports/models.yaml` for fuel.
+
+Why. It draws far fewer false positives on people and past games than
+baseline-a, which is the error that sends the robot after nothing, and its
+threshold sits in a flat stretch of the cost curve, so the choice does not
+hinge on the exact value. It is the simpler of the two merged models,
+since `merged-aug` continued from its weights (D-029).
+
+Consequences. `docs/MODEL_CARD.md` still describes baseline-a and should
+move to `merged-noaug` with the deployment in Task 12. Nothing here was
+scored on REBUILT footage from a robot, which the field test set would
+show.
