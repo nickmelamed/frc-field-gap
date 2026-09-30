@@ -34,9 +34,9 @@ scores").
 
 Two models trained on merged data, `merged-noaug` and `merged-aug`, are
 scored in `docs/EVALUATION.md` next to baseline-a. They draw far fewer
-fuel boxes on people and past games, but they miss about half of the
-balls in a held-back dataset where a person holds them, so this card still
-describes baseline-a.
+fuel boxes on people and past games, but at a confidence of 0.5 they miss
+about half of the balls in a held-back dataset where a person holds them,
+so this card still describes baseline-a.
 
 ## Intended use
 
@@ -69,7 +69,10 @@ auto-orient and the 384x384 stretch (D-016).
 ## Evaluation
 
 The model was scored on the test splits of three datasets, each from a
-different team. Precision and recall count predictions with a confidence
+different team. These are its v0.1.0 runs. v0.2.0 sets fuel labels at the
+frame edge aside in scoring (D-027), which changes A's and B's scores
+slightly, and `docs/EVALUATION.md` has those rescores and a fourth,
+held-back dataset. Precision and recall count predictions with a confidence
 of at least 0.5. The intervals come from resampling whole recordings or
 groups of related photos, as `docs/EVALUATION.md` explains. Precision is
 the share of the model's boxes that are real fuel, recall is the share of
