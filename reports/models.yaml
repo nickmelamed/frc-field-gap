@@ -52,3 +52,53 @@ models:
       false_positives: 15
       median_latency_ms: 3.5
     notes: null
+
+  merged-noaug:
+    dataset: merged
+    split_report: reports/merge.json
+    upload_report: reports/platform_upload_merged_v7.json
+    # Named frc-rebuilt-merged in the web app. Versions 3 and 4 passed the
+    # upload check but Roboflow refused to train them (D-029).
+    project: frc-rebuilt-merged-onokh
+    version: 7
+    version_name: harmonized-merged-noaug-384
+    model_id: frc-rebuilt-merged-onokh-7-rfdetr-nano-t1
+    architecture: RF-DETR (Nano)
+    # The model page shows "-".
+    checkpoint: none shown
+    input_size: 384x384 (Stretch to)
+    preprocessing: auto-orient, resize 384x384 (Stretch to)
+    augmentation: none
+    train_time_augmentation: none
+    estimate: null
+    credit_cap: 5
+    # Not reported yet. It stopped before the cap, so on early stopping.
+    epochs: null
+    early_stopping: true
+    other_settings: {}
+    trained: 2026-09-29
+    credits_used: 2.35
+    # Roboflow's own evaluation on the merged test split (A, B, and C test
+    # together), copied from the model page. Its threshold was picked on
+    # that same split, so these are reference only. Project results come
+    # from make report.
+    platform_reported:
+      split: test
+      images: 771
+      confidence: 0.44
+      map50: 0.918
+      map50_95: 0.615
+      map75: 0.647
+      small_map50_95: 0.561
+      medium_map50_95: 0.658
+      large_map50_95: 0.846
+      precision: 0.909
+      recall: 0.907
+      f1: 0.908
+      # From the confusion matrix. Fuel hits are the 1206 labeled fuel boxes
+      # less the 55 misses, since the page rounds them to 1.15k.
+      per_class:
+        fuel: {true_positives: 1151, false_negatives: 55, false_positives: 80}
+        robot: {true_positives: 865, false_negatives: 142, false_positives: 115}
+      median_latency_ms: 3.8
+    notes: null
