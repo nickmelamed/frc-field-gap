@@ -102,3 +102,51 @@ models:
         robot: {true_positives: 865, false_negatives: 142, false_positives: 115}
       median_latency_ms: 3.8
     notes: null
+
+  merged-aug:
+    dataset: merged
+    split_report: reports/merge.json
+    upload_report: reports/platform_upload_merged_v8.json
+    project: frc-rebuilt-merged-onokh
+    version: 8
+    version_name: harmonized-merged-aug-384
+    model_id: frc-rebuilt-merged-onokh-8-rfdetr-nano-t1
+    architecture: RF-DETR (Nano)
+    # Training continued from merged-noaug's weights, not from COCO, so
+    # this model has seen the merged data for 35 epochs before these 31
+    # (D-029).
+    checkpoint: frc-rebuilt-merged-onokh-7-rfdetr-nano-t1
+    input_size: 384x384 (Stretch to)
+    preprocessing: auto-orient, resize 384x384 (Stretch to)
+    augmentation: flip horizontal, crop 0 to 20 percent, brightness -25 to +25 percent, 3 outputs per training image
+    train_time_augmentation: none
+    estimate: null
+    credit_cap: 5
+    # Stopped by early stopping at epoch 31.
+    epochs: 31
+    early_stopping: true
+    other_settings: {}
+    trained: 2026-09-30
+    credits_used: 5.36
+    # Roboflow's own evaluation on the merged test split, as for
+    # merged-noaug. Reference only.
+    platform_reported:
+      split: test
+      images: 771
+      confidence: 0.41
+      map50: 0.912
+      map50_95: 0.628
+      map75: 0.668
+      small_map50_95: 0.582
+      medium_map50_95: 0.644
+      large_map50_95: 0.850
+      precision: 0.906
+      recall: 0.916
+      f1: 0.911
+      # Fuel hits are the 1206 labeled fuel boxes less the 46 misses, since
+      # the page rounds them to 1.16k.
+      per_class:
+        fuel: {true_positives: 1160, false_negatives: 46, false_positives: 82}
+        robot: {true_positives: 876, false_negatives: 131, false_positives: 122}
+      median_latency_ms: 4.1
+    notes: null
