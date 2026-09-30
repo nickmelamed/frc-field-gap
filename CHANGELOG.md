@@ -23,6 +23,13 @@ uses [Semantic Versioning](https://semver.org/).
 - Runs of `merged-noaug` and `merged-aug` on A, B, C, and `pankratz`
   test, with their diagnoses, and baseline-a rescored under the edge rule.
 - `frc-diagnose --no-gallery`, and a review file per model.
+- `frc-threshold` (`make threshold`) chooses each model's fuel threshold
+  from its cached test runs on A, B, and C, pricing a false positive at
+  three misses. The lockbox is scored only at the chosen threshold, with
+  balls held by a person reported as out of scope. `make report` adds the
+  tables and a cost figure to `docs/EVALUATION.md`.
+- `deploy_confidence` in `reports/models.yaml`. `merged-noaug` is the model
+  chosen for the robot, at 0.49.
 
 ### Changed
 
@@ -34,6 +41,8 @@ uses [Semantic Versioning](https://semver.org/).
 - The prediction cache cap is 500000 bytes, still under the commit hook.
 - Diagnosis figures use six series colors, and the size legend names every
   dataset.
+- `diagnose.error_counts` and `evaluate.precision_recall` are shared, so
+  the threshold sweep counts errors the way the runs do.
 
 ## [0.1.0] - 2026-09-28
 
