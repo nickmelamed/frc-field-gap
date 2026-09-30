@@ -12,8 +12,7 @@ uses [Semantic Versioning](https://semver.org/).
   and `testingfrfr`. It keeps each source's test split whole and drops any
   training image that matches a valid, test, or lockbox image by source
   name, by recording, or by perceptual hash under flips and 90 degree
-  rotations. A
-  field-test match stops the run.
+  rotations. A field-test match stops the run.
 - `pankratz` as a lockbox dataset, scored only, with an `eval_only` split
   method and attribution in the README.
 - Scoring leaves fuel labels at the frame edge out, with the predictions
@@ -21,6 +20,9 @@ uses [Semantic Versioning](https://semver.org/).
 - `frc-verify-upload --augmented` checks versions with augmented train
   copies.
 - Sample grids can leave out source names matching a pattern.
+- Runs of `merged-noaug` and `merged-aug` on A, B, C, and `pankratz`
+  test, with their diagnoses, and baseline-a rescored under the edge rule.
+- `frc-diagnose --no-gallery`, and a review file per model.
 
 ### Changed
 
@@ -29,6 +31,9 @@ uses [Semantic Versioning](https://semver.org/).
 - The version check compares boxes per class, not only their total.
 - `platform.project` is now `platform.projects`, one project per dataset
   key. Upload reports carry the version in their name.
+- The prediction cache cap is 500000 bytes, still under the commit hook.
+- Diagnosis figures use six series colors, and the size legend names every
+  dataset.
 
 ## [0.1.0] - 2026-09-28
 

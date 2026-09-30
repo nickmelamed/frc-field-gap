@@ -6,7 +6,79 @@ and diagnoses where the errors come from. Everything between the
 `make report` from `reports/runs/` and `reports/diagnosis/`. Do not edit
 it by hand.
 
+## What the merged data fixed, and what it broke
+
+`merged-noaug` is the same RF-DETR Nano as baseline-a, trained on fuel and
+robots from A, B, C, and `testingfrfr` together (D-028), with no
+augmentation. `merged-aug` continued from it on an augmented copy of the
+same data (D-029). Both are scored on the same test splits as baseline-a,
+plus the lockbox, `pankratz`, which no model trained on (D-026). baseline-a
+is rescored from its cached predictions under the same rules, so every
+number in this section compares like with like. Fuel labels touching the
+frame edge are set aside in all of them (D-027).
+
+On C, the fix works. baseline-a drew 1083 fuel boxes that matched no
+label, and `merged-noaug` draws 69. Precision rises from 0.257 to 0.844,
+and every labeled fuel box is still found (recall 1.0). mAP50 moves from
+0.836 to 0.886, but the intervals overlap (0.773 to 0.895 against 0.87 to
+0.928), so precision, not mAP50, is where the change shows. None of the 69
+false positives is on a pit photo or a match broadcast. All of them fall on
+the 31 photos of fuel on floors and tables, 2.226 per image, whose
+clusters are known to hold unlabeled balls (D-021), so some of them may be
+real fuel. baseline-a had 632 on the Milford broadcast alone.
+
+Robots are scored for the first time, on C only, since no other test
+split labels them. `merged-noaug` finds 846 of the 1007 robot boxes
+(recall 0.84, mAP50 0.894) and draws 94 robot boxes that match no label.
+These robots come from earlier seasons (D-011), so this says nothing yet
+about REBUILT robots.
+
+On the lockbox, the merged model is worse than the baseline, and by more
+than the resampling spread. baseline-a scores fuel mAP50 0.956 (interval
+0.931 to 0.975) with recall 0.948. `merged-noaug` scores 0.813 (0.747 to
+0.875) with recall 0.486, so it misses about half the balls, though it
+almost never draws one where there is none (precision 0.985, 5 false
+positives). The misses are nearly all on one kind of image. On the 314
+webcam frames, which show one person holding and tossing balls close to
+the camera, recall is 0.393, and they hold 472 of the 473 misses. On the
+phone photos recall is 1.0, and on the phone video 0.972. By box size, the
+model finds 24 of the 270 small balls (recall 0.089). The webcam frames
+hold the lockbox's small balls and its people together, so these slices
+cannot say whether the model misses balls because they are small, because
+they are in someone's hands, or both. One likely reading is that the
+negatives that stopped the false positives on C also taught the model to
+pass over fuel next to a person. A-test has only a few balls held in a
+hand, so the lockbox is the first test split where that case is common.
+
+On A and B the three models are close. `merged-noaug` scores fuel mAP50
+0.979 on A and 1.0 on B, and baseline-a 0.967 and 1.0, with overlapping
+intervals. B is no longer a held-out domain, since the merged models
+trained on B's train split, and A-test was always later frames of A's
+training recordings (D-013).
+
+`merged-aug` differs little from `merged-noaug`. On C its fuel mAP50 is
+0.891 and precision 0.842, on the lockbox mAP50 0.754 and recall 0.537, and
+on A 0.956. It had 31 more epochs of training as well as augmentation
+(D-029), so these runs cannot show what augmentation alone does.
+
+The fix did what the diagnosis asked on C, and the lockbox shows its cost.
+A robot-mounted detector would meet people and fuel in the same frame,
+which is the case the lockbox covers, so neither merged model is ready to
+replace baseline-a for that use. The next step is training data where
+people hold or stand near fuel, labeled, so the negatives stop teaching
+the model that fuel near a person is background.
+
+These results have limits. The lockbox is 363 images from one workshop,
+most of them webcam frames of one person, and it was picked after the
+diagnosis (D-026). The merged models' errors were sliced but not judged by
+eye (D-030), so their false positives on C's fuel photos are not sorted
+into real fuel and mistakes. The field test set has not been scored.
+
 ## How the baseline does on other teams' data
+
+This section and the next describe baseline-a's v0.1.0 runs, scored
+before the edge rule (D-027). The tables under "Results" show its
+rescores, which set labels at the frame edge aside.
 
 baseline-a was trained on fuel from `marswars` (Dataset A) and scored on
 the test splits of A, `robotzftp2` (B), and `scorekeeper` (C). The terms

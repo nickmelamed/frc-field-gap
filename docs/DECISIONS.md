@@ -871,8 +871,8 @@ baseline-a (D-021). Its review sample and gallery tiles were judged by eye
 and checked for faces, which takes hours, and the v0.2.0 write-up is due
 within a day.
 
-Decision. Nick chose on 2026-09-30 to diagnose the merged models with
-slices only. Each model now has its own review file,
+Decision. On 2026-09-30, with Nick's go-ahead to diagnose and write up
+before his deadline, the merged models were diagnosed with slices only. Each model now has its own review file,
 `reports/diagnosis/<model>/review.csv`, so baseline-a's verdicts are never
 applied to another model's errors, and `--no-gallery` leaves the published
 gallery alone. The lockbox is sliced by kind of photo, from the source
