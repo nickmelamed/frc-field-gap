@@ -22,7 +22,9 @@ SURFACE = "#fcfcfb"
 TEXT = "#0b0b0b"
 MUTED = "#52514e"
 GRID = "#e4e3df"
-SERIES = ("#2a78d6", "#eb6834", "#1baf7a")
+# Categorical slots 1 to 6 in fixed order. Slots 3 to 5 fall below 3:1
+# against the surface, which is why every bar carries its value.
+SERIES = ("#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300")
 DPI = 100
 # The PNG's software tag names the matplotlib version, which would change
 # every figure on an upgrade without changing what it shows.
@@ -62,6 +64,8 @@ def size_figure(d: Diagnosis, path: Path) -> Path:
     slot = 0.8 / len(splits)
     for n, (dataset, c) in enumerate(splits):
         rows = {r.bucket: r for r in c.sizes}
+        # The first bar drawn names the dataset, since a size may have no boxes.
+        label: str | None = dataset
         for x, bucket in enumerate(SIZE_BUCKETS):
             r = rows.get(bucket)
             left = x - 0.4 + n * slot
@@ -82,8 +86,9 @@ def size_figure(d: Diagnosis, path: Path) -> Path:
                 r.recall,
                 width=slot * 0.9,
                 color=SERIES[n],
-                label=dataset if x == 0 else None,
+                label=label,
             )
+            label = None
             ax.text(
                 left + slot / 2,
                 r.recall + 0.02,
