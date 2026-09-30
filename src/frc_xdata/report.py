@@ -505,7 +505,8 @@ def threshold_section(choices: Sequence[ThresholdChoice]) -> str:
         f"of each set. The chosen threshold has the lowest mean cost over the tuning sets, "
         f"and the band is the run of thresholds around it whose mean cost is at most "
         f"{first.band:.0%} above it. Only the held-out half of the lockbox played no part in "
-        "the choice."
+        "the choice. Precision and recall come from supervision's metrics, as in the runs, and "
+        "can differ slightly from the counts beside them, which follow the confusion matrix."
         f"{NOT_A_RESULT}",
         "",
         *_header(
@@ -556,13 +557,16 @@ def threshold_section(choices: Sequence[ThresholdChoice]) -> str:
             ),
             *_choice_rows(c),
         ]
-        limited = [s.name for s in c.sets if s.chosen.images_above_limit]
-        if limited:
-            lines += [
-                "",
-                f"On {', '.join(limited)}, the prediction limit may have dropped boxes at the "
-                "chosen threshold, so false positives there are a lower bound.",
-            ]
+        for t, limited in (
+            (c.threshold, [s.name for s in c.sets if s.chosen.images_above_limit]),
+            (c.neutral_threshold, [s.name for s in c.sets if s.neutral.images_above_limit]),
+        ):
+            if limited:
+                lines += [
+                    "",
+                    f"On {', '.join(limited)}, the prediction limit may have dropped boxes at or "
+                    f"above {t}, so false positives and cost there at {t} are lower bounds.",
+                ]
     return "\n".join(lines)
 
 

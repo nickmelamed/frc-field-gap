@@ -562,7 +562,10 @@ def test_threshold_section_shows_every_set_and_class_at_both_thresholds() -> Non
     assert (
         "| alpha test (robot) | tuning | 4 | n/a | 0.25 | 1 | 2 | n/a | n/a | 0.25 | n/a |" in text
     )
-    assert "On box held-out half, the prediction limit" in text
+    assert (
+        "On box held-out half, the prediction limit may have dropped boxes at or above 0.4," in text
+    )
+    assert text.count("prediction limit") == 1
     assert "![Mean cost against threshold](assets/threshold_cost.png)" in text
 
 
