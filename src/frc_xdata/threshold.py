@@ -233,8 +233,10 @@ def tuning_units(
     """Pick the lockbox units that help choose the threshold, a share of each kind.
 
     Units of each kind of image are ordered by a hash of the seed and the
-    unit name, and the first ``fraction`` of them are taken, so both halves
-    hold every kind. A unit's kind is that of its first image by position.
+    unit name, and the first ``fraction`` of them, rounded, are taken. Both
+    halves hold every kind with two or more units, and a kind with one unit
+    stays whole in the held-out half. A unit's kind is that of its first
+    image by position.
 
     Args:
         units: The unit of each image.
@@ -410,6 +412,7 @@ def choose_threshold(project: ProjectConfig, model: str) -> ThresholdChoice:
     whole_sets = [load_set(project, _published(project, model, d), "tuning") for d in cfg.tuning]
     lockbox = load_set(project, _published(project, model, cfg.lockbox.dataset), "held out")
     lock_tuning, held_out, split = split_lockbox(project, lockbox, cfg)
+    _check_halves(lockbox, [lock_tuning, held_out])
     tuning = [*whole_sets, lock_tuning]
     for s in tuning:
         if cfg.scored_class not in s.result.scored_classes:
@@ -444,7 +447,6 @@ def choose_threshold(project: ProjectConfig, model: str) -> ThresholdChoice:
     )
     (interval,) = [c.recall for c in resampled.classes if c.name == held_out.classes[cls]]
 
-    _check_halves(lockbox, [lock_tuning, held_out], cfg)
     return ThresholdChoice(
         model=model,
         scored_class=cfg.scored_class,
@@ -470,20 +472,23 @@ def choose_threshold(project: ProjectConfig, model: str) -> ThresholdChoice:
     )
 
 
-def _check_halves(whole: ScoredSet, halves: Sequence[ScoredSet], cfg: ThresholdConfig) -> None:
-    """Fail unless the halves' counts at the run's threshold add up to the whole lockbox's.
+def _check_halves(whole: ScoredSet, halves: Sequence[ScoredSet]) -> None:
+    """Fail unless each half has images and together they add up to the whole lockbox.
 
     Raises:
-        CountMismatchError: If any image was lost or counted twice.
+        CountMismatchError: If a half is empty, or an image was lost or
+            counted twice.
     """
-    t = whole.result.metrics.confidence
-    whole_counts = set_cost(whole, cfg.scored_class, t, cfg).counts
-    parts = [set_cost(h, cfg.scored_class, t, cfg).counts for h in halves]
-    summed = tuple(
-        sum(getattr(p, f) for p in parts)
-        for f in ("true_positives", "false_positives", "false_negatives")
-    )
-    want = (whole_counts.true_positives, whole_counts.false_positives, whole_counts.false_negatives)
+    if any(h.images == 0 for h in halves):
+        raise CountMismatchError(f"a lockbox half of {whole.result.dataset} has no images")
+
+    def counted(s: ScoredSet) -> dict[int, tuple[int, int, int]]:
+        m = s.result.metrics
+        return error_counts(s.predictions, s.labels, scored_ids(s), m.confidence, m.iou)
+
+    parts = [counted(h) for h in halves]
+    summed = {c: tuple(sum(p[c][i] for p in parts) for i in range(3)) for c in parts[0]}
+    want = counted(whole)
     if summed != want or sum(h.images for h in halves) != whole.images:
         raise CountMismatchError(f"lockbox halves add up to {summed}, not {want}")
 

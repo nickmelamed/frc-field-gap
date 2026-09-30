@@ -9,7 +9,7 @@ from test_evaluate_cli import ARGS, fake, workspace
 
 from frc_xdata import evaluate, threshold
 from frc_xdata.config import ErrorCosts, ModelsFile, ProjectConfig, ThresholdConfig, load_yaml
-from frc_xdata.errors import ConfigError, DirtyTreeError
+from frc_xdata.errors import ConfigError, CountMismatchError, DirtyTreeError
 from frc_xdata.threshold import (
     Counts,
     cost_per_image,
@@ -133,6 +133,11 @@ def test_main_chooses_the_highest_threshold_that_keeps_every_hit(swept: Path) ->
     assert tuning.images + held_out.images == 3
     assert set(choice.lockbox.tuning).isdisjoint(choice.lockbox.held_out)
     assert len(choice.lockbox.tuning) + len(choice.lockbox.held_out) == 3
+    # alpha keeps its own splits, so each image is its own unit.
+    assert (tuning.images, held_out.images) == (
+        len(choice.lockbox.tuning),
+        len(choice.lockbox.held_out),
+    )
     assert [p.threshold for p in choice.grid] == pytest.approx(
         [round(0.05 * i, 2) for i in range(1, 20)]
     )
@@ -160,3 +165,38 @@ def test_each_recorded_deploy_threshold_matches_its_committed_choice() -> None:
     for name in project.threshold.models:
         chosen = load_choice(root / project.threshold.output_dir / name / "threshold.json")
         assert models[name].deploy_confidence == chosen.threshold
+
+
+def test_halves_that_lose_an_image_are_an_error(
+    swept: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    split = threshold.split_lockbox
+
+    def lossy(*args: Any) -> Any:
+        tuning, held_out, halves = split(*args)
+        keep = [i > 0 for i in range(tuning.images)]
+        return tuning.subset(tuning.name, "tuning", keep), held_out, halves
+
+    monkeypatch.setattr(threshold, "split_lockbox", lossy)
+    with pytest.raises(CountMismatchError, match="lockbox halves"):
+        threshold.main(["--project-config", "configs/project.yaml"])
+
+
+def test_units_that_disagree_with_the_run_are_an_error(
+    swept: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(threshold, "image_units", lambda records, *a: ["one"] * len(records))
+    with pytest.raises(ConfigError, match="rebuilt 1 units"):
+        threshold.main(["--project-config", "configs/project.yaml"])
+
+
+def test_an_empty_half_is_an_error(swept: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    split = threshold.split_lockbox
+
+    def emptied(*args: Any) -> Any:
+        tuning, held_out, halves = split(*args)
+        return tuning, held_out.subset(held_out.name, "held out", [False] * held_out.images), halves
+
+    monkeypatch.setattr(threshold, "split_lockbox", emptied)
+    with pytest.raises(CountMismatchError, match="has no images"):
+        threshold.main(["--project-config", "configs/project.yaml"])
