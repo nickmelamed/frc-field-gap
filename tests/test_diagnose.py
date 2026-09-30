@@ -728,10 +728,14 @@ def test_main_applies_no_edge_rule_to_a_run_without_one(
 
 
 def test_main_can_leave_the_gallery_alone(diagnosed: Path) -> None:
+    # The same setup that puts a tile in the gallery otherwise.
+    _add_false_positive(diagnosed)
+    _set_config(diagnosed, _slice_by_source)
     gallery = diagnosed / "docs" / "assets" / "failures.png"
     assert diagnose.main(["m", "--project-config", "configs/project.yaml", "--no-gallery"]) == 0
     assert not gallery.exists()
-    assert (diagnosed / "reports" / "diagnosis" / "m" / "diagnosis.json").is_file()
+    result = load_diagnosis(diagnosed / "reports" / "diagnosis" / "m" / "diagnosis.json")
+    assert result.gallery == []
 
 
 def test_each_model_reads_its_own_review_file(diagnosed: Path) -> None:
