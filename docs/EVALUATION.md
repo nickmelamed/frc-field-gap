@@ -81,98 +81,88 @@ into real fuel and mistakes. The field test set has not been scored.
 
 ## Choosing the robot's threshold
 
-Each model gets its own threshold: 0.34 for `merged-noaug`, 0.48 for
-`merged-aug`, and 0.78 for baseline-a. The thresholds are chosen on the
-tuning sets and checked on the held-out half of the lockbox, and the two
-disagree about which model suits the robot better. Over the tuning sets
-`merged-noaug` at 0.34 has the lowest mean cost, 0.476 per image, against
-0.502 for baseline-a at 0.78. On the held-out half, which played no part in
-either choice, baseline-a's errors cost 0.49 per image and `merged-noaug`'s
-1.303. The tuning-set gap is small, has no interval, and comes from the
-sets each threshold was fitted to, so the held-out half is the fairer
-comparison, though it is 198 images from one workshop. This section sets
-each model's threshold and leaves the choice of model open (D-031). Every
-other table in this document uses 0.5.
+`merged-noaug` is the model for the robot (D-033), and its threshold is
+0.49. Over A, B, and C test its fuel errors cost 0.262 per image there,
+against 0.264 at 0.5, and every threshold from 0.35 to 0.72 costs about as
+little, so 0.5 already sits in the flat stretch. On the lockbox's phone
+photos and video, balls on the ground that played no part in the choice,
+it finds 0.98 of the balls with precision 0.973, and the interval on that
+recall is 0.975 to 1.0. That check is 49 images from one workshop, so it
+confirms the choice more than it measures it.
 
-Lowering `merged-noaug`'s threshold costs almost nothing on C. Its fuel
-precision there is 0.842 at 0.34 and 0.844 at 0.5, with 70 false positives
-against 69, because its false positives on C are confident enough to
-survive any threshold in the flat stretch. On the held-out half its recall
-rises from 0.52 at 0.5 to 0.6 at 0.34, with an interval of 0.429 to 0.765,
-and 13 boxes match no label (precision 0.962). Every threshold from 0.29 to
-0.47 costs about the same over the tuning sets, and for `merged-aug` the
-flat stretch runs from 0.25 to 0.61, so the exact value matters less than
-staying off the steep ends of the curve.
+The robot's job sets the tuning data. It has to find fuel on the field and
+must not chase people, spectators, robots, or balls from past games, which
+is what C tests. It never picks up a ball a person is holding, so the
+lockbox's webcam frames, 314 images of one person holding and tossing
+balls, are reported as out of scope and do not move the choice (D-032).
+They are where the merged models fall short. At 0.5 `merged-noaug` finds
+0.393 of the balls there and baseline-a 0.938, so a use that needs held
+balls should not take this model as it is.
 
-For baseline-a the threshold matters far more, because of C. At 0.78 it
-draws 151 false positives on C (precision 0.711), down from at least 1083
-at 0.5, and its mean cost over the tuning sets falls from 2.845 to 0.502.
-C was a tuning set, so that is a best case. On the held-out half the higher
-threshold does not help. Its cost there is 0.49 at 0.78 against 0.48 at
-0.5, as recall falls from 0.953 to 0.839. No threshold closes the merged
-models' gap on the lockbox.
+baseline-a needs a high threshold, 0.83, to keep its false positives on C
+down. There it draws 99 on C (precision 0.783), down from at least 1083 at
+0.5, but it misses 62 balls on A (recall 0.811), and its mean cost is
+0.46, against 0.262 for `merged-noaug`. `merged-aug` comes in at 0.58,
+with a mean cost of 0.285. These means have no intervals, and A, B, and C
+test helped choose, so each model's scores there at its own threshold are
+slightly optimistic.
 
 The costs price a false positive at three misses (D-031). REBUILT puts a
 lot of fuel on the field, and a ball missed in one frame is usually found
 a few frames later, while a confident box on a person or an old game's
-ball comes back every frame and sends the robot after nothing. The four
-tuning sets count equally, so C's size does not swamp the lockbox. They
-are A, B, and C test and half of the lockbox's recordings and photo
-groups, cut within each kind of image (D-032). A, B, and C test helped
-choose, so their numbers at the chosen threshold are slightly optimistic.
-No model was scored on video, so the claim that a missed ball turns up a
-few frames later is an assumption.
+ball comes back every frame and sends the robot after nothing. The three
+tuning sets count equally, so C's size does not swamp A and B. No model
+was scored on video, so the claim that a missed ball turns up a few frames
+later is an assumption.
 
-Robot boxes share the threshold unless the robot filters by class. At 0.34
-`merged-noaug` draws 140 robot false positives on C, some of them robot
-boxes on fuel labels (precision 0.863, against 0.9 at 0.5). The robot
-steers around other robots, and no cost was set for those errors, so the
-edge pipeline in Task 12 can keep robot boxes at 0.5.
+Robot boxes share the threshold unless the robot filters by class, and
+their errors were not costed. At 0.49 that changes little for robots on C
+(precision 0.898, against 0.9 at 0.5).
 
 <!-- THRESHOLD:START -->
-Costs price one fuel false positive at 3.0 and one miss at 1.0, per image of each set. The chosen threshold has the lowest mean cost over the tuning sets, and the band is the run of thresholds around it whose mean cost is at most 5% above it. Only the held-out half of the lockbox played no part in the choice. Precision and recall come from supervision's metrics, as in the runs, and can differ slightly from the counts beside them, which follow the confusion matrix. <!-- numbers: ok -->
+Costs price one fuel false positive at 3.0 and one miss at 1.0, per image of each set. The chosen threshold has the lowest mean cost over the tuning sets, and the band is the run of thresholds around it whose mean cost is at most 5% above it. Held-out and out-of-scope sets played no part in the choice, and out-of-scope sets show cases the robot never acts on. Precision and recall come from supervision's metrics, as in the runs, and can differ slightly from the counts beside them, which follow the confusion matrix. <!-- numbers: ok -->
 
 | Model | Chosen threshold | Band | Mean cost | Mean cost at 0.5 | Held-out recall interval |
 |---|---|---|---|---|---|
-| baseline-a | 0.78 | 0.77 to 0.8 | 0.502 | 2.845 | 0.763 to 0.905 |
-| merged-noaug | 0.34 | 0.29 to 0.47 | 0.476 | 0.519 | 0.429 to 0.765 |
-| merged-aug | 0.48 | 0.25 to 0.61 | 0.497 | 0.503 | 0.371 to 0.726 |
+| baseline-a | 0.83 | 0.82 to 0.83 | 0.46 | 3.553 | 0.932 to 1.0 |
+| merged-noaug | 0.49 | 0.35 to 0.72 | 0.262 | 0.264 | 0.975 to 1.0 |
+| merged-aug | 0.58 | 0.38 to 0.67 | 0.285 | 0.285 | 0.975 to 1.0 |
 
 ![Mean cost against threshold](assets/threshold_cost.png)
 
-#### baseline-a at 0.78 and at 0.5
+#### baseline-a at 0.83 and at 0.5
 
 | Set | Role | Images | Precision | Recall | False positives | Misses | Cost | Precision at 0.5 | Recall at 0.5 | Cost at 0.5 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| marswars test | tuning | 171 | 0.993 | 0.927 | 2 | 24 | 0.175 | 0.976 | 0.976 | 0.187 |
+| marswars test | tuning | 171 | 0.996 | 0.811 | 1 | 62 | 0.38 | 0.976 | 0.976 | 0.187 |
 | robotzftp2 test | tuning | 286 | 1.0 | 1.0 | 0 | 0 | 0.0 | 0.959 | 1.0 | 0.126 |
-| scorekeeper test | tuning | 314 | 0.711 | 0.995 | 151 | 2 | 1.449 | 0.257 | 1.0 | 10.347 |
-| pankratz tuning half | tuning | 165 | 1.0 | 0.833 | 0 | 63 | 0.382 | 0.92 | 0.942 | 0.721 |
-| pankratz held-out half | held out | 198 | 0.994 | 0.839 | 3 | 88 | 0.49 | 0.958 | 0.953 | 0.48 |
+| scorekeeper test | tuning | 314 | 0.783 | 0.955 | 99 | 17 | 1.0 | 0.257 | 1.0 | 10.347 |
+| pankratz phone video, phone photos | held out | 49 | 1.0 | 0.946 | 0 | 8 | 0.163 | 0.987 | 1.0 | 0.122 |
+| pankratz webcam frames | out of scope | 314 | 0.998 | 0.57 | 1 | 334 | 1.073 | 0.933 | 0.938 | 0.662 |
 
 On scorekeeper test, the prediction limit may have dropped boxes at or above 0.5, so false positives and cost there at 0.5 are lower bounds.
 
-#### merged-noaug at 0.34 and at 0.5
+#### merged-noaug at 0.49 and at 0.5
 
 | Set | Role | Images | Precision | Recall | False positives | Misses | Cost | Precision at 0.5 | Recall at 0.5 | Cost at 0.5 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| marswars test | tuning | 171 | 0.985 | 0.97 | 5 | 10 | 0.146 | 0.991 | 0.963 | 0.123 |
-| robotzftp2 test | tuning | 286 | 0.993 | 1.0 | 2 | 0 | 0.021 | 0.996 | 1.0 | 0.01 |
-| scorekeeper test | tuning | 314 | 0.842 | 1.0 | 70 | 0 | 0.669 | 0.844 | 1.0 | 0.659 |
-| scorekeeper test (robot) | tuning | 314 | 0.863 | 0.877 | 140 | 124 | n/a | 0.9 | 0.84 | n/a |
-| pankratz tuning half | tuning | 165 | 0.986 | 0.557 | 3 | 167 | 1.067 | 1.0 | 0.438 | 1.285 |
-| pankratz held-out half | held out | 198 | 0.962 | 0.6 | 13 | 219 | 1.303 | 0.976 | 0.52 | 1.394 |
+| marswars test | tuning | 171 | 0.991 | 0.966 | 3 | 11 | 0.117 | 0.991 | 0.963 | 0.123 |
+| robotzftp2 test | tuning | 286 | 0.996 | 1.0 | 1 | 0 | 0.01 | 0.996 | 1.0 | 0.01 |
+| scorekeeper test | tuning | 314 | 0.844 | 1.0 | 69 | 0 | 0.659 | 0.844 | 1.0 | 0.659 |
+| scorekeeper test (robot) | tuning | 314 | 0.898 | 0.841 | 96 | 160 | n/a | 0.9 | 0.84 | n/a |
+| pankratz phone video, phone photos | held out | 49 | 0.973 | 0.98 | 2 | 1 | 0.143 | 0.973 | 0.98 | 0.143 |
+| pankratz webcam frames | out of scope | 314 | 0.987 | 0.399 | 4 | 467 | 1.525 | 0.99 | 0.393 | 1.532 |
 
-#### merged-aug at 0.48 and at 0.5
+#### merged-aug at 0.58 and at 0.5
 
 | Set | Role | Images | Precision | Recall | False positives | Misses | Cost | Precision at 0.5 | Recall at 0.5 | Cost at 0.5 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| marswars test | tuning | 171 | 0.984 | 0.951 | 5 | 16 | 0.181 | 0.984 | 0.948 | 0.187 |
-| robotzftp2 test | tuning | 286 | 0.996 | 1.0 | 1 | 0 | 0.01 | 1.0 | 1.0 | 0.0 |
+| marswars test | tuning | 171 | 0.984 | 0.948 | 5 | 17 | 0.187 | 0.984 | 0.948 | 0.187 |
+| robotzftp2 test | tuning | 286 | 1.0 | 1.0 | 0 | 0 | 0.0 | 1.0 | 1.0 | 0.0 |
 | scorekeeper test | tuning | 314 | 0.842 | 1.0 | 70 | 0 | 0.669 | 0.842 | 1.0 | 0.669 |
-| scorekeeper test (robot) | tuning | 314 | 0.901 | 0.854 | 94 | 147 | n/a | 0.906 | 0.853 | n/a |
-| pankratz tuning half | tuning | 165 | 0.981 | 0.538 | 4 | 174 | 1.127 | 0.98 | 0.525 | 1.158 |
-| pankratz held-out half | held out | 198 | 0.984 | 0.553 | 5 | 245 | 1.313 | 0.984 | 0.546 | 1.333 |
+| scorekeeper test (robot) | tuning | 314 | 0.916 | 0.845 | 78 | 156 | n/a | 0.906 | 0.853 | n/a |
+| pankratz phone video, phone photos | held out | 49 | 0.993 | 0.98 | 1 | 3 | 0.122 | 0.993 | 0.98 | 0.122 |
+| pankratz webcam frames | out of scope | 314 | 0.988 | 0.426 | 4 | 446 | 1.459 | 0.978 | 0.453 | 1.43 |
 <!-- THRESHOLD:END -->
 
 ## How the baseline does on other teams' data
