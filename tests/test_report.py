@@ -535,13 +535,6 @@ def choice(model: str = "m") -> ThresholdChoice:
             "neutral_cost": 1.75,
             "sets": sets,
             "held_out_recall": {"low": 0.625, "high": 0.875},
-            "lockbox": {
-                "dataset": "box",
-                "tune_fraction": 0.5,
-                "seed": 1,
-                "tuning": ["u1"],
-                "held_out": ["u2"],
-            },
             "grid": [point],
         }
     )
