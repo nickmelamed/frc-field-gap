@@ -34,11 +34,12 @@ scores").
 
 Two models trained on merged data, `merged-noaug` and `merged-aug`, are
 scored in `docs/EVALUATION.md` next to baseline-a. They draw far fewer
-fuel boxes on people and past games, but at a confidence of 0.5 they miss
-about half of the balls in a held-back dataset where a person holds them,
-so this card still describes baseline-a. `merged-noaug` is the model
-chosen for the robot, and this card moves to it with the deployment.
-`docs/EVALUATION.md` picks a threshold for each model on a robot, pricing a
+fuel boxes on people and past games. At a confidence of 0.5 they miss
+about half of the balls a person holds in a held-back dataset, but the
+robot never picks those up (D-032). `merged-noaug` is the model chosen for
+the robot (D-033), and this card moves to it with the deployment. Until
+then it describes baseline-a. `docs/EVALUATION.md` picks the threshold
+each model would run at on a robot, pricing a
 false positive at three misses. baseline-a's is 0.83 (`deploy_confidence`
 in `reports/models.yaml`). The scores on this card are at 0.5.
 
