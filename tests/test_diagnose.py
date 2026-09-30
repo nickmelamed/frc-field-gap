@@ -612,7 +612,7 @@ def test_a_false_positive_reaches_the_slices_gallery_and_review(
     assert diagnose.main([*args, "--review-sheet"]) == 0
     template = diagnosed / "data" / "contact_sheets" / "review_template.csv"
     (row,) = template.read_text("utf-8").splitlines()[1:]
-    review = diagnosed / "reports" / "diagnosis" / "review.csv"
+    review = diagnosed / "reports" / "diagnosis" / "m" / "review.csv"
     review.write_text(
         template.read_text("utf-8").replace(row, row.replace(",,", ",other,")), "utf-8"
     )
@@ -725,3 +725,24 @@ def test_main_applies_no_edge_rule_to_a_run_without_one(
     assert evaluate.main(ARGS) == 0
     set_edge_tolerance(workspace, 5)
     assert diagnose_fuel_counts(workspace, monkeypatch) == (3, 0, 0)
+
+
+def test_main_can_leave_the_gallery_alone(diagnosed: Path) -> None:
+    gallery = diagnosed / "docs" / "assets" / "failures.png"
+    assert diagnose.main(["m", "--project-config", "configs/project.yaml", "--no-gallery"]) == 0
+    assert not gallery.exists()
+    assert (diagnosed / "reports" / "diagnosis" / "m" / "diagnosis.json").is_file()
+
+
+def test_each_model_reads_its_own_review_file(diagnosed: Path) -> None:
+    other = diagnosed / "reports" / "diagnosis" / "other-model" / "review.csv"
+    other.parent.mkdir(parents=True)
+    # A row m's sample lacks, which would fail m's diagnosis if m read it.
+    other.write_text(
+        "dataset,file_name,kind,x1,y1,x2,y2,verdict,note\n"
+        "alpha,zzz.jpg,false positive,0,0,1,1,other,\n",
+        "utf-8",
+    )
+    assert diagnose.main(["m", "--project-config", "configs/project.yaml"]) == 0
+    result = load_diagnosis(diagnosed / "reports" / "diagnosis" / "m" / "diagnosis.json")
+    assert result.review == []

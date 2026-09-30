@@ -56,7 +56,7 @@ the cached predictions and reproduces each run's published counts (D-021).
 The tables are under "Diagnosis" at the end of this page.
 Errors were also judged by eye (D-021): every false positive and miss on A
 and B, and a random 40 of C's false positives. The verdicts and a note on
-each are in `reports/diagnosis/review.csv`.
+each are in `reports/diagnosis/baseline-a/review.csv`.
 
 ### C's false positives come from photos without fuel
 
