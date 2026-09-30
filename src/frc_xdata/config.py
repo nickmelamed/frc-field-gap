@@ -436,6 +436,9 @@ class ModelEntry(BaseModel):
     model_id: Slug
     architecture: str
     input_size: str
+    # The threshold frc-threshold chose for running the model on the robot
+    # (D-031). Scores in the report stay at evaluate.confidence.
+    deploy_confidence: Probability | None = None
 
 
 class ModelsFile(BaseModel):
