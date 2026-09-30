@@ -1,0 +1,1186 @@
+{
+  "run_id": "merged-noaug__scorekeeper-test__20260930T125505Z",
+  "model": "merged-noaug",
+  "dataset": "scorekeeper",
+  "split": "test",
+  "limit": null,
+  "predictions_from": "this run",
+  "scored_classes": [
+    "fuel",
+    "robot"
+  ],
+  "unscored_classes": [],
+  "per_image_limit": {
+    "per_image": 25,
+    "images_at_limit": 275,
+    "images_above_threshold": 0
+  },
+  "edge_ignore": {
+    "classes": [
+      "fuel"
+    ],
+    "tolerance_px": 1.0,
+    "min_overlap": 0.5,
+    "iou": 0.5,
+    "labels": 1,
+    "predictions": 3
+  },
+  "metrics": {
+    "images": 314,
+    "confidence": 0.5,
+    "iou": 0.5,
+    "map50": 0.89,
+    "map50_95": 0.628,
+    "small_map50_95": 0.603,
+    "medium_map50_95": 0.641,
+    "large_map50_95": 0.729,
+    "classes": [
+      {
+        "name": "fuel",
+        "instances": 374,
+        "map50": 0.886,
+        "map50_95": 0.751,
+        "precision": 0.844,
+        "recall": 1.0,
+        "true_positives": 374,
+        "false_positives": 69,
+        "false_negatives": 0
+      },
+      {
+        "name": "robot",
+        "instances": 1007,
+        "map50": 0.894,
+        "map50_95": 0.504,
+        "precision": 0.9,
+        "recall": 0.84,
+        "true_positives": 846,
+        "false_positives": 94,
+        "false_negatives": 161
+      }
+    ],
+    "confusion": {
+      "labels": [
+        "fuel",
+        "robot",
+        "background"
+      ],
+      "matrix": [
+        [
+          374,
+          0,
+          0
+        ],
+        [
+          0,
+          846,
+          161
+        ],
+        [
+          69,
+          94,
+          0
+        ]
+      ]
+    },
+    "pr_curve": {
+      "fuel": [
+        {
+          "threshold": 0.05,
+          "precision": 0.684,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.1,
+          "precision": 0.824,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.15,
+          "precision": 0.833,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.2,
+          "precision": 0.839,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.25,
+          "precision": 0.84,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.3,
+          "precision": 0.842,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.35,
+          "precision": 0.842,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.4,
+          "precision": 0.842,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.45,
+          "precision": 0.844,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.5,
+          "precision": 0.844,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.55,
+          "precision": 0.844,
+          "recall": 0.997
+        },
+        {
+          "threshold": 0.6,
+          "precision": 0.844,
+          "recall": 0.997
+        },
+        {
+          "threshold": 0.65,
+          "precision": 0.844,
+          "recall": 0.995
+        },
+        {
+          "threshold": 0.7,
+          "precision": 0.845,
+          "recall": 0.992
+        },
+        {
+          "threshold": 0.75,
+          "precision": 0.845,
+          "recall": 0.973
+        },
+        {
+          "threshold": 0.8,
+          "precision": 0.844,
+          "recall": 0.955
+        },
+        {
+          "threshold": 0.85,
+          "precision": 0.851,
+          "recall": 0.898
+        },
+        {
+          "threshold": 0.9,
+          "precision": 0.824,
+          "recall": 0.262
+        },
+        {
+          "threshold": 0.95,
+          "precision": 1.0,
+          "recall": 0.072
+        }
+      ],
+      "robot": [
+        {
+          "threshold": 0.05,
+          "precision": 0.33,
+          "recall": 0.934
+        },
+        {
+          "threshold": 0.1,
+          "precision": 0.604,
+          "recall": 0.921
+        },
+        {
+          "threshold": 0.15,
+          "precision": 0.727,
+          "recall": 0.907
+        },
+        {
+          "threshold": 0.2,
+          "precision": 0.794,
+          "recall": 0.898
+        },
+        {
+          "threshold": 0.25,
+          "precision": 0.828,
+          "recall": 0.892
+        },
+        {
+          "threshold": 0.3,
+          "precision": 0.851,
+          "recall": 0.888
+        },
+        {
+          "threshold": 0.35,
+          "precision": 0.868,
+          "recall": 0.875
+        },
+        {
+          "threshold": 0.4,
+          "precision": 0.881,
+          "recall": 0.861
+        },
+        {
+          "threshold": 0.45,
+          "precision": 0.89,
+          "recall": 0.854
+        },
+        {
+          "threshold": 0.5,
+          "precision": 0.9,
+          "recall": 0.84
+        },
+        {
+          "threshold": 0.55,
+          "precision": 0.91,
+          "recall": 0.826
+        },
+        {
+          "threshold": 0.6,
+          "precision": 0.923,
+          "recall": 0.808
+        },
+        {
+          "threshold": 0.65,
+          "precision": 0.934,
+          "recall": 0.792
+        },
+        {
+          "threshold": 0.7,
+          "precision": 0.946,
+          "recall": 0.759
+        },
+        {
+          "threshold": 0.75,
+          "precision": 0.957,
+          "recall": 0.711
+        },
+        {
+          "threshold": 0.8,
+          "precision": 0.98,
+          "recall": 0.572
+        },
+        {
+          "threshold": 0.85,
+          "precision": 0.986,
+          "recall": 0.288
+        },
+        {
+          "threshold": 0.9,
+          "precision": 1.0,
+          "recall": 0.065
+        },
+        {
+          "threshold": 0.95,
+          "precision": 1.0,
+          "recall": 0.016
+        }
+      ]
+    }
+  },
+  "units": [
+    {
+      "unit": "Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0000_jpg.rf.8dd0336529d85058b7ca7b6a989f301e.jpg",
+      "images": 159,
+      "boxes": {
+        "fuel": 0,
+        "robot": 667
+      }
+    },
+    {
+      "unit": "mQbklnVHj7k_0_jpg.rf.81b24257aa10010d96a920d7e5b22c93.jpg",
+      "images": 19,
+      "boxes": {
+        "fuel": 0,
+        "robot": 115
+      }
+    },
+    {
+      "unit": "frame_0233_jpg.rf.938d117831ebb49b9ab34bcfbed3ec2a.jpg",
+      "images": 6,
+      "boxes": {
+        "fuel": 78,
+        "robot": 0
+      }
+    },
+    {
+      "unit": "-Q97WO6Zc_U_0_jpg.rf.d67bf6e85b303a47fc90b7044c9569e0.jpg",
+      "images": 9,
+      "boxes": {
+        "fuel": 0,
+        "robot": 70
+      }
+    },
+    {
+      "unit": "frame_0458_jpg.rf.355f6f2192332ea6dc865a496062d5ea.jpg",
+      "images": 4,
+      "boxes": {
+        "fuel": 50,
+        "robot": 0
+      }
+    },
+    {
+      "unit": "frame_0183_jpg.rf.90656b7c2eeed698cc936b06545ad856.jpg",
+      "images": 4,
+      "boxes": {
+        "fuel": 40,
+        "robot": 0
+      }
+    },
+    {
+      "unit": "frame_0228_jpg.rf.6f4f73dec0d529dcec5b7db7f4915935.jpg",
+      "images": 3,
+      "boxes": {
+        "fuel": 39,
+        "robot": 0
+      }
+    },
+    {
+      "unit": "frame_0294_jpg.rf.97adfc4a534b7a91f4d3d40faaa82941.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 28,
+        "robot": 0
+      }
+    },
+    {
+      "unit": "frame_0051_jpg.rf.13768b3a1df8e51d2f8f8a07a9ba5ca7.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 19,
+        "robot": 0
+      }
+    },
+    {
+      "unit": "frame_0250_jpg.rf.57cf4d97294a93e290917337b047ce07.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 14,
+        "robot": 0
+      }
+    },
+    {
+      "unit": "frame_0316_jpg.rf.8024aa0b0627ddc2854338d7db10edb7.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 14,
+        "robot": 0
+      }
+    },
+    {
+      "unit": "frame_0371_jpg.rf.2e1beb63eb6df2a82462512864bbcb7a.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 14,
+        "robot": 0
+      }
+    },
+    {
+      "unit": "frame_0384_jpg.rf.7bf14483bb17c298466b8f860c5370ad.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 13,
+        "robot": 0
+      }
+    },
+    {
+      "unit": "frame_0389_jpg.rf.503051b30f24368621427d1252d7bf24.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 13,
+        "robot": 0
+      }
+    },
+    {
+      "unit": "frame_0394_jpg.rf.a4c2b14841ab6f32c1087116bac8df33.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 13,
+        "robot": 0
+      }
+    },
+    {
+      "unit": "frame_0032_jpg.rf.d082e67f742416310056575b1e94a3e3.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 10,
+        "robot": 0
+      }
+    },
+    {
+      "unit": "frame_0118_jpg.rf.5ea32800ace96add85da39f0dc22ea2e.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 10,
+        "robot": 0
+      }
+    },
+    {
+      "unit": "frame_0121_jpg.rf.979bb4d695b4023b092464659d9732bb.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 10,
+        "robot": 0
+      }
+    },
+    {
+      "unit": "frame_0015_jpg.rf.4afd42cd9d0b562bd42629d7dade426c.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 9,
+        "robot": 0
+      }
+    },
+    {
+      "unit": "youtube-47_jpg.rf.2dcfca9e0e1e1d49e2ab7427be4418bc.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 0,
+        "robot": 7
+      }
+    },
+    {
+      "unit": "frc_train_378_jpg.rf.508e98c81287b7395d0b1e26a695b07b.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 6
+      }
+    },
+    {
+      "unit": "frc_train_418_jpg.rf.4f974d3e39e36f669a2534e6d26bf0d5.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 5
+      }
+    },
+    {
+      "unit": "frc_train_757_jpg.rf.90155cc15c686ed35e2ee2259d918ad0.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 5
+      }
+    },
+    {
+      "unit": "DSC00475_jpg.rf.ee1f506ae1631977a970636c355e4616.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 4
+      }
+    },
+    {
+      "unit": "frc_train_372_jpg.rf.12597f3359607d2df5e761adf5169388.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 4
+      }
+    },
+    {
+      "unit": "frc_train_612_jpg.rf.154710d49abc64e36c0024a44abb0196.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 4
+      }
+    },
+    {
+      "unit": "20230401_085428-mp4_00401_png.rf.ae5caf6dfc731ef53b397512b9702dbf.jpg",
+      "images": 3,
+      "boxes": {
+        "fuel": 0,
+        "robot": 3
+      }
+    },
+    {
+      "unit": "5172_POV-Great_Northern_2020_Quals_22-mp4_01573_png.rf.5c1b3ae8d1dbb0d71854d2c8ae5d36de.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 3
+      }
+    },
+    {
+      "unit": "frc_train_136_jpg.rf.0da5f7d476b754be1ea17e7d24f6eb8e.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 3
+      }
+    },
+    {
+      "unit": "frc_train_177_jpg.rf.955c804d41d5e8becfe1e6ff5af00430.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 3
+      }
+    },
+    {
+      "unit": "frc_train_248_png.rf.4cbc59f280092f8bf4b7a60773213cd1.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 3
+      }
+    },
+    {
+      "unit": "frc_train_451_jpg.rf.c0c99cc4aef81df2107423f1063286c9.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 3
+      }
+    },
+    {
+      "unit": "frc_train_583_jpg.rf.e8942285ff5b6726ccd05d060bcf9480.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 3
+      }
+    },
+    {
+      "unit": "frc_train_756_jpg.rf.d1b67ed70a4cafd3e36a7879af4c5e9e.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 3
+      }
+    },
+    {
+      "unit": "frc_train_770_png.rf.49cf8bf61d2e0b64d567537d768a91f3.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 3
+      }
+    },
+    {
+      "unit": "ncash2023_gopro3-mp4_00623_png.rf.a6f284cd2dd3fe44024d239ee99b746c.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 0,
+        "robot": 3
+      }
+    },
+    {
+      "unit": "2019_PNW_District_Auburn_Event_Quarterfinal_3_Match_1-mp4_00000_png.rf.cbd5e440a1053e4adf0f03b6f456a2ae.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 2
+      }
+    },
+    {
+      "unit": "2019_robot_in_action_at_regional_competitions-mp4_03492_png.rf.b3a6ded60f12ecffa138264856ecc804.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 2
+      }
+    },
+    {
+      "unit": "2390380140529009_jpg.rf.f80f55deeaf5bbf0f985b7f33d51483b.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 2
+      }
+    },
+    {
+      "unit": "3805437685595586_jpg.rf.2f48397ace0a5bbf3c2ddaa996c4a1b4.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 2
+      }
+    },
+    {
+      "unit": "8229697264638354_jpg.rf.272a1a19aafb25d0d3a8a8901311f64a.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 2
+      }
+    },
+    {
+      "unit": "IMG_7728_jpg.rf.136c665af227ec3445430d1bed3d4fd1.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 2
+      }
+    },
+    {
+      "unit": "frc_train_178_jpg.rf.26532eeffcffd217118be2f2972278fa.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 2
+      }
+    },
+    {
+      "unit": "frc_train_294_jpg.rf.3265766fdac602e8006e8d79dfacc617.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 0,
+        "robot": 2
+      }
+    },
+    {
+      "unit": "frc_train_302_jpg.rf.09aab126191b4d07947ef09481f0baa7.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 2
+      }
+    },
+    {
+      "unit": "frc_train_337_jpg.rf.2d3861b7ab3c6d2cf59042b8e9ac7f3e.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 0,
+        "robot": 2
+      }
+    },
+    {
+      "unit": "frc_train_351_jpg.rf.408979343ff71e60be722789058f5f7c.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 2
+      }
+    },
+    {
+      "unit": "frc_train_357_jpg.rf.db5b127e4fdd2a6813811ac6e20e474e.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 2
+      }
+    },
+    {
+      "unit": "frc_train_429_png.rf.d3be862250bb419b9125d0ec76b284c3.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 2
+      }
+    },
+    {
+      "unit": "frc_train_466_jpg.rf.9e4a7858815e04656bcacf7dd33bbdc2.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 2
+      }
+    },
+    {
+      "unit": "frc_train_574_png.rf.ceaab6bc437329ab2c5d451aec5a2aa7.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 2
+      }
+    },
+    {
+      "unit": "frc_train_628_jpg.rf.8e33c83a23ee2d0d2e1f7471cd574671.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 2
+      }
+    },
+    {
+      "unit": "frc_train_698_jpg.rf.0d535a40ab7a36f8d9cc9a14e062e4f7.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 2
+      }
+    },
+    {
+      "unit": "138_large_bmp_jpg.rf.5268def6631da841a1f991348284de6d.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "1863864651553307_jpg.rf.4c51a05c8f224ca7bed6e8f84c00e55f.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "2127759398063417_jpg.rf.68e57d0c6e54ed38a758457ab33a15ce.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "3521640472382218_jpg.rf.a332cac61d346ae07ac89d6c233a2fe7.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "3894602767693008_jpg.rf.3fc31c26d24f035bffd61b3f4b46dc7e.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "5174595182670516_jpg.rf.7c73e4c50c71a3a524564ed2b09d6a5a.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "6620792713112208_jpg.rf.633c9aaeaa245a1b9e54e9d134dda1a9.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "6995611823995866_jpg.rf.e7a5e513b761a94d4da72772f352c880.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "776527022308422_jpg.rf.af1d97b6c6e314e037c9d7c7e45b8cc3.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "8059736661121834_jpg.rf.9adf520d1452a08866ac1eb843f8f6da.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "8744566038245311_jpg.rf.67cfc693851bcef60c1ca5920b7eb9f1.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "9386648450833753_jpg.rf.6ec2f49fc999c88a46550eb520500420.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "9598990875053535_jpg.rf.6c791051dc9da1a09f8bfe64b80115d8.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "Img-2635_mp4-22_jpg.rf.a9964c49f2ffd025465d1944425e0ffc.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "Img-2639_mp4-7_jpg.rf.7394e5a13af046d0d91d16f9f822c2a4.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "PXL_20220219_190751379_jpg.rf.f67de0751a2245e075ee6d9b63c5c2bf.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "blue_big2frame_00200_png.rf.1a62b9682068629b2285b5689b746d97.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_110_jpg.rf.5059236770bbde2de073cc99446bc401.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_115_jpg.rf.625a3da1f59c993ed37b5571c62d0509.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_142_jpg.rf.e9284652e1caa8bfe4bfc654791cd77f.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_144_jpg.rf.3b87e873f4a0761b83c6f6416d70fc04.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_154_jpg.rf.a03c1439ee7c7504407ca82260f1676e.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_181_jpg.rf.3937d8d9c29ac75b511512e7b7382efc.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_188_jpg.rf.a1b7fd1746f454a6172f601beb42a274.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_199_png.rf.28a50b49c23a6c4d0befcb3a686f0b36.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_210_jpg.rf.c1535cfea7ae425b0c4324b3f7aacb79.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_221_jpg.rf.f0a2a3fa4bcd60370a21f2d11a0e9ea1.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_261_jpg.rf.e411a2cde362a1fa9bcdbd248609ffd9.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_272_jpg.rf.aa0258b1d08d4edd60977a8aba867d92.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_308_jpg.rf.13fae020eb9dc227b7b3ab718fe80f1e.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_321_jpg.rf.2e76e324fd79c90ac1f2c97ae03d9c33.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_324_png.rf.28cd833de6c63ad0917a3cbb55050d77.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_344_jpg.rf.549293c00b8c75c380c9139278eaffb5.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_345_jpg.rf.e19a27113aa22c739525005a4c383830.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_352_jpg.rf.e97c4636a1594e5853ffa33af7222871.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_358_jpg.rf.d58429ab18d7cf0ad3c8df17a2269840.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_374_png.rf.ce68d7c178aec01b19b8c14fbaf40b51.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_396_jpg.rf.6087a4d12000a6d0ce9d1b10614565c3.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_399_png.rf.8676450eccda04d7d8b51b8199875351.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_406_png.rf.1b6adccab8dea7981963f1e24ecd3a79.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_436_jpg.rf.f0e4de37ada46adca075c43791d8a2dc.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_438_jpg.rf.4c3b0766f6b3eeaff8a758f3834ffcd8.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_495_jpg.rf.d4abcf35f865dac56fc3ec496c6dfba2.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_504_png.rf.1322153e58a6feac3c636b9ed3d56213.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_509_jpg.rf.b541f370107f46a9fc7194ee979e3ca9.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_53_png.rf.2d57cec05dcb6976af779de97157e188.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_581_jpg.rf.30ecdd56f9153493cca5d0a6288122a7.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_699_jpg.rf.61c2dca813bd500ae507a9c2ecfc7877.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_712_jpg.rf.82ff034df145d15031a54b8a46da1fdc.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_731_jpg.rf.052dfea1ca504058ca72f9b24914a181.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_78_jpg.rf.e6aa943b588e78d06f15abc7ed19000f.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "frc_train_798_jpg.rf.6fd0d82e2ed8a092b62037528226a4f6.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "youtube-292_jpg.rf.0408e4fe31e5a23cb67776b6b924d47b.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "youtube-315_jpg.rf.35f46eb86d44bdc6c7625ac3982e7abc.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "youtube-421_jpg.rf.4257f5d6f39707b90aa580d45684f04f.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    },
+    {
+      "unit": "youtube-51_jpg.rf.26d0ac047c581fa64acf2bdcb8e93e66.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0,
+        "robot": 1
+      }
+    }
+  ],
+  "bootstrap": {
+    "units": 109,
+    "resamples": 1000,
+    "level": 0.95,
+    "seed": 2026,
+    "classes": [
+      {
+        "name": "fuel",
+        "map50": {
+          "low": 0.87,
+          "high": 0.928
+        },
+        "recall": {
+          "low": 1.0,
+          "high": 1.0
+        }
+      },
+      {
+        "name": "robot",
+        "map50": {
+          "low": 0.691,
+          "high": 0.937
+        },
+        "recall": {
+          "low": 0.611,
+          "high": 0.887
+        }
+      }
+    ]
+  }
+}
