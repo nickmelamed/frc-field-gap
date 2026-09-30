@@ -202,8 +202,9 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
   - PR 2 (`eval/merged`). `merged-noaug` (version 7) and `merged-aug`
     (version 8) were trained and scored on A, B, C, and `pankratz` test,
     next to baseline-a rescored under the edge rule. On C, fuel false
-    positives fall from 1083 to 69. On the lockbox, recall falls from 0.948
-    to 0.486, nearly all on webcam frames of a person holding balls. Both
+    positives fall from 1083 to 69. On the lockbox at confidence 0.5,
+    recall falls from 0.948 to 0.486, nearly all on webcam frames of a
+    person holding balls. At 0.05 it is 0.808, so many misses are low scores. Both
     merged models are diagnosed with slices, without a review or gallery
     (D-030). `docs/EVALUATION.md` and `docs/WRITEUP.md` have the write-up.
   - Differences from the plan and SPEC section 7. Roboflow refused to

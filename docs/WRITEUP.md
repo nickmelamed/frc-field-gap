@@ -3,9 +3,9 @@
 Draft for v0.2.0. It covers the first four steps of the project: training
 a baseline, scoring it on other teams' data, working out why it fails, and
 fixing it with merged data. The Raspberry Pi deployment comes in a later
-release. Every
-number here comes from the tables that `make report` generates, and
-`docs/EVALUATION.md` has them in full.
+release. Every number here comes from the runs that `make report` reads,
+and `docs/EVALUATION.md` has them in full. The baseline's numbers under
+"Results" are from its v0.1.0 runs, before the edge rule of v0.2.0.
 
 ## The short version
 
@@ -85,6 +85,10 @@ scoring each set. A wide interval means the
 score depends heavily on which recordings ended up in test.
 
 ## Results
+
+These are baseline-a's v0.1.0 scores. v0.2.0 sets labels at the frame edge
+aside in scoring, which changes A's and B's slightly, and
+`docs/EVALUATION.md` has the rescored tables.
 
 | Dataset | Images | mAP50 | mAP50 interval | Precision | Recall | Wrong boxes |
 |---|---|---|---|---|---|---|
@@ -170,16 +174,19 @@ one to box, and the baseline was rescored the same way.
 
 On the third team's photos, the wrong fuel boxes fall from 1083 to 69, and
 every labeled ball is still found. None of the 69 is on a pit photo or a
-broadcast. They all fall on close-up photos of fuel clusters, some of
-which have balls nobody labeled.
+broadcast. They all fall on close-up photos of fuel clusters, and most of
+them (59) are loose boxes on balls that are labeled.
 
 A dataset held back from all training shows the cost. It comes from
 another team, mostly webcam frames of one person tossing and catching balls.
-The baseline finds nearly all of its balls (recall 0.948). The merged model finds
-about half (recall 0.486), and nearly all of its misses are on those webcam
-frames, where the balls are small and often in someone's hands. It almost
-never draws fuel on the person. It seems to have learned the opposite
-mistake: that fuel next to a person is background. A second run with
+The baseline finds nearly all of its balls (recall 0.948). At the same confidence
+threshold of 0.5, the merged model finds about half (recall 0.486), and
+nearly all of its misses are on those webcam frames. It almost never draws
+fuel on the person. Many of the missed balls do get a box, just with a low
+score: at a threshold of 0.05 its recall is 0.808. So the merged model has
+become cautious about fuel in those frames, and this data cannot yet say
+whether that is because the balls are small or because they are near a
+person. A second run with
 augmentation, flips, crops, and brightness changes, did about the same.
 
 So the merged data fixed what the diagnosis found and exposed a case the
