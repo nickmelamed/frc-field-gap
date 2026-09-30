@@ -947,13 +947,12 @@ webcam frames are reported apart as out of scope (`held_out` in
 Why. Tuning on the webcam frames would lower the threshold to catch balls
 the robot never acts on, and every extra box it lets through elsewhere is
 a possible wasted pickup. Keeping the lockbox out of the choice leaves one
-set scored free of it. An earlier version on this branch cut the lockbox
-into a tuning half and a held-out half by unit, which pulled
-`merged-noaug`'s threshold down to 0.34 mostly for the webcam frames, and
-was dropped for this reason.
+set scored free of it. Cutting the lockbox by unit into a tuning half and a
+held-out half pulled `merged-noaug`'s threshold down to 0.34, mostly for
+the webcam frames, which is why that split was dropped.
 
 Consequences. The held-out check is small, 49 images in 28 units from one
-workshop, so its recall interval says little. A, B, and C test helped
+workshop, so its narrow recall interval speaks only for that workshop. A, B, and C test helped
 choose, so their scores at the chosen threshold are slightly optimistic.
 How the models do on held balls is still reported, so a use that needs
 them can see the gap. The whole-lockbox runs at 0.5 are unchanged and
@@ -964,8 +963,7 @@ still published.
 Context. Task 12 deploys one model. At its own threshold, `merged-noaug`
 has the lowest cost over A, B, and C test of the three models. baseline-a
 does better on the lockbox's webcam frames, which D-032 puts out of scope.
-`merged-aug` scores about the same as `merged-noaug`, and its training
-cannot isolate augmentation (D-029).
+`merged-aug` scores about the same as `merged-noaug`.
 
 Decision. On 2026-09-30 Nick chose `merged-noaug` for the robot, run at
 its `deploy_confidence` in `reports/models.yaml` for fuel.

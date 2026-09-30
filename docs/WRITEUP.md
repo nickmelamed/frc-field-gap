@@ -202,16 +202,15 @@ robot after nothing. So a false positive was priced at three misses, and
 each model's threshold was chosen to make its errors cheapest on the three
 test splits. The robot never picks up a ball someone is holding, so the
 held-back dataset's webcam frames were left out of the choice, and its
-photos of balls on the ground were kept aside to check it.
+photos and video of balls on the ground were kept aside to check it.
 
-The merged model runs on the robot, at a threshold of 0.49. Its errors
-there cost 0.262 per image, against 0.46 for the baseline at its own best
-threshold of 0.83, which it needs to keep its wrong boxes on C down and
-which costs it 62 missed balls on A. The merged model's cost is nearly
-flat from 0.35 to 0.72, so the exact value matters little. On the kept-aside
-photos it finds 0.98 of the balls, though that check is only 49 images.
-It still misses most balls held by a person, which the robot does not
-need.
+The merged model runs on the robot at a threshold of 0.49, where its
+errors cost 0.262 per image. The baseline needs 0.83 to keep its wrong
+boxes on C down, which costs it 62 missed balls on A and leaves its cost
+at 0.46. The merged model's cost is nearly flat from 0.35 to 0.72, so the
+exact value matters little. On the kept-aside photos and video it finds
+0.98 of the balls, though that check is only 49 images. It still misses
+most balls held by a person, but the robot never picks those up.
 
 ## What comes next
 

@@ -82,8 +82,8 @@ into real fuel and mistakes. The field test set has not been scored.
 ## Choosing the robot's threshold
 
 `merged-noaug` is the model for the robot (D-033), and its threshold is
-0.49. Over A, B, and C test its fuel errors cost 0.262 per image there,
-against 0.264 at 0.5, and every threshold from 0.35 to 0.72 costs about as
+0.49. At that threshold its fuel errors over A, B, and C test cost 0.262
+per image, against 0.264 at 0.5, and every threshold from 0.35 to 0.72 costs about as
 little, so 0.5 already sits in the flat stretch. On the lockbox's phone
 photos and video, balls on the ground that played no part in the choice,
 it finds 0.98 of the balls with precision 0.973, and the interval on that
@@ -100,10 +100,10 @@ They are where the merged models fall short. At 0.5 `merged-noaug` finds
 balls should not take this model as it is.
 
 baseline-a needs a high threshold, 0.83, to keep its false positives on C
-down. There it draws 99 on C (precision 0.783), down from at least 1083 at
+down. At 0.83 it draws 99 false positives on C (precision 0.783), down from at least 1083 at
 0.5, but it misses 62 balls on A (recall 0.811), and its mean cost is
-0.46, against 0.262 for `merged-noaug`. `merged-aug` comes in at 0.58,
-with a mean cost of 0.285. These means have no intervals, and A, B, and C
+0.46, against 0.262 for `merged-noaug`. `merged-aug`'s threshold is
+0.58, with a mean cost of 0.285. These means have no intervals, and A, B, and C
 test helped choose, so each model's scores there at its own threshold are
 slightly optimistic.
 
