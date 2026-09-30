@@ -670,6 +670,44 @@ def image_sources(
     return keys, sorted(set(keys))
 
 
+def error_counts(
+    predictions: Sequence[sv.Detections],
+    labels: Sequence[sv.Detections],
+    class_ids: Sequence[int],
+    confidence: float,
+    iou: float,
+) -> dict[int, tuple[int, int, int]]:
+    """Return hits, false positives, and misses per class, matching every class together.
+
+    A box paired with a label of another class is a false positive for its
+    own class and a miss for the label's, as in a run's confusion matrix.
+
+    Args:
+        predictions: Per-image predictions, at every confidence.
+        labels: Per-image labels, in the same order.
+        class_ids: The classes to match and count. Boxes of other classes
+            are left out.
+        confidence: Threshold a prediction must reach to count.
+        iou: Overlap a hit must exceed.
+    """
+    counts = {c: [0, 0, 0] for c in class_ids}
+    for preds, labs in zip(predictions, labels, strict=True):
+        kept = above(restrict(preds, class_ids), confidence)
+        wanted = restrict(labs, class_ids)
+        match = match_boxes(kept, wanted, iou)
+        pred_ids, label_ids = _class_ids(kept), _class_ids(wanted)
+        for p, _ in match.hits:
+            counts[int(pred_ids[p])][0] += 1
+        for p, lab in match.confusions:
+            counts[int(pred_ids[p])][1] += 1
+            counts[int(label_ids[lab])][2] += 1
+        for p in match.false_positives:
+            counts[int(pred_ids[p])][1] += 1
+        for lab in match.misses:
+            counts[int(label_ids[lab])][2] += 1
+    return {c: (tp, fp, fn) for c, (tp, fp, fn) in counts.items()}
+
+
 def check_run_totals(cases: SplitCases) -> None:
     """Fail if matching every scored class together does not reproduce the run's counts.
 
@@ -684,25 +722,13 @@ def check_run_totals(cases: SplitCases) -> None:
     """
     r = cases.result
     scored_ids = [cases.classes.index(c) for c in r.scored_classes]
-    counts = {c: [0, 0, 0] for c in scored_ids}
-    for preds, labels in zip(cases.predictions, cases.labels, strict=True):
-        kept = above(restrict(preds, scored_ids), r.metrics.confidence)
-        wanted = restrict(labels, scored_ids)
-        match = match_boxes(kept, wanted, r.metrics.iou)
-        pred_ids, label_ids = _class_ids(kept), _class_ids(wanted)
-        for p, _ in match.hits:
-            counts[int(pred_ids[p])][0] += 1
-        for p, lab in match.confusions:
-            counts[int(pred_ids[p])][1] += 1
-            counts[int(label_ids[lab])][2] += 1
-        for p in match.false_positives:
-            counts[int(pred_ids[p])][1] += 1
-        for lab in match.misses:
-            counts[int(label_ids[lab])][2] += 1
+    counts = error_counts(
+        cases.predictions, cases.labels, scored_ids, r.metrics.confidence, r.metrics.iou
+    )
     published = {c.name: c for c in r.metrics.classes}
     for cid in scored_ids:
         c = published[cases.classes[cid]]
-        got = tuple(counts[cid])
+        got = counts[cid]
         want = (c.true_positives, c.false_positives, c.false_negatives)
         if got != want:
             raise CountMismatchError(
