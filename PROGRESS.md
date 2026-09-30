@@ -216,7 +216,27 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     images of people holding fuel are the next data to add. A review and
     face-checked gallery for the merged models can follow with
     `/publish-diagnosis` and `/face-check`.
-- [ ] Task 11: Threshold choice (v0.2.0)
+- [x] Task 11: Threshold choice (v0.2.0)
+  - `frc-threshold` (`make threshold`) chooses each model's threshold from
+    its cached test predictions, pricing a fuel false positive at three
+    misses (D-031), and writes `reports/thresholds/<model>/`. The lockbox
+    is cut by unit into a tuning half and a held-out half (D-032). The
+    choices are `deploy_confidence` in `reports/models.yaml`, and
+    `make report` writes the tables and the cost figure into
+    `docs/EVALUATION.md`.
+  - Result. `merged-noaug` runs best at 0.34, where its held-out lockbox
+    recall rises from 0.52 to 0.6 and its C precision barely moves, since
+    its false positives on C are confident. baseline-a at its own 0.78
+    comes close in mean cost and fails on C, where the merged model does well, so the
+    comparison between them at 0.5 overstates the merged data's gain.
+  - Differences from SPEC section 7. Runs were not
+    rescored at the new threshold, since that would replace the 0.5 runs
+    the Task 10 write-up cites (D-031). A, B, and C test helped choose, so
+    only the held-out lockbox half is free of the choice. Robot boxes were
+    not costed.
+  - For Task 12. Run `merged-noaug` at `deploy_confidence` for fuel, and
+    consider keeping robot boxes at 0.5 by filtering per class. The next
+    data to add is still labeled images of people holding fuel.
 - [ ] Task 12: Edge deployment (v0.3.0, before interviews)
 
 Field test set: pending confirmation

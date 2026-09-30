@@ -193,12 +193,31 @@ So the merged data fixed what the diagnosis found and exposed a case the
 first three datasets barely had. `docs/EVALUATION.md` has the numbers,
 their intervals, and the slices behind this.
 
+## Picking a threshold for the robot
+
+A robot needs one threshold, and a wrong box costs more than a missed ball.
+Fuel is plentiful, and a ball missed in one frame usually shows up a few
+frames later, while a box on a person comes back every frame and sends the
+robot after nothing. So a false positive was priced at three misses, and
+each model's threshold was chosen to make its errors cheapest across the
+test splits and half of the held-back dataset. The other half, the
+held-out half, was kept out of the choice to check it.
+
+The merged model's best threshold is 0.34. There its recall on the held-out
+half rises from 0.52 at 0.5 to 0.6, while its precision on C barely moves
+(0.842 against 0.844), since its remaining wrong boxes on C are confident
+ones. The baseline's best threshold is 0.78, and there it comes close to
+the merged model in mean cost over the tuning sets. It still draws 151 wrong boxes on C, and it finds
+0.839 of the held-out half's balls. The cost gap has no interval, so this
+does not rank the two models. So a well-chosen threshold undoes much of the
+baseline's failure at 0.5, and the merged model's trouble with balls held
+by a person is one no threshold fixes.
+
 ## What comes next
 
 The merged model needs labeled images of people holding or standing near
-fuel, so it can tell a ball in a hand from a hand. After that come a confidence threshold picked for the robot, where a
-missed ball and a wasted pickup cost different things, and a Raspberry Pi
-deployment with measured speed in v0.3.0.
+fuel, so it can tell a ball in a hand from a hand. After that comes a
+Raspberry Pi deployment with measured speed in v0.3.0.
 
 ## Limits
 
