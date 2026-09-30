@@ -30,6 +30,14 @@ that trained it. Its cached predictions are committed under
 `reports/runs/`, so anyone can rescore them (see "Reproducing the
 scores").
 
+## Later models
+
+Two models trained on merged data, `merged-noaug` and `merged-aug`, are
+scored in `docs/EVALUATION.md` next to baseline-a. They draw far fewer
+fuel boxes on people and past games, but they miss about half of the
+balls in a held-back dataset where a person holds them, so this card still
+describes baseline-a.
+
 ## Intended use
 
 baseline-a exists to measure how a detector trained on one team's data
