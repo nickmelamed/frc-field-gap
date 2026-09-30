@@ -10,27 +10,34 @@
         "marswars": {
           "role": "keep_splits",
           "exclude_pattern": "^2026-FIRST-Robotics-Competition-",
+          "exclude_files": [],
           "dedupe_copies": false
         },
         "robotzftp2": {
           "role": "keep_splits",
           "exclude_pattern": null,
+          "exclude_files": [],
           "dedupe_copies": false
         },
         "scorekeeper": {
           "role": "keep_splits",
           "exclude_pattern": "^frame_\\d+\\.",
+          "exclude_files": [
+            "youtube-16_jpg.rf.03c351a731f5daa26d6a94c42c502e5a.jpg",
+            "youtube-16_jpg.rf.727bdb5da1deef78c6328ee5f5913ac4.jpg"
+          ],
           "dedupe_copies": false
         },
         "testingfrfr": {
           "role": "train_only",
           "exclude_pattern": null,
+          "exclude_files": [],
           "dedupe_copies": true
         }
       },
       "splits": {
         "train": {
-          "images": 6629
+          "images": 6628
         },
         "valid": {
           "images": 652
@@ -51,7 +58,7 @@
           "test": 286
         },
         "scorekeeper": {
-          "train": 1074,
+          "train": 1073,
           "valid": 263,
           "test": 314
         },
@@ -66,8 +73,8 @@
           "excluded": 140
         },
         "scorekeeper": {
-          "exact_duplicate": 4,
-          "excluded": 439
+          "exact_duplicate": 3,
+          "excluded": 441
         },
         "testingfrfr": {
           "copy": 6333,

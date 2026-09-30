@@ -131,6 +131,12 @@ merge:
       role: keep_splits
       # The fuel photos have unlabeled balls in their clusters (D-021).
       exclude_pattern: '^frame_\d+\.'
+      # Two byte-identical copies of one frame with different labels. The
+      # first labels a person as a robot, and Roboflow gave the upload the
+      # second copy's labels, which failed the version check (D-028).
+      exclude_files:
+        - youtube-16_jpg.rf.03c351a731f5daa26d6a94c42c502e5a.jpg
+        - youtube-16_jpg.rf.727bdb5da1deef78c6328ee5f5913ac4.jpg
     testingfrfr:
       role: train_only
       # Train holds about three augmented copies of each photo, some turned

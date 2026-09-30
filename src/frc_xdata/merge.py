@@ -248,7 +248,9 @@ def plan_merge(
                 if r.ref in dropped:
                     continue
                 target = split if source.role == "keep_splits" else "train"
-                if target != "test" and excluded(r, source.exclude_pattern):
+                if target != "test" and (
+                    excluded(r, source.exclude_pattern) or r.ref.file_name in source.exclude_files
+                ):
                     dropped[r.ref] = "excluded"
                     continue
                 if source.role == "train_only" and r.ref in blocked:

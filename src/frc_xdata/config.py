@@ -315,12 +315,14 @@ class MergeSource(_Frozen):
     ``keep_splits`` keeps the dataset's train, valid, and test as they are,
     and its valid and test are protected. ``train_only`` puts every image in
     train, once it matches no protected image. Source names matching
-    ``exclude_pattern`` are left out of train and valid. ``dedupe_copies``
+    ``exclude_pattern``, and harmonized files in ``exclude_files``, are left
+    out of train and valid. ``dedupe_copies``
     keeps one augmented copy of each training photo, as D-014 does.
     """
 
     role: Literal["keep_splits", "train_only"]
     exclude_pattern: str | None = None
+    exclude_files: list[str] = []
     dedupe_copies: bool = False
 
     @model_validator(mode="after")

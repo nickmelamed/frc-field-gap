@@ -796,7 +796,12 @@ two more problems. Roboflow drops the `.rf.<hash>` suffix on upload, and
 that suffix, so merged names now keep it as `_rf_<hash>`. And Roboflow
 keeps one of two byte-identical uploads, so merged train keeps one copy of
 each, the first by name, and `frc-upload` refuses byte-identical images and
-names that would collide. Keeping every
+names that would collide. The second upload's check then failed on one
+`scorekeeper` frame, `youtube-16`, stored twice as identical files with
+different labels. The copy merge kept labels a person in a yellow shirt as
+a robot, and Roboflow gave the upload the other copy's five robot boxes.
+Both copies are left out with `exclude_files`. Of the other byte-identical
+pairs in train, none disagree on labels. Keeping every
 augmented copy would have made most training images `testingfrfr` copies,
 about three per photo, some with broadcast frames on their side.
 
