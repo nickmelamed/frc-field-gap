@@ -262,7 +262,9 @@ def threshold_figure(choices: Sequence[ThresholdChoice], path: Path) -> Path:
     ax.set_ylim(0, COST_CEILING)
     ax.set_xlabel("Confidence threshold", color=MUTED, fontsize=9)
     ax.set_ylabel("Mean cost per image", color=MUTED, fontsize=9)
-    title = "Fuel error cost against threshold (a false positive costs three misses)"
+    costs = choices[0].costs
+    ratio = f"{costs.false_positive / costs.false_negative:g}"
+    title = f"Fuel error cost against threshold (a false positive costs {ratio} misses)"
     if notes:
         title += f"\nAbove {COST_CEILING}, off the chart: " + ", ".join(notes)
     ax.set_title(title, loc="left", fontsize=10, color=TEXT)
