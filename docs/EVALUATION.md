@@ -79,6 +79,52 @@ diagnosis (D-026). The merged models' errors were sliced but not judged by
 eye (D-030), so their false positives on C's fuel photos are not sorted
 into real fuel and mistakes. The field test set has not been scored.
 
+## Choosing the robot's threshold
+
+<!-- THRESHOLD:START -->
+Costs price one fuel false positive at 3.0 and one miss at 1.0, per image of each set. The chosen threshold has the lowest mean cost over the tuning sets, and the band is the run of thresholds around it within 0.05 of that cost as a share. Only the held-out half of the lockbox played no part in the choice. <!-- numbers: ok -->
+
+| Model | Chosen threshold | Band | Mean cost | Mean cost at 0.5 | Held-out recall interval |
+|---|---|---|---|---|---|
+| baseline-a | 0.78 | 0.77 to 0.8 | 0.502 | 2.845 | 0.763 to 0.905 |
+| merged-noaug | 0.34 | 0.29 to 0.47 | 0.476 | 0.519 | 0.429 to 0.765 |
+| merged-aug | 0.48 | 0.25 to 0.61 | 0.497 | 0.503 | 0.371 to 0.726 |
+
+![Mean cost against threshold](assets/threshold_cost.png)
+
+#### baseline-a at 0.78 and at 0.5
+
+| Set | Role | Images | Precision | Recall | False positives | Misses | Cost | Precision at 0.5 | Recall at 0.5 | Cost at 0.5 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| marswars test | tuning | 171 | 0.993 | 0.927 | 2 | 24 | 0.175 | 0.976 | 0.976 | 0.187 |
+| robotzftp2 test | tuning | 286 | 1.0 | 1.0 | 0 | 0 | 0.0 | 0.959 | 1.0 | 0.126 |
+| scorekeeper test | tuning | 314 | 0.711 | 0.995 | 151 | 2 | 1.449 | 0.257 | 1.0 | 10.347 |
+| pankratz tuning half | tuning | 165 | 1.0 | 0.833 | 0 | 63 | 0.382 | 0.92 | 0.942 | 0.721 |
+| pankratz held-out half | held out | 198 | 0.994 | 0.839 | 3 | 88 | 0.49 | 0.958 | 0.953 | 0.48 |
+
+#### merged-noaug at 0.34 and at 0.5
+
+| Set | Role | Images | Precision | Recall | False positives | Misses | Cost | Precision at 0.5 | Recall at 0.5 | Cost at 0.5 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| marswars test | tuning | 171 | 0.985 | 0.97 | 5 | 10 | 0.146 | 0.991 | 0.963 | 0.123 |
+| robotzftp2 test | tuning | 286 | 0.993 | 1.0 | 2 | 0 | 0.021 | 0.996 | 1.0 | 0.01 |
+| scorekeeper test | tuning | 314 | 0.842 | 1.0 | 70 | 0 | 0.669 | 0.844 | 1.0 | 0.659 |
+| scorekeeper test (robot) | tuning | 314 | 0.863 | 0.877 | 140 | 124 | n/a | 0.9 | 0.84 | n/a |
+| pankratz tuning half | tuning | 165 | 0.986 | 0.557 | 3 | 167 | 1.067 | 1.0 | 0.438 | 1.285 |
+| pankratz held-out half | held out | 198 | 0.962 | 0.6 | 13 | 219 | 1.303 | 0.976 | 0.52 | 1.394 |
+
+#### merged-aug at 0.48 and at 0.5
+
+| Set | Role | Images | Precision | Recall | False positives | Misses | Cost | Precision at 0.5 | Recall at 0.5 | Cost at 0.5 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| marswars test | tuning | 171 | 0.984 | 0.951 | 5 | 16 | 0.181 | 0.984 | 0.948 | 0.187 |
+| robotzftp2 test | tuning | 286 | 0.996 | 1.0 | 1 | 0 | 0.01 | 1.0 | 1.0 | 0.0 |
+| scorekeeper test | tuning | 314 | 0.842 | 1.0 | 70 | 0 | 0.669 | 0.842 | 1.0 | 0.669 |
+| scorekeeper test (robot) | tuning | 314 | 0.901 | 0.854 | 94 | 147 | n/a | 0.906 | 0.853 | n/a |
+| pankratz tuning half | tuning | 165 | 0.981 | 0.538 | 4 | 174 | 1.127 | 0.98 | 0.525 | 1.158 |
+| pankratz held-out half | held out | 198 | 0.984 | 0.553 | 5 | 245 | 1.313 | 0.984 | 0.546 | 1.333 |
+<!-- THRESHOLD:END -->
+
 ## How the baseline does on other teams' data
 
 This section and the next describe baseline-a's v0.1.0 runs, scored
