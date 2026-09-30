@@ -503,8 +503,9 @@ def threshold_section(choices: Sequence[ThresholdChoice]) -> str:
         f"Costs price one {first.scored_class} false positive at "
         f"{first.costs.false_positive} and one miss at {first.costs.false_negative}, per image "
         f"of each set. The chosen threshold has the lowest mean cost over the tuning sets, "
-        f"and the band is the run of thresholds around it within {first.band} of that cost "
-        f"as a share. Only the held-out half of the lockbox played no part in the choice."
+        f"and the band is the run of thresholds around it whose mean cost is at most "
+        f"{first.band:.0%} above it. Only the held-out half of the lockbox played no part in "
+        "the choice."
         f"{NOT_A_RESULT}",
         "",
         *_header(
