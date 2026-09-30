@@ -264,147 +264,220 @@ The field test set has not been scored yet.
 <!-- EVALUATION:START -->
 ### baseline-a on marswars test
 
-Run `baseline-a__marswars-test__20260927T221432Z`, scored on 171 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
+Run `baseline-a__marswars-test__20260930T070455Z`, scored on 171 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
 Intervals come from 1000 resamples of the split's 6 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
 
 | Class | Labeled boxes | mAP50 | mAP50 interval | mAP50-95 | Precision | Recall | Recall interval | Hits | False positives | Misses |
 |---|---|---|---|---|---|---|---|---|---|---|
-| fuel | 455 | 0.936 | 0.923 to 1.0 | 0.623 | 0.963 | 0.927 | 0.908 to 1.0 | 422 | 16 | 33 |
+| fuel | 328 | 0.967 | 0.956 to 1.0 | 0.683 | 0.976 | 0.976 | 0.966 to 1.0 | 320 | 8 | 8 |
 
 35 of 171 images reached the limit of 25 predictions per image and class (D-020, D-025), so fainter boxes may have been dropped there.
+
+127 labeled fuel boxes touch the frame edge and are neither hits nor misses, and 515 predictions that mostly overlap one of them are left out too (D-027).
 
 mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
 
 | Small | Medium | Large |
 |---|---|---|
-| 0.295 | 0.648 | 0.77 |
+| 0.428 | 0.677 | 0.776 |
 
 Confusion matrix. Rows are labeled boxes and columns are predictions. The background row holds predictions that matched no labeled box, and the background column holds labeled boxes the model missed.
 
 | | fuel | background |
 |---|---|---|
-| fuel | 422 | 33 |
-| background | 16 | 0 |
+| fuel | 320 | 8 |
+| background | 8 | 0 |
 
 Precision and recall for fuel at each confidence threshold:
 
 | Confidence | Precision | Recall |
 |---|---|---|
-| 0.05 | 0.585 | 0.949 |
-| 0.1 | 0.784 | 0.949 |
-| 0.15 | 0.867 | 0.947 |
-| 0.2 | 0.915 | 0.945 |
-| 0.25 | 0.931 | 0.945 |
-| 0.3 | 0.939 | 0.943 |
-| 0.35 | 0.945 | 0.943 |
-| 0.4 | 0.953 | 0.936 |
-| 0.45 | 0.957 | 0.932 |
-| 0.5 | 0.963 | 0.927 |
-| 0.55 | 0.967 | 0.914 |
-| 0.6 | 0.979 | 0.901 |
-| 0.65 | 0.981 | 0.895 |
-| 0.7 | 0.988 | 0.879 |
-| 0.75 | 0.992 | 0.837 |
-| 0.8 | 0.994 | 0.749 |
-| 0.85 | 0.996 | 0.488 |
-| 0.9 | 1.0 | 0.088 |
+| 0.05 | 0.678 | 0.976 |
+| 0.1 | 0.853 | 0.976 |
+| 0.15 | 0.896 | 0.976 |
+| 0.2 | 0.936 | 0.976 |
+| 0.25 | 0.947 | 0.976 |
+| 0.3 | 0.952 | 0.976 |
+| 0.35 | 0.952 | 0.976 |
+| 0.4 | 0.961 | 0.976 |
+| 0.45 | 0.967 | 0.976 |
+| 0.5 | 0.976 | 0.976 |
+| 0.55 | 0.982 | 0.973 |
+| 0.6 | 0.981 | 0.97 |
+| 0.65 | 0.984 | 0.966 |
+| 0.7 | 0.991 | 0.963 |
+| 0.75 | 0.99 | 0.936 |
+| 0.8 | 0.993 | 0.905 |
+| 0.85 | 0.995 | 0.649 |
+| 0.9 | 1.0 | 0.122 |
 | 0.95 | n/a | 0.0 |
 
 Recordings or groups with the most labeled boxes:
 
 | Recording or group | Images | fuel boxes |
 |---|---|---|
-| `Basler_daA1280-54uc__24770352__20260112_181311364` | 69 | 335 |
-| `Basler_daA1280-54uc__24770352__20260112_180938780` | 22 | 39 |
+| `Basler_daA1280-54uc__24770352__20260112_181311364` | 69 | 221 |
+| `Basler_daA1280-54uc__24770352__20260112_180938780` | 22 | 38 |
 | `Basler_daA1280-54uc__24770352__20260112_180745507` | 26 | 33 |
-| `Basler_daA1280-54uc__24770352__20260112_180633579` | 21 | 32 |
-| `Basler_daA1280-54uc__24770352__20260112_180305685` | 23 | 16 |
+| `Basler_daA1280-54uc__24770352__20260112_180633579` | 21 | 27 |
+| `Basler_daA1280-54uc__24770352__20260112_180305685` | 23 | 9 |
 | `Basler_daA1280-54uc__24770352__20260112_180602871` | 10 | 0 |
 
-### baseline-a on robotzftp2 test
+### baseline-a on pankratz test
 
-Run `baseline-a__robotzftp2-test__20260927T221735Z`, scored on 286 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
-Intervals come from 1000 resamples of the split's 7 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
+Run `baseline-a__pankratz-test__20260930T072846Z`, scored on 363 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
+Intervals come from 1000 resamples of the split's 280 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
 
 | Class | Labeled boxes | mAP50 | mAP50 interval | mAP50-95 | Precision | Recall | Recall interval | Hits | False positives | Misses |
 |---|---|---|---|---|---|---|---|---|---|---|
-| fuel | 376 | 0.994 | 0.985 to 1.0 | 0.864 | 0.966 | 0.973 | 0.94 to 1.0 | 366 | 13 | 10 |
+| fuel | 925 | 0.956 | 0.931 to 0.975 | 0.656 | 0.942 | 0.948 | 0.921 to 0.971 | 876 | 55 | 49 |
 
-122 of 286 images reached the limit of 25 predictions per image and class (D-020, D-025), so fainter boxes may have been dropped there.
+315 of 363 images reached the limit of 25 predictions per image and class (D-020, D-025), so fainter boxes may have been dropped there.
+
+60 labeled fuel boxes touch the frame edge and are neither hits nor misses, and 317 predictions that mostly overlap one of them are left out too (D-027).
 
 mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
 
 | Small | Medium | Large |
 |---|---|---|
-| n/a | 0.795 | 0.897 |
+| 0.611 | 0.879 | 0.92 |
 
 Confusion matrix. Rows are labeled boxes and columns are predictions. The background row holds predictions that matched no labeled box, and the background column holds labeled boxes the model missed.
 
 | | fuel | background |
 |---|---|---|
-| fuel | 366 | 10 |
-| background | 13 | 0 |
+| fuel | 876 | 49 |
+| background | 55 | 0 |
 
 Precision and recall for fuel at each confidence threshold:
 
 | Confidence | Precision | Recall |
 |---|---|---|
-| 0.05 | 0.239 | 1.0 |
-| 0.1 | 0.451 | 1.0 |
-| 0.15 | 0.605 | 1.0 |
-| 0.2 | 0.693 | 0.997 |
-| 0.25 | 0.783 | 0.997 |
-| 0.3 | 0.842 | 0.995 |
-| 0.35 | 0.871 | 0.989 |
-| 0.4 | 0.909 | 0.984 |
-| 0.45 | 0.931 | 0.976 |
-| 0.5 | 0.966 | 0.973 |
-| 0.55 | 0.973 | 0.968 |
-| 0.6 | 0.981 | 0.965 |
-| 0.65 | 1.0 | 0.957 |
-| 0.7 | 1.0 | 0.952 |
-| 0.75 | 1.0 | 0.947 |
-| 0.8 | 1.0 | 0.936 |
-| 0.85 | 1.0 | 0.896 |
-| 0.9 | 1.0 | 0.532 |
-| 0.95 | 1.0 | 0.035 |
+| 0.05 | 0.282 | 0.971 |
+| 0.1 | 0.451 | 0.961 |
+| 0.15 | 0.561 | 0.958 |
+| 0.2 | 0.658 | 0.957 |
+| 0.25 | 0.747 | 0.956 |
+| 0.3 | 0.81 | 0.955 |
+| 0.35 | 0.86 | 0.954 |
+| 0.4 | 0.902 | 0.95 |
+| 0.45 | 0.926 | 0.948 |
+| 0.5 | 0.942 | 0.948 |
+| 0.55 | 0.957 | 0.943 |
+| 0.6 | 0.966 | 0.939 |
+| 0.65 | 0.98 | 0.931 |
+| 0.7 | 0.989 | 0.917 |
+| 0.75 | 0.993 | 0.882 |
+| 0.8 | 0.996 | 0.764 |
+| 0.85 | 0.998 | 0.522 |
+| 0.9 | 1.0 | 0.172 |
+| 0.95 | 1.0 | 0.017 |
 
 Recordings or groups with the most labeled boxes:
 
 | Recording or group | Images | fuel boxes |
 |---|---|---|
-| `IMG_5833_MOV` | 79 | 129 |
-| `IMG_5835_MOV` | 65 | 117 |
-| `IMG_5839_MOV` | 44 | 36 |
-| `IMG_5836_MOV` | 35 | 35 |
-| `IMG_5838_MOV` | 29 | 25 |
-| `IMG_5837_MOV` | 20 | 20 |
-| `IMG_5834_MOV` | 14 | 14 |
+| `IMG_7023_mov-0000_jpg.rf.e9605090038976ab2d577c84f89ad8a7.jpg` | 22 | 107 |
+| `WIN_20260120_19_08_50_Pro_jpg.rf.7f0013007e46fc5bbfd9a8c9b36502e1.jpg` | 13 | 37 |
+| `WIN_20260120_18_58_08_Pro_jpg.rf.d86dd5b49333552d30a775aed9ba7e43.jpg` | 6 | 26 |
+| `WIN_20260120_19_06_12_Pro_jpg.rf.2ef8b594d4c4b600bfa5e8d13770d9d7.jpg` | 11 | 22 |
+| `WIN_20260120_19_01_29_Pro_jpg.rf.b8e6f674119be34dc2ff3110eac452f9.jpg` | 4 | 19 |
+| `WIN_20260120_19_04_39_Pro_jpg.rf.fe13af87223df2a861eca3df186ff140.jpg` | 3 | 12 |
+| `WIN_20260120_18_57_25_Pro_jpg.rf.078351cfb85cc47ed75eba6b762ace55.jpg` | 2 | 9 |
+| `WIN_20260120_19_03_45_Pro_jpg.rf.e4288cd428267dc32568c0de2eb2d2f8.jpg` | 3 | 8 |
+| `WIN_20260120_19_11_13_Pro_jpg.rf.1862f797f95ce9468fa5bef57f0627fe.jpg` | 2 | 8 |
+| `WIN_20260120_18_59_17_Pro_jpg.rf.ac50e12174cbfe06067553e1e3ccd087.jpg` | 2 | 6 |
 
-### baseline-a on scorekeeper test
+The other 270 hold 295 images and 671 fuel boxes.
 
-Run `baseline-a__scorekeeper-test__20260927T222144Z`, scored on 314 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
-Intervals come from 1000 resamples of the split's 109 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
+### baseline-a on robotzftp2 test
+
+Run `baseline-a__robotzftp2-test__20260930T070722Z`, scored on 286 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
+Intervals come from 1000 resamples of the split's 7 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
 
 | Class | Labeled boxes | mAP50 | mAP50 interval | mAP50-95 | Precision | Recall | Recall interval | Hits | False positives | Misses |
 |---|---|---|---|---|---|---|---|---|---|---|
-| fuel | 375 | 0.836 | 0.773 to 0.895 | 0.725 | 0.257 | 1.0 | 1.0 to 1.0 | 375 | 1083 | 0 |
+| fuel | 281 | 1.0 | 1.0 to 1.0 | 0.883 | 0.959 | 1.0 | 1.0 to 1.0 | 281 | 12 | 0 |
 
-The robot boxes in scorekeeper are not scored, since baseline-a was never trained to find them.
+122 of 286 images reached the limit of 25 predictions per image and class (D-020, D-025), so fainter boxes may have been dropped there.
 
-286 of 314 images reached the limit of 25 predictions per image and class (D-020, D-025), so fainter boxes may have been dropped there. In 4 of them every kept box is at or above the threshold, so boxes that would have counted at it were dropped, and the false positive count at the threshold is a lower bound.
+95 labeled fuel boxes touch the frame edge and are neither hits nor misses, and 903 predictions that mostly overlap one of them are left out too (D-027).
 
 mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
 
 | Small | Medium | Large |
 |---|---|---|
-| 0.73 | 0.751 | n/a |
+| n/a | 0.848 | 0.898 |
 
 Confusion matrix. Rows are labeled boxes and columns are predictions. The background row holds predictions that matched no labeled box, and the background column holds labeled boxes the model missed.
 
 | | fuel | background |
 |---|---|---|
-| fuel | 375 | 0 |
+| fuel | 281 | 0 |
+| background | 12 | 0 |
+
+Precision and recall for fuel at each confidence threshold:
+
+| Confidence | Precision | Recall |
+|---|---|---|
+| 0.05 | 0.196 | 1.0 |
+| 0.1 | 0.387 | 1.0 |
+| 0.15 | 0.535 | 1.0 |
+| 0.2 | 0.63 | 1.0 |
+| 0.25 | 0.732 | 1.0 |
+| 0.3 | 0.803 | 1.0 |
+| 0.35 | 0.839 | 1.0 |
+| 0.4 | 0.886 | 1.0 |
+| 0.45 | 0.915 | 1.0 |
+| 0.5 | 0.959 | 1.0 |
+| 0.55 | 0.969 | 1.0 |
+| 0.6 | 0.979 | 1.0 |
+| 0.65 | 1.0 | 1.0 |
+| 0.7 | 1.0 | 1.0 |
+| 0.75 | 1.0 | 1.0 |
+| 0.8 | 1.0 | 1.0 |
+| 0.85 | 1.0 | 0.996 |
+| 0.9 | 1.0 | 0.605 |
+| 0.95 | 1.0 | 0.039 |
+
+Recordings or groups with the most labeled boxes:
+
+| Recording or group | Images | fuel boxes |
+|---|---|---|
+| `IMG_5835_MOV` | 65 | 99 |
+| `IMG_5833_MOV` | 79 | 98 |
+| `IMG_5839_MOV` | 44 | 32 |
+| `IMG_5838_MOV` | 29 | 15 |
+| `IMG_5836_MOV` | 35 | 13 |
+| `IMG_5834_MOV` | 14 | 12 |
+| `IMG_5837_MOV` | 20 | 12 |
+
+### baseline-a on scorekeeper test
+
+Run `baseline-a__scorekeeper-test__20260930T071104Z`, scored on 314 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
+Intervals come from 1000 resamples of the split's 109 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
+
+| Class | Labeled boxes | mAP50 | mAP50 interval | mAP50-95 | Precision | Recall | Recall interval | Hits | False positives | Misses |
+|---|---|---|---|---|---|---|---|---|---|---|
+| fuel | 374 | 0.836 | 0.773 to 0.895 | 0.725 | 0.257 | 1.0 | 1.0 to 1.0 | 374 | 1083 | 0 |
+
+The robot boxes in scorekeeper are not scored, since baseline-a was never trained to find them.
+
+286 of 314 images reached the limit of 25 predictions per image and class (D-020, D-025), so fainter boxes may have been dropped there. In 4 of them every kept box is at or above the threshold, so boxes that would have counted at it were dropped, and the false positive count at the threshold is a lower bound.
+
+1 labeled fuel boxes touch the frame edge and are neither hits nor misses, and 1 predictions that mostly overlap one of them are left out too (D-027).
+
+mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
+
+| Small | Medium | Large |
+|---|---|---|
+| 0.731 | 0.751 | n/a |
+
+Confusion matrix. Rows are labeled boxes and columns are predictions. The background row holds predictions that matched no labeled box, and the background column holds labeled boxes the model missed.
+
+| | fuel | background |
+|---|---|---|
+| fuel | 374 | 0 |
 | background | 1083 | 0 |
 
 Precision and recall for fuel at each confidence threshold:
@@ -415,7 +488,7 @@ Precision and recall for fuel at each confidence threshold:
 | 0.1 | 0.063 | 1.0 |
 | 0.15 | 0.066 | 1.0 |
 | 0.2 | 0.07 | 1.0 |
-| 0.25 | 0.077 | 1.0 |
+| 0.25 | 0.076 | 1.0 |
 | 0.3 | 0.091 | 1.0 |
 | 0.35 | 0.114 | 1.0 |
 | 0.4 | 0.148 | 1.0 |
@@ -424,10 +497,10 @@ Precision and recall for fuel at each confidence threshold:
 | 0.55 | 0.319 | 1.0 |
 | 0.6 | 0.389 | 1.0 |
 | 0.65 | 0.466 | 1.0 |
-| 0.7 | 0.573 | 1.0 |
-| 0.75 | 0.671 | 1.0 |
-| 0.8 | 0.724 | 0.981 |
-| 0.85 | 0.809 | 0.845 |
+| 0.7 | 0.572 | 1.0 |
+| 0.75 | 0.67 | 1.0 |
+| 0.8 | 0.724 | 0.984 |
+| 0.85 | 0.809 | 0.848 |
 | 0.9 | 0.814 | 0.128 |
 | 0.95 | n/a | 0.0 |
 
@@ -446,7 +519,569 @@ Recordings or groups with the most labeled boxes:
 | `frame_0371_jpg.rf.2e1beb63eb6df2a82462512864bbcb7a.jpg` | 1 | 14 |
 | `frame_0384_jpg.rf.7bf14483bb17c298466b8f860c5370ad.jpg` | 1 | 13 |
 
-The other 99 hold 289 images and 66 fuel boxes.
+The other 99 hold 289 images and 65 fuel boxes.
+
+### merged-aug on marswars test
+
+Run `merged-aug__marswars-test__20260930T130809Z`, scored on 171 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
+Intervals come from 1000 resamples of the split's 6 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
+
+| Class | Labeled boxes | mAP50 | mAP50 interval | mAP50-95 | Precision | Recall | Recall interval | Hits | False positives | Misses |
+|---|---|---|---|---|---|---|---|---|---|---|
+| fuel | 328 | 0.956 | 0.94 to 1.0 | 0.667 | 0.984 | 0.948 | 0.902 to 1.0 | 311 | 5 | 17 |
+
+22 of 171 images reached the limit of 25 predictions per image and class (D-020, D-025), so fainter boxes may have been dropped there.
+
+127 labeled fuel boxes touch the frame edge and are neither hits nor misses, and 356 predictions that mostly overlap one of them are left out too (D-027).
+
+mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
+
+| Small | Medium | Large |
+|---|---|---|
+| 0.364 | 0.658 | 0.806 |
+
+Confusion matrix. Rows are labeled boxes and columns are predictions. The background row holds predictions that matched no labeled box, and the background column holds labeled boxes the model missed.
+
+| | fuel | background |
+|---|---|---|
+| fuel | 311 | 17 |
+| background | 5 | 0 |
+
+Precision and recall for fuel at each confidence threshold:
+
+| Confidence | Precision | Recall |
+|---|---|---|
+| 0.05 | 0.888 | 0.963 |
+| 0.1 | 0.935 | 0.963 |
+| 0.15 | 0.963 | 0.963 |
+| 0.2 | 0.966 | 0.963 |
+| 0.25 | 0.978 | 0.96 |
+| 0.3 | 0.981 | 0.954 |
+| 0.35 | 0.981 | 0.954 |
+| 0.4 | 0.981 | 0.954 |
+| 0.45 | 0.984 | 0.951 |
+| 0.5 | 0.984 | 0.948 |
+| 0.55 | 0.984 | 0.948 |
+| 0.6 | 0.984 | 0.936 |
+| 0.65 | 0.99 | 0.924 |
+| 0.7 | 0.993 | 0.866 |
+| 0.75 | 0.992 | 0.735 |
+| 0.8 | 0.994 | 0.466 |
+| 0.85 | 0.991 | 0.338 |
+| 0.9 | 0.984 | 0.192 |
+| 0.95 | n/a | 0.0 |
+
+Recordings or groups with the most labeled boxes:
+
+| Recording or group | Images | fuel boxes |
+|---|---|---|
+| `Basler_daA1280-54uc__24770352__20260112_181311364` | 69 | 221 |
+| `Basler_daA1280-54uc__24770352__20260112_180938780` | 22 | 38 |
+| `Basler_daA1280-54uc__24770352__20260112_180745507` | 26 | 33 |
+| `Basler_daA1280-54uc__24770352__20260112_180633579` | 21 | 27 |
+| `Basler_daA1280-54uc__24770352__20260112_180305685` | 23 | 9 |
+| `Basler_daA1280-54uc__24770352__20260112_180602871` | 10 | 0 |
+
+### merged-aug on pankratz test
+
+Run `merged-aug__pankratz-test__20260930T132349Z`, scored on 363 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
+Intervals come from 1000 resamples of the split's 280 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
+
+| Class | Labeled boxes | mAP50 | mAP50 interval | mAP50-95 | Precision | Recall | Recall interval | Hits | False positives | Misses |
+|---|---|---|---|---|---|---|---|---|---|---|
+| fuel | 925 | 0.754 | 0.671 to 0.833 | 0.48 | 0.982 | 0.537 | 0.432 to 0.654 | 497 | 9 | 428 |
+
+16 of 363 images reached the limit of 25 predictions per image and class (D-020, D-025), so fainter boxes may have been dropped there.
+
+60 labeled fuel boxes touch the frame edge and are neither hits nor misses, and 200 predictions that mostly overlap one of them are left out too (D-027).
+
+mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
+
+| Small | Medium | Large |
+|---|---|---|
+| 0.414 | 0.837 | 0.96 |
+
+Confusion matrix. Rows are labeled boxes and columns are predictions. The background row holds predictions that matched no labeled box, and the background column holds labeled boxes the model missed.
+
+| | fuel | background |
+|---|---|---|
+| fuel | 497 | 428 |
+| background | 9 | 0 |
+
+Precision and recall for fuel at each confidence threshold:
+
+| Confidence | Precision | Recall |
+|---|---|---|
+| 0.05 | 0.771 | 0.721 |
+| 0.1 | 0.877 | 0.677 |
+| 0.15 | 0.918 | 0.652 |
+| 0.2 | 0.938 | 0.634 |
+| 0.25 | 0.959 | 0.625 |
+| 0.3 | 0.967 | 0.604 |
+| 0.35 | 0.97 | 0.588 |
+| 0.4 | 0.974 | 0.571 |
+| 0.45 | 0.977 | 0.554 |
+| 0.5 | 0.982 | 0.537 |
+| 0.55 | 0.984 | 0.523 |
+| 0.6 | 0.989 | 0.502 |
+| 0.65 | 0.993 | 0.479 |
+| 0.7 | 0.993 | 0.444 |
+| 0.75 | 0.995 | 0.4 |
+| 0.8 | 0.994 | 0.342 |
+| 0.85 | 0.996 | 0.254 |
+| 0.9 | 1.0 | 0.168 |
+| 0.95 | 1.0 | 0.056 |
+
+Recordings or groups with the most labeled boxes:
+
+| Recording or group | Images | fuel boxes |
+|---|---|---|
+| `IMG_7023_mov-0000_jpg.rf.e9605090038976ab2d577c84f89ad8a7.jpg` | 22 | 107 |
+| `WIN_20260120_19_08_50_Pro_jpg.rf.7f0013007e46fc5bbfd9a8c9b36502e1.jpg` | 13 | 37 |
+| `WIN_20260120_18_58_08_Pro_jpg.rf.d86dd5b49333552d30a775aed9ba7e43.jpg` | 6 | 26 |
+| `WIN_20260120_19_06_12_Pro_jpg.rf.2ef8b594d4c4b600bfa5e8d13770d9d7.jpg` | 11 | 22 |
+| `WIN_20260120_19_01_29_Pro_jpg.rf.b8e6f674119be34dc2ff3110eac452f9.jpg` | 4 | 19 |
+| `WIN_20260120_19_04_39_Pro_jpg.rf.fe13af87223df2a861eca3df186ff140.jpg` | 3 | 12 |
+| `WIN_20260120_18_57_25_Pro_jpg.rf.078351cfb85cc47ed75eba6b762ace55.jpg` | 2 | 9 |
+| `WIN_20260120_19_03_45_Pro_jpg.rf.e4288cd428267dc32568c0de2eb2d2f8.jpg` | 3 | 8 |
+| `WIN_20260120_19_11_13_Pro_jpg.rf.1862f797f95ce9468fa5bef57f0627fe.jpg` | 2 | 8 |
+| `WIN_20260120_18_59_17_Pro_jpg.rf.ac50e12174cbfe06067553e1e3ccd087.jpg` | 2 | 6 |
+
+The other 270 hold 295 images and 671 fuel boxes.
+
+### merged-aug on robotzftp2 test
+
+Run `merged-aug__robotzftp2-test__20260930T131050Z`, scored on 286 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
+Intervals come from 1000 resamples of the split's 7 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
+
+| Class | Labeled boxes | mAP50 | mAP50 interval | mAP50-95 | Precision | Recall | Recall interval | Hits | False positives | Misses |
+|---|---|---|---|---|---|---|---|---|---|---|
+| fuel | 281 | 1.0 | 1.0 to 1.0 | 0.926 | 1.0 | 1.0 | 1.0 to 1.0 | 281 | 0 | 0 |
+
+95 labeled fuel boxes touch the frame edge and are neither hits nor misses, and 381 predictions that mostly overlap one of them are left out too (D-027).
+
+mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
+
+| Small | Medium | Large |
+|---|---|---|
+| n/a | 0.905 | 0.934 |
+
+Confusion matrix. Rows are labeled boxes and columns are predictions. The background row holds predictions that matched no labeled box, and the background column holds labeled boxes the model missed.
+
+| | fuel | background |
+|---|---|---|
+| fuel | 281 | 0 |
+| background | 0 | 0 |
+
+Precision and recall for fuel at each confidence threshold:
+
+| Confidence | Precision | Recall |
+|---|---|---|
+| 0.05 | 0.959 | 1.0 |
+| 0.1 | 0.979 | 1.0 |
+| 0.15 | 0.986 | 1.0 |
+| 0.2 | 0.986 | 1.0 |
+| 0.25 | 0.989 | 1.0 |
+| 0.3 | 0.993 | 1.0 |
+| 0.35 | 0.993 | 1.0 |
+| 0.4 | 0.993 | 1.0 |
+| 0.45 | 0.993 | 1.0 |
+| 0.5 | 1.0 | 1.0 |
+| 0.55 | 1.0 | 1.0 |
+| 0.6 | 1.0 | 1.0 |
+| 0.65 | 1.0 | 1.0 |
+| 0.7 | 1.0 | 1.0 |
+| 0.75 | 1.0 | 1.0 |
+| 0.8 | 1.0 | 1.0 |
+| 0.85 | 1.0 | 1.0 |
+| 0.9 | 1.0 | 0.996 |
+| 0.95 | 1.0 | 0.722 |
+
+Recordings or groups with the most labeled boxes:
+
+| Recording or group | Images | fuel boxes |
+|---|---|---|
+| `IMG_5835_MOV` | 65 | 99 |
+| `IMG_5833_MOV` | 79 | 98 |
+| `IMG_5839_MOV` | 44 | 32 |
+| `IMG_5838_MOV` | 29 | 15 |
+| `IMG_5836_MOV` | 35 | 13 |
+| `IMG_5834_MOV` | 14 | 12 |
+| `IMG_5837_MOV` | 20 | 12 |
+
+### merged-aug on scorekeeper test
+
+Run `merged-aug__scorekeeper-test__20260930T131406Z`, scored on 314 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
+Intervals come from 1000 resamples of the split's 109 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
+
+| Class | Labeled boxes | mAP50 | mAP50 interval | mAP50-95 | Precision | Recall | Recall interval | Hits | False positives | Misses |
+|---|---|---|---|---|---|---|---|---|---|---|
+| fuel | 374 | 0.891 | 0.87 to 0.936 | 0.764 | 0.842 | 1.0 | 1.0 to 1.0 | 374 | 70 | 0 |
+| robot | 1007 | 0.894 | 0.669 to 0.943 | 0.52 | 0.906 | 0.853 | 0.601 to 0.903 | 859 | 89 | 148 |
+
+253 of 314 images reached the limit of 25 predictions per image and class (D-020, D-025), so fainter boxes may have been dropped there.
+
+1 labeled fuel boxes touch the frame edge and are neither hits nor misses, and 4 predictions that mostly overlap one of them are left out too (D-027).
+
+mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
+
+| Small | Medium | Large |
+|---|---|---|
+| 0.632 | 0.635 | 0.723 |
+
+Confusion matrix. Rows are labeled boxes and columns are predictions. The background row holds predictions that matched no labeled box, and the background column holds labeled boxes the model missed.
+
+| | fuel | robot | background |
+|---|---|---|---|
+| fuel | 374 | 0 | 0 |
+| robot | 0 | 859 | 148 |
+| background | 70 | 89 | 0 |
+
+Precision and recall for fuel at each confidence threshold:
+
+| Confidence | Precision | Recall |
+|---|---|---|
+| 0.05 | 0.784 | 1.0 |
+| 0.1 | 0.82 | 1.0 |
+| 0.15 | 0.833 | 1.0 |
+| 0.2 | 0.833 | 1.0 |
+| 0.25 | 0.835 | 1.0 |
+| 0.3 | 0.839 | 1.0 |
+| 0.35 | 0.839 | 1.0 |
+| 0.4 | 0.84 | 1.0 |
+| 0.45 | 0.84 | 1.0 |
+| 0.5 | 0.842 | 1.0 |
+| 0.55 | 0.842 | 1.0 |
+| 0.6 | 0.842 | 1.0 |
+| 0.65 | 0.842 | 1.0 |
+| 0.7 | 0.844 | 1.0 |
+| 0.75 | 0.846 | 1.0 |
+| 0.8 | 0.846 | 1.0 |
+| 0.85 | 0.846 | 0.971 |
+| 0.9 | 0.854 | 0.468 |
+| 0.95 | 0.949 | 0.099 |
+
+Precision and recall for robot at each confidence threshold:
+
+| Confidence | Precision | Recall |
+|---|---|---|
+| 0.05 | 0.581 | 0.926 |
+| 0.1 | 0.763 | 0.913 |
+| 0.15 | 0.818 | 0.904 |
+| 0.2 | 0.847 | 0.9 |
+| 0.25 | 0.861 | 0.894 |
+| 0.3 | 0.878 | 0.888 |
+| 0.35 | 0.885 | 0.878 |
+| 0.4 | 0.894 | 0.867 |
+| 0.45 | 0.897 | 0.86 |
+| 0.5 | 0.906 | 0.853 |
+| 0.55 | 0.91 | 0.851 |
+| 0.6 | 0.918 | 0.842 |
+| 0.65 | 0.919 | 0.836 |
+| 0.7 | 0.924 | 0.827 |
+| 0.75 | 0.931 | 0.805 |
+| 0.8 | 0.941 | 0.777 |
+| 0.85 | 0.966 | 0.642 |
+| 0.9 | 0.992 | 0.126 |
+| 0.95 | 1.0 | 0.049 |
+
+Recordings or groups with the most labeled boxes:
+
+| Recording or group | Images | fuel boxes | robot boxes |
+|---|---|---|---|
+| `Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0000_jpg.rf.8dd0336529d85058b7ca7b6a989f301e.jpg` | 159 | 0 | 667 |
+| `mQbklnVHj7k_0_jpg.rf.81b24257aa10010d96a920d7e5b22c93.jpg` | 19 | 0 | 115 |
+| `frame_0233_jpg.rf.938d117831ebb49b9ab34bcfbed3ec2a.jpg` | 6 | 78 | 0 |
+| `-Q97WO6Zc_U_0_jpg.rf.d67bf6e85b303a47fc90b7044c9569e0.jpg` | 9 | 0 | 70 |
+| `frame_0458_jpg.rf.355f6f2192332ea6dc865a496062d5ea.jpg` | 4 | 50 | 0 |
+| `frame_0183_jpg.rf.90656b7c2eeed698cc936b06545ad856.jpg` | 4 | 40 | 0 |
+| `frame_0228_jpg.rf.6f4f73dec0d529dcec5b7db7f4915935.jpg` | 3 | 39 | 0 |
+| `frame_0294_jpg.rf.97adfc4a534b7a91f4d3d40faaa82941.jpg` | 2 | 28 | 0 |
+| `frame_0051_jpg.rf.13768b3a1df8e51d2f8f8a07a9ba5ca7.jpg` | 2 | 19 | 0 |
+| `frame_0250_jpg.rf.57cf4d97294a93e290917337b047ce07.jpg` | 1 | 14 | 0 |
+
+The other 99 hold 105 images and 106 fuel boxes, 155 robot boxes.
+
+### merged-noaug on marswars test
+
+Run `merged-noaug__marswars-test__20260930T071421Z`, scored on 171 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
+Intervals come from 1000 resamples of the split's 6 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
+
+| Class | Labeled boxes | mAP50 | mAP50 interval | mAP50-95 | Precision | Recall | Recall interval | Hits | False positives | Misses |
+|---|---|---|---|---|---|---|---|---|---|---|
+| fuel | 328 | 0.979 | 0.969 to 1.0 | 0.683 | 0.991 | 0.963 | 0.922 to 1.0 | 316 | 3 | 12 |
+
+29 of 171 images reached the limit of 25 predictions per image and class (D-020, D-025), so fainter boxes may have been dropped there.
+
+127 labeled fuel boxes touch the frame edge and are neither hits nor misses, and 472 predictions that mostly overlap one of them are left out too (D-027).
+
+mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
+
+| Small | Medium | Large |
+|---|---|---|
+| 0.367 | 0.674 | 0.802 |
+
+Confusion matrix. Rows are labeled boxes and columns are predictions. The background row holds predictions that matched no labeled box, and the background column holds labeled boxes the model missed.
+
+| | fuel | background |
+|---|---|---|
+| fuel | 316 | 12 |
+| background | 3 | 0 |
+
+Precision and recall for fuel at each confidence threshold:
+
+| Confidence | Precision | Recall |
+|---|---|---|
+| 0.05 | 0.763 | 0.982 |
+| 0.1 | 0.933 | 0.979 |
+| 0.15 | 0.958 | 0.979 |
+| 0.2 | 0.973 | 0.973 |
+| 0.25 | 0.976 | 0.973 |
+| 0.3 | 0.985 | 0.97 |
+| 0.35 | 0.985 | 0.97 |
+| 0.4 | 0.985 | 0.97 |
+| 0.45 | 0.991 | 0.966 |
+| 0.5 | 0.991 | 0.963 |
+| 0.55 | 0.991 | 0.963 |
+| 0.6 | 0.991 | 0.957 |
+| 0.65 | 0.99 | 0.948 |
+| 0.7 | 0.994 | 0.936 |
+| 0.75 | 0.997 | 0.909 |
+| 0.8 | 0.996 | 0.86 |
+| 0.85 | 1.0 | 0.573 |
+| 0.9 | 1.0 | 0.128 |
+| 0.95 | n/a | 0.0 |
+
+Recordings or groups with the most labeled boxes:
+
+| Recording or group | Images | fuel boxes |
+|---|---|---|
+| `Basler_daA1280-54uc__24770352__20260112_181311364` | 69 | 221 |
+| `Basler_daA1280-54uc__24770352__20260112_180938780` | 22 | 38 |
+| `Basler_daA1280-54uc__24770352__20260112_180745507` | 26 | 33 |
+| `Basler_daA1280-54uc__24770352__20260112_180633579` | 21 | 27 |
+| `Basler_daA1280-54uc__24770352__20260112_180305685` | 23 | 9 |
+| `Basler_daA1280-54uc__24770352__20260112_180602871` | 10 | 0 |
+
+### merged-noaug on pankratz test
+
+Run `merged-noaug__pankratz-test__20260930T072220Z`, scored on 363 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
+Intervals come from 1000 resamples of the split's 280 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
+
+| Class | Labeled boxes | mAP50 | mAP50 interval | mAP50-95 | Precision | Recall | Recall interval | Hits | False positives | Misses |
+|---|---|---|---|---|---|---|---|---|---|---|
+| fuel | 925 | 0.813 | 0.747 to 0.875 | 0.55 | 0.985 | 0.486 | 0.375 to 0.615 | 452 | 5 | 473 |
+
+62 of 363 images reached the limit of 25 predictions per image and class (D-020, D-025), so fainter boxes may have been dropped there.
+
+60 labeled fuel boxes touch the frame edge and are neither hits nor misses, and 311 predictions that mostly overlap one of them are left out too (D-027).
+
+mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
+
+| Small | Medium | Large |
+|---|---|---|
+| 0.507 | 0.858 | 0.991 |
+
+Confusion matrix. Rows are labeled boxes and columns are predictions. The background row holds predictions that matched no labeled box, and the background column holds labeled boxes the model missed.
+
+| | fuel | background |
+|---|---|---|
+| fuel | 452 | 473 |
+| background | 5 | 0 |
+
+Precision and recall for fuel at each confidence threshold:
+
+| Confidence | Precision | Recall |
+|---|---|---|
+| 0.05 | 0.658 | 0.808 |
+| 0.1 | 0.796 | 0.738 |
+| 0.15 | 0.86 | 0.703 |
+| 0.2 | 0.901 | 0.668 |
+| 0.25 | 0.929 | 0.635 |
+| 0.3 | 0.959 | 0.612 |
+| 0.35 | 0.973 | 0.578 |
+| 0.4 | 0.979 | 0.549 |
+| 0.45 | 0.981 | 0.516 |
+| 0.5 | 0.985 | 0.486 |
+| 0.55 | 0.988 | 0.441 |
+| 0.6 | 0.992 | 0.398 |
+| 0.65 | 0.991 | 0.359 |
+| 0.7 | 0.99 | 0.325 |
+| 0.75 | 0.992 | 0.278 |
+| 0.8 | 0.995 | 0.239 |
+| 0.85 | 1.0 | 0.187 |
+| 0.9 | 1.0 | 0.139 |
+| 0.95 | 1.0 | 0.053 |
+
+Recordings or groups with the most labeled boxes:
+
+| Recording or group | Images | fuel boxes |
+|---|---|---|
+| `IMG_7023_mov-0000_jpg.rf.e9605090038976ab2d577c84f89ad8a7.jpg` | 22 | 107 |
+| `WIN_20260120_19_08_50_Pro_jpg.rf.7f0013007e46fc5bbfd9a8c9b36502e1.jpg` | 13 | 37 |
+| `WIN_20260120_18_58_08_Pro_jpg.rf.d86dd5b49333552d30a775aed9ba7e43.jpg` | 6 | 26 |
+| `WIN_20260120_19_06_12_Pro_jpg.rf.2ef8b594d4c4b600bfa5e8d13770d9d7.jpg` | 11 | 22 |
+| `WIN_20260120_19_01_29_Pro_jpg.rf.b8e6f674119be34dc2ff3110eac452f9.jpg` | 4 | 19 |
+| `WIN_20260120_19_04_39_Pro_jpg.rf.fe13af87223df2a861eca3df186ff140.jpg` | 3 | 12 |
+| `WIN_20260120_18_57_25_Pro_jpg.rf.078351cfb85cc47ed75eba6b762ace55.jpg` | 2 | 9 |
+| `WIN_20260120_19_03_45_Pro_jpg.rf.e4288cd428267dc32568c0de2eb2d2f8.jpg` | 3 | 8 |
+| `WIN_20260120_19_11_13_Pro_jpg.rf.1862f797f95ce9468fa5bef57f0627fe.jpg` | 2 | 8 |
+| `WIN_20260120_18_59_17_Pro_jpg.rf.ac50e12174cbfe06067553e1e3ccd087.jpg` | 2 | 6 |
+
+The other 270 hold 295 images and 671 fuel boxes.
+
+### merged-noaug on robotzftp2 test
+
+Run `merged-noaug__robotzftp2-test__20260930T071728Z`, scored on 286 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
+Intervals come from 1000 resamples of the split's 7 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
+
+| Class | Labeled boxes | mAP50 | mAP50 interval | mAP50-95 | Precision | Recall | Recall interval | Hits | False positives | Misses |
+|---|---|---|---|---|---|---|---|---|---|---|
+| fuel | 281 | 1.0 | 1.0 to 1.0 | 0.932 | 0.996 | 1.0 | 1.0 to 1.0 | 281 | 1 | 0 |
+
+95 labeled fuel boxes touch the frame edge and are neither hits nor misses, and 543 predictions that mostly overlap one of them are left out too (D-027).
+
+mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
+
+| Small | Medium | Large |
+|---|---|---|
+| n/a | 0.914 | 0.939 |
+
+Confusion matrix. Rows are labeled boxes and columns are predictions. The background row holds predictions that matched no labeled box, and the background column holds labeled boxes the model missed.
+
+| | fuel | background |
+|---|---|---|
+| fuel | 281 | 0 |
+| background | 1 | 0 |
+
+Precision and recall for fuel at each confidence threshold:
+
+| Confidence | Precision | Recall |
+|---|---|---|
+| 0.05 | 0.886 | 1.0 |
+| 0.1 | 0.986 | 1.0 |
+| 0.15 | 0.993 | 1.0 |
+| 0.2 | 0.993 | 1.0 |
+| 0.25 | 0.993 | 1.0 |
+| 0.3 | 0.993 | 1.0 |
+| 0.35 | 0.996 | 1.0 |
+| 0.4 | 0.996 | 1.0 |
+| 0.45 | 0.996 | 1.0 |
+| 0.5 | 0.996 | 1.0 |
+| 0.55 | 0.996 | 1.0 |
+| 0.6 | 1.0 | 1.0 |
+| 0.65 | 1.0 | 1.0 |
+| 0.7 | 1.0 | 1.0 |
+| 0.75 | 1.0 | 1.0 |
+| 0.8 | 1.0 | 1.0 |
+| 0.85 | 1.0 | 1.0 |
+| 0.9 | 1.0 | 1.0 |
+| 0.95 | 1.0 | 0.594 |
+
+Recordings or groups with the most labeled boxes:
+
+| Recording or group | Images | fuel boxes |
+|---|---|---|
+| `IMG_5835_MOV` | 65 | 99 |
+| `IMG_5833_MOV` | 79 | 98 |
+| `IMG_5839_MOV` | 44 | 32 |
+| `IMG_5838_MOV` | 29 | 15 |
+| `IMG_5836_MOV` | 35 | 13 |
+| `IMG_5834_MOV` | 14 | 12 |
+| `IMG_5837_MOV` | 20 | 12 |
+
+### merged-noaug on scorekeeper test
+
+Run `merged-noaug__scorekeeper-test__20260930T125505Z`, scored on 314 images. Precision, recall, and the confusion matrix count predictions with confidence of at least 0.5.
+Intervals come from 1000 resamples of the split's 109 recordings or groups, and hold the middle 95% of the resampled scores. <!-- numbers: ok -->
+
+| Class | Labeled boxes | mAP50 | mAP50 interval | mAP50-95 | Precision | Recall | Recall interval | Hits | False positives | Misses |
+|---|---|---|---|---|---|---|---|---|---|---|
+| fuel | 374 | 0.886 | 0.87 to 0.928 | 0.751 | 0.844 | 1.0 | 1.0 to 1.0 | 374 | 69 | 0 |
+| robot | 1007 | 0.894 | 0.691 to 0.937 | 0.504 | 0.9 | 0.84 | 0.611 to 0.887 | 846 | 94 | 161 |
+
+275 of 314 images reached the limit of 25 predictions per image and class (D-020, D-025), so fainter boxes may have been dropped there.
+
+1 labeled fuel boxes touch the frame edge and are neither hits nor misses, and 3 predictions that mostly overlap one of them are left out too (D-027).
+
+mAP50-95 by labeled box size. A box is small when its area is under 32x32 pixels and large when it is over 96x96, measured on the original image.
+
+| Small | Medium | Large |
+|---|---|---|
+| 0.603 | 0.641 | 0.729 |
+
+Confusion matrix. Rows are labeled boxes and columns are predictions. The background row holds predictions that matched no labeled box, and the background column holds labeled boxes the model missed.
+
+| | fuel | robot | background |
+|---|---|---|---|
+| fuel | 374 | 0 | 0 |
+| robot | 0 | 846 | 161 |
+| background | 69 | 94 | 0 |
+
+Precision and recall for fuel at each confidence threshold:
+
+| Confidence | Precision | Recall |
+|---|---|---|
+| 0.05 | 0.684 | 1.0 |
+| 0.1 | 0.824 | 1.0 |
+| 0.15 | 0.833 | 1.0 |
+| 0.2 | 0.839 | 1.0 |
+| 0.25 | 0.84 | 1.0 |
+| 0.3 | 0.842 | 1.0 |
+| 0.35 | 0.842 | 1.0 |
+| 0.4 | 0.842 | 1.0 |
+| 0.45 | 0.844 | 1.0 |
+| 0.5 | 0.844 | 1.0 |
+| 0.55 | 0.844 | 0.997 |
+| 0.6 | 0.844 | 0.997 |
+| 0.65 | 0.844 | 0.995 |
+| 0.7 | 0.845 | 0.992 |
+| 0.75 | 0.845 | 0.973 |
+| 0.8 | 0.844 | 0.955 |
+| 0.85 | 0.851 | 0.898 |
+| 0.9 | 0.824 | 0.262 |
+| 0.95 | 1.0 | 0.072 |
+
+Precision and recall for robot at each confidence threshold:
+
+| Confidence | Precision | Recall |
+|---|---|---|
+| 0.05 | 0.33 | 0.934 |
+| 0.1 | 0.604 | 0.921 |
+| 0.15 | 0.727 | 0.907 |
+| 0.2 | 0.794 | 0.898 |
+| 0.25 | 0.828 | 0.892 |
+| 0.3 | 0.851 | 0.888 |
+| 0.35 | 0.868 | 0.875 |
+| 0.4 | 0.881 | 0.861 |
+| 0.45 | 0.89 | 0.854 |
+| 0.5 | 0.9 | 0.84 |
+| 0.55 | 0.91 | 0.826 |
+| 0.6 | 0.923 | 0.808 |
+| 0.65 | 0.934 | 0.792 |
+| 0.7 | 0.946 | 0.759 |
+| 0.75 | 0.957 | 0.711 |
+| 0.8 | 0.98 | 0.572 |
+| 0.85 | 0.986 | 0.288 |
+| 0.9 | 1.0 | 0.065 |
+| 0.95 | 1.0 | 0.016 |
+
+Recordings or groups with the most labeled boxes:
+
+| Recording or group | Images | fuel boxes | robot boxes |
+|---|---|---|---|
+| `Match-12-R4-2024-FIM-District-Milford-Event-presented-by-GM-Milford-Proving-Ground_mp4-0000_jpg.rf.8dd0336529d85058b7ca7b6a989f301e.jpg` | 159 | 0 | 667 |
+| `mQbklnVHj7k_0_jpg.rf.81b24257aa10010d96a920d7e5b22c93.jpg` | 19 | 0 | 115 |
+| `frame_0233_jpg.rf.938d117831ebb49b9ab34bcfbed3ec2a.jpg` | 6 | 78 | 0 |
+| `-Q97WO6Zc_U_0_jpg.rf.d67bf6e85b303a47fc90b7044c9569e0.jpg` | 9 | 0 | 70 |
+| `frame_0458_jpg.rf.355f6f2192332ea6dc865a496062d5ea.jpg` | 4 | 50 | 0 |
+| `frame_0183_jpg.rf.90656b7c2eeed698cc936b06545ad856.jpg` | 4 | 40 | 0 |
+| `frame_0228_jpg.rf.6f4f73dec0d529dcec5b7db7f4915935.jpg` | 3 | 39 | 0 |
+| `frame_0294_jpg.rf.97adfc4a534b7a91f4d3d40faaa82941.jpg` | 2 | 28 | 0 |
+| `frame_0051_jpg.rf.13768b3a1df8e51d2f8f8a07a9ba5ca7.jpg` | 2 | 19 | 0 |
+| `frame_0250_jpg.rf.57cf4d97294a93e290917337b047ce07.jpg` | 1 | 14 | 0 |
+
+The other 99 hold 105 images and 106 fuel boxes, 155 robot boxes.
 <!-- EVALUATION:END -->
 
 ## Diagnosis
@@ -608,4 +1243,390 @@ The failure gallery, tile by tile from the top left:
 | 13 | scorekeeper | false positive | `fuel photos` |
 | 14 | scorekeeper | false positive | `frc_train photos` |
 | 15 | scorekeeper | false positive | `YouTube frames` |
+
+### Where merged-aug's errors fall
+
+Hits, false positives, and misses count predictions with confidence of at least 0.5, matched to labels the way supervision's confusion matrix matches them (see Limits). Brightness is the mean gray level from 0 to 255 and sharpness the variance of the Laplacian, both measured on the image stretched to 384 pixels square, as the model sees it. Their bins hold equal numbers of images, pooled over every test split, so a bin can hold few images of one dataset.
+
+Brightness:
+
+| Dataset | Brightness | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| marswars fuel | below 110.6 | 93 | 134 | 127 | 2 | 7 | 0.984 | 0.948 | 0.968 | 0.022 |
+| marswars fuel | 110.6 to 119.3 | 34 | 149 | 140 | 2 | 9 | 0.986 | 0.94 | 0.957 | 0.059 |
+| marswars fuel | 119.3 and above | 44 | 45 | 44 | 1 | 1 | 0.978 | 0.978 | 0.954 | 0.023 |
+| pankratz fuel | below 110.6 | 60 | 144 | 76 | 0 | 68 | 1.0 | 0.528 | 0.846 | 0.0 |
+| pankratz fuel | 110.6 to 119.3 | 126 | 329 | 178 | 3 | 151 | 0.983 | 0.541 | 0.8 | 0.024 |
+| pankratz fuel | 119.3 and above | 177 | 452 | 243 | 6 | 209 | 0.976 | 0.538 | 0.692 | 0.034 |
+| robotzftp2 fuel | below 110.6 | 137 | 122 | 122 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | 110.6 to 119.3 | 38 | 39 | 39 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | 119.3 and above | 111 | 120 | 120 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| scorekeeper fuel | below 110.6 | 90 | 153 | 153 | 25 | 0 | 0.86 | 1.0 | 0.913 | 0.278 |
+| scorekeeper fuel | 110.6 to 119.3 | 177 | 134 | 134 | 24 | 0 | 0.848 | 1.0 | 0.908 | 0.136 |
+| scorekeeper fuel | 119.3 and above | 47 | 87 | 87 | 21 | 0 | 0.806 | 1.0 | 0.897 | 0.447 |
+| scorekeeper robot | below 110.6 | 90 | 228 | 195 | 25 | 33 | 0.886 | 0.855 | 0.875 | 0.278 |
+| scorekeeper robot | 110.6 to 119.3 | 177 | 679 | 603 | 51 | 76 | 0.922 | 0.888 | 0.937 | 0.288 |
+| scorekeeper robot | 119.3 and above | 47 | 100 | 61 | 13 | 39 | 0.824 | 0.61 | 0.665 | 0.277 |
+
+Sharpness:
+
+| Dataset | Sharpness | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| marswars fuel | below 190.7 | 83 | 221 | 210 | 4 | 11 | 0.981 | 0.95 | 0.966 | 0.048 |
+| marswars fuel | 190.7 to 303.2 | 86 | 103 | 97 | 1 | 6 | 0.99 | 0.942 | 0.951 | 0.012 |
+| marswars fuel | 303.2 and above | 2 | 4 | 4 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| pankratz fuel | below 190.7 | 83 | 211 | 170 | 1 | 41 | 0.994 | 0.806 | 0.931 | 0.012 |
+| pankratz fuel | 190.7 to 303.2 | 251 | 616 | 276 | 8 | 340 | 0.972 | 0.448 | 0.681 | 0.032 |
+| pankratz fuel | 303.2 and above | 29 | 98 | 51 | 0 | 47 | 1.0 | 0.52 | 0.79 | 0.0 |
+| robotzftp2 fuel | below 190.7 | 174 | 132 | 132 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | 190.7 to 303.2 | 28 | 33 | 33 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | 303.2 and above | 84 | 116 | 116 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| scorekeeper fuel | below 190.7 | 38 | 374 | 374 | 70 | 0 | 0.842 | 1.0 | 0.891 | 1.842 |
+| scorekeeper fuel | 190.7 to 303.2 | 13 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper fuel | 303.2 and above | 263 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper robot | below 190.7 | 38 | 7 | 7 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| scorekeeper robot | 190.7 to 303.2 | 13 | 17 | 15 | 5 | 2 | 0.75 | 0.882 | 0.877 | 0.385 |
+| scorekeeper robot | 303.2 and above | 263 | 983 | 837 | 84 | 146 | 0.909 | 0.851 | 0.896 | 0.319 |
+
+Labeled fuel per image:
+
+| Dataset | Labeled fuel per image | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| marswars fuel | 0 | 36 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| marswars fuel | 1 | 53 | 53 | 51 | 0 | 2 | 1.0 | 0.962 | 0.98 | 0.0 |
+| marswars fuel | 2 to 4 | 63 | 130 | 125 | 2 | 5 | 0.984 | 0.962 | 0.961 | 0.032 |
+| marswars fuel | 5 to 9 | 15 | 95 | 90 | 1 | 5 | 0.989 | 0.947 | 0.96 | 0.067 |
+| marswars fuel | 10 or more | 4 | 50 | 45 | 2 | 5 | 0.957 | 0.9 | 0.931 | 0.5 |
+| pankratz fuel | 0 | 7 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| pankratz fuel | 1 | 112 | 112 | 66 | 4 | 46 | 0.943 | 0.589 | 0.747 | 0.036 |
+| pankratz fuel | 2 to 4 | 205 | 601 | 295 | 5 | 306 | 0.983 | 0.491 | 0.719 | 0.024 |
+| pankratz fuel | 5 to 9 | 39 | 212 | 136 | 0 | 76 | 1.0 | 0.642 | 0.864 | 0.0 |
+| robotzftp2 fuel | 0 | 72 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| robotzftp2 fuel | 1 | 147 | 147 | 147 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | 2 to 4 | 67 | 134 | 134 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| scorekeeper fuel | 0 | 283 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper fuel | 5 to 9 | 2 | 18 | 18 | 8 | 0 | 0.692 | 1.0 | 0.875 | 4.0 |
+| scorekeeper fuel | 10 or more | 29 | 356 | 356 | 62 | 0 | 0.852 | 1.0 | 0.902 | 2.138 |
+
+Has labeled fuel:
+
+| Dataset | Has labeled fuel | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| marswars fuel | yes | 135 | 328 | 311 | 5 | 17 | 0.984 | 0.948 | 0.956 | 0.037 |
+| marswars fuel | no | 36 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| pankratz fuel | yes | 356 | 925 | 497 | 9 | 428 | 0.982 | 0.537 | 0.754 | 0.025 |
+| pankratz fuel | no | 7 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| robotzftp2 fuel | yes | 214 | 281 | 281 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | no | 72 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper fuel | yes | 31 | 374 | 374 | 70 | 0 | 0.842 | 1.0 | 0.891 | 2.258 |
+| scorekeeper fuel | no | 283 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+
+Source:
+
+| Dataset | Source | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| marswars fuel | Basler_daA1280-54uc__24770352__20260112_180305685 | 23 | 9 | 9 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| marswars fuel | Basler_daA1280-54uc__24770352__20260112_180602871 | 10 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| marswars fuel | Basler_daA1280-54uc__24770352__20260112_180633579 | 21 | 27 | 27 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| marswars fuel | Basler_daA1280-54uc__24770352__20260112_180745507 | 26 | 33 | 28 | 0 | 5 | 1.0 | 0.848 | 0.901 | 0.0 |
+| marswars fuel | Basler_daA1280-54uc__24770352__20260112_180938780 | 22 | 38 | 38 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| marswars fuel | Basler_daA1280-54uc__24770352__20260112_181311364 | 69 | 221 | 209 | 5 | 12 | 0.977 | 0.946 | 0.951 | 0.072 |
+| pankratz fuel | webcam frames | 314 | 777 | 352 | 8 | 425 | 0.978 | 0.453 | 0.7 | 0.025 |
+| pankratz fuel | phone video | 22 | 107 | 104 | 1 | 3 | 0.99 | 0.972 | 0.998 | 0.045 |
+| pankratz fuel | phone photos | 27 | 41 | 41 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | IMG_5833_MOV | 79 | 98 | 98 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | IMG_5834_MOV | 14 | 12 | 12 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | IMG_5835_MOV | 65 | 99 | 99 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | IMG_5836_MOV | 35 | 13 | 13 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | IMG_5837_MOV | 20 | 12 | 12 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | IMG_5838_MOV | 29 | 15 | 15 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | IMG_5839_MOV | 44 | 32 | 32 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| scorekeeper fuel | fuel photos | 31 | 374 | 374 | 70 | 0 | 0.842 | 1.0 | 0.891 | 2.258 |
+| scorekeeper fuel | 2024 Milford broadcast | 159 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper fuel | frc_train photos | 60 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper fuel | YouTube frames | 34 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper fuel | other | 30 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper robot | fuel photos | 31 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper robot | 2024 Milford broadcast | 159 | 667 | 602 | 51 | 65 | 0.922 | 0.903 | 0.945 | 0.321 |
+| scorekeeper robot | frc_train photos | 60 | 102 | 89 | 10 | 13 | 0.899 | 0.873 | 0.933 | 0.167 |
+| scorekeeper robot | YouTube frames | 34 | 196 | 133 | 24 | 63 | 0.847 | 0.679 | 0.715 | 0.706 |
+| scorekeeper robot | other | 30 | 42 | 35 | 4 | 7 | 0.897 | 0.833 | 0.872 | 0.133 |
+
+Labeled robot per image:
+
+| Dataset | Labeled robot per image | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| scorekeeper robot | 0 | 33 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper robot | 1 | 69 | 69 | 67 | 4 | 2 | 0.944 | 0.971 | 0.969 | 0.058 |
+| scorekeeper robot | 2 to 4 | 117 | 384 | 339 | 51 | 45 | 0.869 | 0.883 | 0.908 | 0.436 |
+| scorekeeper robot | 5 to 9 | 88 | 477 | 410 | 24 | 67 | 0.945 | 0.86 | 0.919 | 0.273 |
+| scorekeeper robot | 10 or more | 7 | 77 | 43 | 10 | 34 | 0.811 | 0.558 | 0.623 | 1.429 |
+
+Has labeled robot:
+
+| Dataset | Has labeled robot | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| scorekeeper robot | yes | 281 | 1007 | 859 | 89 | 148 | 0.906 | 0.853 | 0.894 | 0.317 |
+| scorekeeper robot | no | 33 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+
+By relative box size. A box is small when it covers less than 0.0025 of the image area, medium below 0.0225, and large otherwise. Labeled boxes are sized by their label and false positives by their own box.
+
+| Dataset | Size | Labeled boxes | Hits | Recall | False positives |
+|---|---|---|---|---|---|
+| marswars fuel | small | 113 | 99 | 0.876 | 3 |
+| marswars fuel | medium | 215 | 212 | 0.986 | 2 |
+| marswars fuel | large | 0 | 0 | n/a | 0 |
+| pankratz fuel | small | 270 | 16 | 0.059 | 0 |
+| pankratz fuel | medium | 598 | 426 | 0.712 | 6 |
+| pankratz fuel | large | 57 | 55 | 0.965 | 3 |
+| robotzftp2 fuel | small | 0 | 0 | n/a | 0 |
+| robotzftp2 fuel | medium | 144 | 144 | 1.0 | 0 |
+| robotzftp2 fuel | large | 137 | 137 | 1.0 | 0 |
+| scorekeeper fuel | small | 31 | 31 | 1.0 | 5 |
+| scorekeeper fuel | medium | 335 | 335 | 1.0 | 65 |
+| scorekeeper fuel | large | 8 | 8 | 1.0 | 0 |
+| scorekeeper robot | small | 189 | 138 | 0.73 | 29 |
+| scorekeeper robot | medium | 680 | 597 | 0.878 | 49 |
+| scorekeeper robot | large | 138 | 124 | 0.899 | 11 |
+
+False positives by why they matched no label. A duplicate overlaps a label that another prediction already took. A localization error overlaps a label by more than 0.1 IoU, but not enough to count. A box inside an unscored label has its center in a box of a class the model is not scored on, such as a robot. The rest are background.
+
+| Dataset | Which images | Duplicate | Localization | Inside an unscored label | Background |
+|---|---|---|---|---|---|
+| marswars fuel | all | 0 | 5 | 0 | 0 |
+| marswars fuel | with labeled fuel | 0 | 5 | 0 | 0 |
+| marswars fuel | without labeled fuel | 0 | 0 | 0 | 0 |
+| pankratz fuel | all | 0 | 4 | 0 | 5 |
+| pankratz fuel | with labeled fuel | 0 | 4 | 0 | 5 |
+| pankratz fuel | without labeled fuel | 0 | 0 | 0 | 0 |
+| robotzftp2 fuel | all | 0 | 0 | 0 | 0 |
+| robotzftp2 fuel | with labeled fuel | 0 | 0 | 0 | 0 |
+| robotzftp2 fuel | without labeled fuel | 0 | 0 | 0 | 0 |
+| scorekeeper fuel | all | 0 | 66 | 0 | 4 |
+| scorekeeper fuel | with labeled fuel | 0 | 66 | 0 | 4 |
+| scorekeeper fuel | without labeled fuel | 0 | 0 | 0 | 0 |
+| scorekeeper robot | all | 2 | 39 | 0 | 48 |
+| scorekeeper robot | with labeled robot | 2 | 39 | 0 | 48 |
+| scorekeeper robot | without labeled robot | 0 | 0 | 0 | 0 |
+
+The model's training split next to each test split. Each cell gives the quantiles 0.1, 0.5, 0.9. Box side is the side of a square with the box's share of the image area, as a fraction of the image side.
+
+| Split | Role | Images | Labeled boxes | Brightness | Sharpness | Box side | Boxes per image |
+|---|---|---|---|---|---|---|---|
+| merged train | training | 6628 | 16390 | 78.421 / 111.43 / 146.902 | 45.335 / 212.629 / 1514.818 | 0.044 / 0.087 / 0.4 | 1.0 / 1.0 / 6.0 |
+| marswars test | test | 171 | 328 | 92.645 / 108.514 / 131.201 | 121.96 / 192.29 / 254.477 | 0.037 / 0.058 / 0.085 | 0.0 / 1.0 / 5.0 |
+| pankratz test | test | 363 | 925 | 108.276 / 118.902 / 134.038 | 109.12 / 231.744 / 296.306 | 0.039 / 0.064 / 0.13 | 1.0 / 2.0 / 5.0 |
+| robotzftp2 test | test | 286 | 281 | 76.049 / 111.808 / 153.63 | 27.24 / 139.397 / 724.864 | 0.061 / 0.149 / 0.23 | 0.0 / 1.0 / 2.0 |
+| scorekeeper test | test | 314 | 1381 | 93.041 / 114.773 / 126.0 | 97.835 / 1995.108 / 2400.531 | 0.047 / 0.063 / 0.162 | 1.0 / 4.0 / 10.0 |
+
+No errors have been reviewed by eye yet.
+
+The failure gallery, tile by tile from the top left:
+
+| Tile | Dataset | Error | Source |
+|---|---|---|---|
+| 1 | marswars | false positive | `Basler_daA1280-54uc__24770352__20260112_181311364` |
+| 2 | marswars | miss | `Basler_daA1280-54uc__24770352__20260112_180745507` |
+| 3 | marswars | false positive | `Basler_daA1280-54uc__24770352__20260112_181311364` |
+| 4 | scorekeeper | false positive | `fuel photos` |
+| 5 | scorekeeper | miss | `YouTube frames` |
+| 6 | scorekeeper | false positive | `other` |
+| 7 | scorekeeper | miss | `frc_train photos` |
+| 8 | scorekeeper | false positive | `frc_train photos` |
+| 9 | scorekeeper | miss | `other` |
+| 10 | scorekeeper | false positive | `YouTube frames` |
+| 11 | scorekeeper | miss | `YouTube frames` |
+
+### Where merged-noaug's errors fall
+
+Hits, false positives, and misses count predictions with confidence of at least 0.5, matched to labels the way supervision's confusion matrix matches them (see Limits). Brightness is the mean gray level from 0 to 255 and sharpness the variance of the Laplacian, both measured on the image stretched to 384 pixels square, as the model sees it. Their bins hold equal numbers of images, pooled over every test split, so a bin can hold few images of one dataset.
+
+Brightness:
+
+| Dataset | Brightness | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| marswars fuel | below 110.6 | 93 | 134 | 130 | 0 | 4 | 1.0 | 0.97 | 0.978 | 0.0 |
+| marswars fuel | 110.6 to 119.3 | 34 | 149 | 141 | 3 | 8 | 0.979 | 0.946 | 0.968 | 0.088 |
+| marswars fuel | 119.3 and above | 44 | 45 | 45 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| pankratz fuel | below 110.6 | 60 | 144 | 75 | 1 | 69 | 0.987 | 0.521 | 0.876 | 0.017 |
+| pankratz fuel | 110.6 to 119.3 | 126 | 329 | 146 | 1 | 183 | 0.993 | 0.444 | 0.833 | 0.008 |
+| pankratz fuel | 119.3 and above | 177 | 452 | 231 | 3 | 221 | 0.979 | 0.507 | 0.781 | 0.017 |
+| robotzftp2 fuel | below 110.6 | 137 | 122 | 122 | 1 | 0 | 0.992 | 1.0 | 1.0 | 0.007 |
+| robotzftp2 fuel | 110.6 to 119.3 | 38 | 39 | 39 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | 119.3 and above | 111 | 120 | 120 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| scorekeeper fuel | below 110.6 | 90 | 153 | 153 | 25 | 0 | 0.86 | 1.0 | 0.933 | 0.278 |
+| scorekeeper fuel | 110.6 to 119.3 | 177 | 134 | 134 | 24 | 0 | 0.848 | 1.0 | 0.89 | 0.136 |
+| scorekeeper fuel | 119.3 and above | 47 | 87 | 87 | 20 | 0 | 0.813 | 1.0 | 0.892 | 0.426 |
+| scorekeeper robot | below 110.6 | 90 | 228 | 187 | 32 | 41 | 0.854 | 0.82 | 0.862 | 0.356 |
+| scorekeeper robot | 110.6 to 119.3 | 177 | 679 | 595 | 53 | 84 | 0.918 | 0.876 | 0.929 | 0.299 |
+| scorekeeper robot | 119.3 and above | 47 | 100 | 64 | 9 | 36 | 0.877 | 0.64 | 0.722 | 0.191 |
+
+Sharpness:
+
+| Dataset | Sharpness | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| marswars fuel | below 190.7 | 83 | 221 | 213 | 3 | 8 | 0.986 | 0.964 | 0.969 | 0.036 |
+| marswars fuel | 190.7 to 303.2 | 86 | 103 | 99 | 0 | 4 | 1.0 | 0.961 | 0.998 | 0.0 |
+| marswars fuel | 303.2 and above | 2 | 4 | 4 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| pankratz fuel | below 190.7 | 83 | 211 | 172 | 3 | 39 | 0.971 | 0.806 | 0.94 | 0.036 |
+| pankratz fuel | 190.7 to 303.2 | 251 | 616 | 233 | 2 | 383 | 0.991 | 0.378 | 0.76 | 0.008 |
+| pankratz fuel | 303.2 and above | 29 | 98 | 47 | 0 | 51 | 1.0 | 0.48 | 0.849 | 0.0 |
+| robotzftp2 fuel | below 190.7 | 174 | 132 | 132 | 1 | 0 | 0.992 | 1.0 | 1.0 | 0.006 |
+| robotzftp2 fuel | 190.7 to 303.2 | 28 | 33 | 33 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | 303.2 and above | 84 | 116 | 116 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| scorekeeper fuel | below 190.7 | 38 | 374 | 374 | 69 | 0 | 0.844 | 1.0 | 0.886 | 1.816 |
+| scorekeeper fuel | 190.7 to 303.2 | 13 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper fuel | 303.2 and above | 263 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper robot | below 190.7 | 38 | 7 | 4 | 0 | 3 | 1.0 | 0.571 | 0.947 | 0.0 |
+| scorekeeper robot | 190.7 to 303.2 | 13 | 17 | 13 | 4 | 4 | 0.765 | 0.765 | 0.865 | 0.308 |
+| scorekeeper robot | 303.2 and above | 263 | 983 | 829 | 90 | 154 | 0.902 | 0.843 | 0.893 | 0.342 |
+
+Labeled fuel per image:
+
+| Dataset | Labeled fuel per image | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| marswars fuel | 0 | 36 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| marswars fuel | 1 | 53 | 53 | 52 | 0 | 1 | 1.0 | 0.981 | 1.0 | 0.0 |
+| marswars fuel | 2 to 4 | 63 | 130 | 127 | 0 | 3 | 1.0 | 0.977 | 0.997 | 0.0 |
+| marswars fuel | 5 to 9 | 15 | 95 | 92 | 0 | 3 | 1.0 | 0.968 | 0.97 | 0.0 |
+| marswars fuel | 10 or more | 4 | 50 | 45 | 3 | 5 | 0.938 | 0.9 | 0.929 | 0.75 |
+| pankratz fuel | 0 | 7 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| pankratz fuel | 1 | 112 | 112 | 56 | 1 | 56 | 0.982 | 0.5 | 0.736 | 0.009 |
+| pankratz fuel | 2 to 4 | 205 | 601 | 256 | 4 | 345 | 0.977 | 0.423 | 0.787 | 0.02 |
+| pankratz fuel | 5 to 9 | 39 | 212 | 140 | 0 | 72 | 1.0 | 0.66 | 0.92 | 0.0 |
+| robotzftp2 fuel | 0 | 72 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| robotzftp2 fuel | 1 | 147 | 147 | 147 | 1 | 0 | 0.993 | 1.0 | 1.0 | 0.007 |
+| robotzftp2 fuel | 2 to 4 | 67 | 134 | 134 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| scorekeeper fuel | 0 | 283 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper fuel | 5 to 9 | 2 | 18 | 18 | 8 | 0 | 0.692 | 1.0 | 0.897 | 4.0 |
+| scorekeeper fuel | 10 or more | 29 | 356 | 356 | 61 | 0 | 0.854 | 1.0 | 0.895 | 2.103 |
+
+Has labeled fuel:
+
+| Dataset | Has labeled fuel | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| marswars fuel | yes | 135 | 328 | 316 | 3 | 12 | 0.991 | 0.963 | 0.979 | 0.022 |
+| marswars fuel | no | 36 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| pankratz fuel | yes | 356 | 925 | 452 | 5 | 473 | 0.985 | 0.486 | 0.813 | 0.014 |
+| pankratz fuel | no | 7 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| robotzftp2 fuel | yes | 214 | 281 | 281 | 1 | 0 | 0.996 | 1.0 | 1.0 | 0.005 |
+| robotzftp2 fuel | no | 72 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper fuel | yes | 31 | 374 | 374 | 69 | 0 | 0.844 | 1.0 | 0.886 | 2.226 |
+| scorekeeper fuel | no | 283 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+
+Source:
+
+| Dataset | Source | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| marswars fuel | Basler_daA1280-54uc__24770352__20260112_180305685 | 23 | 9 | 9 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| marswars fuel | Basler_daA1280-54uc__24770352__20260112_180602871 | 10 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| marswars fuel | Basler_daA1280-54uc__24770352__20260112_180633579 | 21 | 27 | 27 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| marswars fuel | Basler_daA1280-54uc__24770352__20260112_180745507 | 26 | 33 | 29 | 0 | 4 | 1.0 | 0.879 | 0.995 | 0.0 |
+| marswars fuel | Basler_daA1280-54uc__24770352__20260112_180938780 | 22 | 38 | 38 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| marswars fuel | Basler_daA1280-54uc__24770352__20260112_181311364 | 69 | 221 | 213 | 3 | 8 | 0.986 | 0.964 | 0.969 | 0.043 |
+| pankratz fuel | webcam frames | 314 | 777 | 305 | 3 | 472 | 0.99 | 0.393 | 0.769 | 0.01 |
+| pankratz fuel | phone video | 22 | 107 | 106 | 2 | 1 | 0.963 | 0.972 | 0.999 | 0.091 |
+| pankratz fuel | phone photos | 27 | 41 | 41 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | IMG_5833_MOV | 79 | 98 | 98 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | IMG_5834_MOV | 14 | 12 | 12 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | IMG_5835_MOV | 65 | 99 | 99 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | IMG_5836_MOV | 35 | 13 | 13 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | IMG_5837_MOV | 20 | 12 | 12 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| robotzftp2 fuel | IMG_5838_MOV | 29 | 15 | 15 | 1 | 0 | 0.938 | 1.0 | 1.0 | 0.034 |
+| robotzftp2 fuel | IMG_5839_MOV | 44 | 32 | 32 | 0 | 0 | 1.0 | 1.0 | 1.0 | 0.0 |
+| scorekeeper fuel | fuel photos | 31 | 374 | 374 | 69 | 0 | 0.844 | 1.0 | 0.886 | 2.226 |
+| scorekeeper fuel | 2024 Milford broadcast | 159 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper fuel | frc_train photos | 60 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper fuel | YouTube frames | 34 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper fuel | other | 30 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper robot | fuel photos | 31 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper robot | 2024 Milford broadcast | 159 | 667 | 595 | 52 | 72 | 0.92 | 0.892 | 0.94 | 0.327 |
+| scorekeeper robot | frc_train photos | 60 | 102 | 81 | 15 | 21 | 0.844 | 0.794 | 0.898 | 0.25 |
+| scorekeeper robot | YouTube frames | 34 | 196 | 135 | 21 | 61 | 0.865 | 0.689 | 0.733 | 0.618 |
+| scorekeeper robot | other | 30 | 42 | 35 | 6 | 7 | 0.854 | 0.833 | 0.896 | 0.2 |
+
+Labeled robot per image:
+
+| Dataset | Labeled robot per image | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| scorekeeper robot | 0 | 33 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+| scorekeeper robot | 1 | 69 | 69 | 63 | 8 | 6 | 0.887 | 0.913 | 0.961 | 0.116 |
+| scorekeeper robot | 2 to 4 | 117 | 384 | 335 | 49 | 49 | 0.872 | 0.872 | 0.916 | 0.419 |
+| scorekeeper robot | 5 to 9 | 88 | 477 | 403 | 31 | 74 | 0.929 | 0.845 | 0.91 | 0.352 |
+| scorekeeper robot | 10 or more | 7 | 77 | 45 | 6 | 32 | 0.882 | 0.584 | 0.649 | 0.857 |
+
+Has labeled robot:
+
+| Dataset | Has labeled robot | Images | Labeled boxes | Hits | False positives | Misses | Precision | Recall | mAP50 | False positives per image |
+|---|---|---|---|---|---|---|---|---|---|---|
+| scorekeeper robot | yes | 281 | 1007 | 846 | 94 | 161 | 0.9 | 0.84 | 0.894 | 0.335 |
+| scorekeeper robot | no | 33 | 0 | 0 | 0 | 0 | n/a | n/a | n/a | 0.0 |
+
+By relative box size. A box is small when it covers less than 0.0025 of the image area, medium below 0.0225, and large otherwise. Labeled boxes are sized by their label and false positives by their own box.
+
+| Dataset | Size | Labeled boxes | Hits | Recall | False positives |
+|---|---|---|---|---|---|
+| marswars fuel | small | 113 | 102 | 0.903 | 3 |
+| marswars fuel | medium | 215 | 214 | 0.995 | 0 |
+| marswars fuel | large | 0 | 0 | n/a | 0 |
+| pankratz fuel | small | 270 | 24 | 0.089 | 1 |
+| pankratz fuel | medium | 598 | 376 | 0.629 | 2 |
+| pankratz fuel | large | 57 | 52 | 0.912 | 2 |
+| robotzftp2 fuel | small | 0 | 0 | n/a | 1 |
+| robotzftp2 fuel | medium | 144 | 144 | 1.0 | 0 |
+| robotzftp2 fuel | large | 137 | 137 | 1.0 | 0 |
+| scorekeeper fuel | small | 31 | 31 | 1.0 | 10 |
+| scorekeeper fuel | medium | 335 | 335 | 1.0 | 59 |
+| scorekeeper fuel | large | 8 | 8 | 1.0 | 0 |
+| scorekeeper robot | small | 189 | 123 | 0.651 | 16 |
+| scorekeeper robot | medium | 680 | 603 | 0.887 | 67 |
+| scorekeeper robot | large | 138 | 120 | 0.87 | 11 |
+
+False positives by why they matched no label. A duplicate overlaps a label that another prediction already took. A localization error overlaps a label by more than 0.1 IoU, but not enough to count. A box inside an unscored label has its center in a box of a class the model is not scored on, such as a robot. The rest are background.
+
+| Dataset | Which images | Duplicate | Localization | Inside an unscored label | Background |
+|---|---|---|---|---|---|
+| marswars fuel | all | 0 | 3 | 0 | 0 |
+| marswars fuel | with labeled fuel | 0 | 3 | 0 | 0 |
+| marswars fuel | without labeled fuel | 0 | 0 | 0 | 0 |
+| pankratz fuel | all | 1 | 0 | 0 | 4 |
+| pankratz fuel | with labeled fuel | 1 | 0 | 0 | 4 |
+| pankratz fuel | without labeled fuel | 0 | 0 | 0 | 0 |
+| robotzftp2 fuel | all | 0 | 0 | 0 | 1 |
+| robotzftp2 fuel | with labeled fuel | 0 | 0 | 0 | 1 |
+| robotzftp2 fuel | without labeled fuel | 0 | 0 | 0 | 0 |
+| scorekeeper fuel | all | 0 | 59 | 0 | 10 |
+| scorekeeper fuel | with labeled fuel | 0 | 59 | 0 | 10 |
+| scorekeeper fuel | without labeled fuel | 0 | 0 | 0 | 0 |
+| scorekeeper robot | all | 4 | 42 | 0 | 48 |
+| scorekeeper robot | with labeled robot | 4 | 42 | 0 | 48 |
+| scorekeeper robot | without labeled robot | 0 | 0 | 0 | 0 |
+
+The model's training split next to each test split. Each cell gives the quantiles 0.1, 0.5, 0.9. Box side is the side of a square with the box's share of the image area, as a fraction of the image side.
+
+| Split | Role | Images | Labeled boxes | Brightness | Sharpness | Box side | Boxes per image |
+|---|---|---|---|---|---|---|---|
+| merged train | training | 6628 | 16390 | 78.421 / 111.43 / 146.902 | 45.335 / 212.629 / 1514.818 | 0.044 / 0.087 / 0.4 | 1.0 / 1.0 / 6.0 |
+| marswars test | test | 171 | 328 | 92.645 / 108.514 / 131.201 | 121.96 / 192.29 / 254.477 | 0.037 / 0.058 / 0.085 | 0.0 / 1.0 / 5.0 |
+| pankratz test | test | 363 | 925 | 108.276 / 118.902 / 134.038 | 109.12 / 231.744 / 296.306 | 0.039 / 0.064 / 0.13 | 1.0 / 2.0 / 5.0 |
+| robotzftp2 test | test | 286 | 281 | 76.049 / 111.808 / 153.63 | 27.24 / 139.397 / 724.864 | 0.061 / 0.149 / 0.23 | 0.0 / 1.0 / 2.0 |
+| scorekeeper test | test | 314 | 1381 | 93.041 / 114.773 / 126.0 | 97.835 / 1995.108 / 2400.531 | 0.047 / 0.063 / 0.162 | 1.0 / 4.0 / 10.0 |
+
+No errors have been reviewed by eye yet.
+
+The failure gallery, tile by tile from the top left:
+
+| Tile | Dataset | Error | Source |
+|---|---|---|---|
+| 1 | marswars | false positive | `Basler_daA1280-54uc__24770352__20260112_181311364` |
+| 2 | marswars | miss | `Basler_daA1280-54uc__24770352__20260112_180745507` |
+| 3 | robotzftp2 | false positive | `IMG_5838_MOV` |
+| 4 | scorekeeper | false positive | `fuel photos` |
+| 5 | scorekeeper | miss | `YouTube frames` |
+| 6 | scorekeeper | false positive | `frc_train photos` |
+| 7 | scorekeeper | miss | `other` |
+| 8 | scorekeeper | false positive | `other` |
+| 9 | scorekeeper | miss | `frc_train photos` |
+| 10 | scorekeeper | false positive | `fuel photos` |
+| 11 | scorekeeper | miss | `YouTube frames` |
 <!-- DIAGNOSIS:END -->

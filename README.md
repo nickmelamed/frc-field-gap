@@ -31,9 +31,20 @@ Do not edit it by hand.
 <!-- RESULTS:START -->
 | Model | Dataset | Split | Images | Class | mAP50 | mAP50 interval | mAP50-95 | Threshold | Precision | Recall | Recall interval |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| baseline-a | marswars | test | 171 | fuel | 0.936 | 0.923 to 1.0 | 0.623 | 0.5 | 0.963 | 0.927 | 0.908 to 1.0 |
-| baseline-a | robotzftp2 | test | 286 | fuel | 0.994 | 0.985 to 1.0 | 0.864 | 0.5 | 0.966 | 0.973 | 0.94 to 1.0 |
+| baseline-a | marswars | test | 171 | fuel | 0.967 | 0.956 to 1.0 | 0.683 | 0.5 | 0.976 | 0.976 | 0.966 to 1.0 |
+| baseline-a | pankratz | test | 363 | fuel | 0.956 | 0.931 to 0.975 | 0.656 | 0.5 | 0.942 | 0.948 | 0.921 to 0.971 |
+| baseline-a | robotzftp2 | test | 286 | fuel | 1.0 | 1.0 to 1.0 | 0.883 | 0.5 | 0.959 | 1.0 | 1.0 to 1.0 |
 | baseline-a | scorekeeper | test | 314 | fuel | 0.836 | 0.773 to 0.895 | 0.725 | 0.5 | 0.257 | 1.0 | 1.0 to 1.0 |
+| merged-aug | marswars | test | 171 | fuel | 0.956 | 0.94 to 1.0 | 0.667 | 0.5 | 0.984 | 0.948 | 0.902 to 1.0 |
+| merged-aug | pankratz | test | 363 | fuel | 0.754 | 0.671 to 0.833 | 0.48 | 0.5 | 0.982 | 0.537 | 0.432 to 0.654 |
+| merged-aug | robotzftp2 | test | 286 | fuel | 1.0 | 1.0 to 1.0 | 0.926 | 0.5 | 1.0 | 1.0 | 1.0 to 1.0 |
+| merged-aug | scorekeeper | test | 314 | fuel | 0.891 | 0.87 to 0.936 | 0.764 | 0.5 | 0.842 | 1.0 | 1.0 to 1.0 |
+| merged-aug | scorekeeper | test | 314 | robot | 0.894 | 0.669 to 0.943 | 0.52 | 0.5 | 0.906 | 0.853 | 0.601 to 0.903 |
+| merged-noaug | marswars | test | 171 | fuel | 0.979 | 0.969 to 1.0 | 0.683 | 0.5 | 0.991 | 0.963 | 0.922 to 1.0 |
+| merged-noaug | pankratz | test | 363 | fuel | 0.813 | 0.747 to 0.875 | 0.55 | 0.5 | 0.985 | 0.486 | 0.375 to 0.615 |
+| merged-noaug | robotzftp2 | test | 286 | fuel | 1.0 | 1.0 to 1.0 | 0.932 | 0.5 | 0.996 | 1.0 | 1.0 to 1.0 |
+| merged-noaug | scorekeeper | test | 314 | fuel | 0.886 | 0.87 to 0.928 | 0.751 | 0.5 | 0.844 | 1.0 | 1.0 to 1.0 |
+| merged-noaug | scorekeeper | test | 314 | robot | 0.894 | 0.691 to 0.937 | 0.504 | 0.5 | 0.9 | 0.84 | 0.611 to 0.887 |
 
 Intervals hold the middle 95% of scores from resampling whole recordings or photo groups, as `docs/EVALUATION.md` explains. <!-- numbers: ok -->
 <!-- RESULTS:END -->
