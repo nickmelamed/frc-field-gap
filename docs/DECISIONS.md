@@ -669,7 +669,10 @@ the same boxes under this rule, as rescoring every cache under
 `reports/runs/` shows, and its scores are unchanged. A two-class model's
 cache can hold up to twice as many boxes per image. The size limit still
 stops a run before it writes anything, so a cache too large for C would
-fail the run rather than be cut silently. Robot predictions on a
+fail the run rather than be cut silently. That happened for merged-noaug on
+C-test, at 464006 bytes, and Nick chose on 2026-09-30 to raise
+`max_prediction_bytes` from 450000 to 500000, still below the 512000 byte
+hook. Nothing else about scoring changed, so earlier runs stay comparable. Robot predictions on a
 fuel-only dataset are not cached, so they cannot be studied later without
 calling the model again.
 
