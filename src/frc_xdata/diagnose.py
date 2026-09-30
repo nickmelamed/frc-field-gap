@@ -1476,8 +1476,12 @@ def main(argv: list[str] | None = None) -> int:
             project.diagnose.review.path_for(args.model),
         )
         return 0
-    meta = diagnosis_meta(repo, project, args.project_config, run.diagnosis, raw_args, dirty)
-    write_diagnosis(project.diagnose.output_dir / args.model, run.diagnosis, meta)
+    diagnosis = run.diagnosis
+    if args.no_gallery:
+        # No image is drawn, so no tiles are listed for the report to print.
+        diagnosis = diagnosis.model_copy(update={"gallery": []})
+    meta = diagnosis_meta(repo, project, args.project_config, diagnosis, raw_args, dirty)
+    write_diagnosis(project.diagnose.output_dir / args.model, diagnosis, meta)
     if not args.no_gallery:
         write_gallery(run, project.diagnose.gallery, project.paths.assets_dir / GALLERY_NAME)
     return 0
