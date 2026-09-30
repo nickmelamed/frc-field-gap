@@ -861,3 +861,34 @@ credits. So `merged-aug` saw the merged data for 35 epochs without
 augmentation and then 31 with it, while `merged-noaug` had only the first
 35. A difference between the two measures the augmentation together with
 the extra training, not the augmentation alone.
+
+## D-030: Diagnose the merged models without a gallery or a review (2026-09-30)
+
+Context. Task 10 needs to know where the merged models' errors fall,
+above all why they miss half of the lockbox's fuel. `frc-diagnose` wrote
+one review file and one failure gallery for all models, both made for
+baseline-a (D-021). Its review sample and gallery tiles were judged by eye
+and checked for faces, which takes hours, and the v0.2.0 write-up is due
+within a day.
+
+Decision. Nick chose on 2026-09-30 to diagnose the merged models with
+slices only. Each model now has its own review file,
+`reports/diagnosis/<model>/review.csv`, so baseline-a's verdicts are never
+applied to another model's errors, and `--no-gallery` leaves the published
+gallery alone. The lockbox is sliced by kind of photo, from the source
+name: webcam frames, which show one person holding balls, frames of a
+phone video, and phone photos. baseline-a's diagnosis stays the one made
+from its v0.1.0 runs.
+
+Why. The slices reproduce each run's counts and need no judgment, and the
+lockbox slice tests the leading explanation, that the merged models learned
+to avoid fuel near people, by comparing webcam frames with photos that show
+no one. A gallery drawn from new errors would need a face check before it
+could be published.
+
+Consequences. The merged models' errors are counted, not judged, so a
+false positive on unlabeled fuel cannot be told apart from one on a
+person. baseline-a's diagnosis describes its runs before the edge rule
+(D-027), and its false positive kinds and slices are not rescored. The
+review and gallery for the merged models can be added later with
+`/publish-diagnosis` and `/face-check`.

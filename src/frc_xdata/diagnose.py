@@ -1273,12 +1273,13 @@ def diagnose_model(project: ProjectConfig, model: str) -> DiagnosisRun:
             )
     sample = review_sample(items, cfg.review.per_kind, str(project.seed))
     review: list[ReviewCount] = []
-    if cfg.review.file.is_file():
+    review_file = cfg.review.path_for(model)
+    if review_file.is_file():
         totals: Counter[tuple[str, str]] = Counter((i.dataset, i.kind) for i in items)
-        verdicts = read_review(cfg.review.file, cfg.review.verdicts)
+        verdicts = read_review(review_file, cfg.review.verdicts)
         review = review_counts(sample, totals, verdicts, cfg.review.verdicts)
     else:
-        logger.warning("%s does not exist, so no verdicts are counted", cfg.review.file)
+        logger.warning("%s does not exist, so no verdicts are counted", review_file)
 
     trained_on = entries[model].dataset
     train_dir = project.paths.harmonized_dir / trained_on / "train"
@@ -1357,7 +1358,9 @@ def write_gallery(run: DiagnosisRun, cfg: GalleryConfig, path: Path) -> None:
     logger.info("wrote %s, which must pass the face check before it is committed", path)
 
 
-def write_review_sheets(run: DiagnosisRun, cfg: ReviewConfig, out_dir: Path) -> None:
+def write_review_sheets(
+    run: DiagnosisRun, cfg: ReviewConfig, out_dir: Path, review_file: Path
+) -> None:
     """Write one numbered crop sheet per sampled group, and a review file to fill in.
 
     The sheets are not face-checked, so they go under the gitignored
@@ -1379,7 +1382,7 @@ def write_review_sheets(run: DiagnosisRun, cfg: ReviewConfig, out_dir: Path) -> 
             )
     template = out_dir / f"{REVIEW_SHEET_PREFIX}template.csv"
     write_review_template(template, run.review_sample)
-    logger.info("fill in %s by eye and save it as %s", template, cfg.file)
+    logger.info("fill in %s by eye and save it as %s", template, review_file)
 
 
 def diagnosis_meta(
@@ -1406,7 +1409,7 @@ def diagnosis_meta(
         ev.models_file,
         ev.coverage_file,
         project.paths.reports_dir / SPLITS_NAME,
-        project.diagnose.review.file,
+        project.diagnose.review.path_for(diagnosis.model),
     ]
     return {
         "created": utc_timestamp(),
@@ -1448,6 +1451,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="write crop sheets of the review sample under data/contact_sheets/ and nothing else",
     )
+    parser.add_argument(
+        "--no-gallery",
+        action="store_true",
+        help="leave the failure gallery as it is, for a model whose tiles are not face-checked",
+    )
     parser.add_argument("--project-config", type=Path, default=PROJECT_CONFIG)
     add_log_level_argument(parser)
     raw_args = sys.argv[1:] if argv is None else argv
@@ -1461,9 +1469,15 @@ def main(argv: list[str] | None = None) -> int:
     project = load_yaml(args.project_config, ProjectConfig)
     run = diagnose_model(project, args.model)
     if args.review_sheet:
-        write_review_sheets(run, project.diagnose.review, project.paths.contact_sheet_dir)
+        write_review_sheets(
+            run,
+            project.diagnose.review,
+            project.paths.contact_sheet_dir,
+            project.diagnose.review.path_for(args.model),
+        )
         return 0
     meta = diagnosis_meta(repo, project, args.project_config, run.diagnosis, raw_args, dirty)
     write_diagnosis(project.diagnose.output_dir / args.model, run.diagnosis, meta)
-    write_gallery(run, project.diagnose.gallery, project.paths.assets_dir / GALLERY_NAME)
+    if not args.no_gallery:
+        write_gallery(run, project.diagnose.gallery, project.paths.assets_dir / GALLERY_NAME)
     return 0

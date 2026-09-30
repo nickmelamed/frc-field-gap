@@ -10,7 +10,7 @@ diagnosis tables for the model Nick named (D-021).
    numbered crop sheets and `review_template.csv` under
    `data/contact_sheets/`, which can show faces and are never published.
    - Judge every crop, and zoom in where a crop is too small to tell.
-   - Save the template as `reports/diagnosis/review.csv` with a verdict from
+   - Save the template as `reports/diagnosis/<model>/review.csv` with a verdict from
      `diagnose.review.verdicts` on every row.
    - Add a note to any row the write-up will lean on, such as what the
      object is. Claims in the docs must be backed by a verdict or a note.
