@@ -6,6 +6,8 @@ uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-30
+
 ### Added
 
 - `frc-merge` (`make merge`) builds the merged training set from A, B, C,
@@ -43,6 +45,7 @@ uses [Semantic Versioning](https://semver.org/).
   dataset.
 - `diagnose.error_counts` and `evaluate.precision_recall` are shared, so
   the threshold sweep counts errors the way the runs do.
+- The package version is 0.2.0.
 
 ## [0.1.0] - 2026-09-28
 
@@ -130,5 +133,6 @@ uses [Semantic Versioning](https://semver.org/).
 - Three `scorekeeper` sample-grid tiles with partly visible faces are
   left out of `docs/assets/samples_scorekeeper.png`.
 
-[Unreleased]: https://github.com/nickmelamed/frc-field-gap/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/nickmelamed/frc-field-gap/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/nickmelamed/frc-field-gap/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/nickmelamed/frc-field-gap/releases/tag/v0.1.0
