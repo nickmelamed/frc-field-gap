@@ -36,18 +36,22 @@ from frc_xdata.report import (
     DIAGNOSIS_MARKERS,
     EVALUATION_MARKERS,
     RESULTS_MARKERS,
+    THRESHOLD_MARKERS,
     PublishedRun,
     diagnosis_section,
     diagnosis_sections,
     evaluation_sections,
+    load_choices,
     load_runs,
     main,
     replace_between,
     results_table,
     run_section,
     select_runs,
+    threshold_section,
     write_report,
 )
+from frc_xdata.threshold import ThresholdChoice
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 # The same pattern and exemption scripts/agent/check_numbers.py uses to find
@@ -485,3 +489,102 @@ def test_main_draws_figures_for_each_diagnosis(
 
 def test_no_diagnosis_says_so() -> None:
     assert diagnosis_sections([]) == "No model has been diagnosed yet."
+
+
+def choice(model: str = "m") -> ThresholdChoice:
+    counts = {"true_positives": 9, "false_positives": 1, "false_negatives": 2}
+    fuel = {"name": "fuel", "precision": 0.9, "recall": 0.818, "counts": counts}
+    robot = {"name": "robot", "precision": None, "recall": 0.25, "counts": counts}
+    score = {"threshold": 0.4, "cost": 1.25, "classes": [fuel, robot], "images_above_limit": 0}
+    limited = {**score, "classes": [fuel], "images_above_limit": 2}
+    neutral = {**score, "threshold": 0.5, "cost": 1.75}
+    sets = [
+        {
+            "name": "alpha test",
+            "dataset": "alpha",
+            "role": "tuning",
+            "run_id": "r1",
+            "images": 4,
+            "units": 2,
+            "chosen": score,
+            "neutral": neutral,
+        },
+        {
+            "name": "box held-out half",
+            "dataset": "box",
+            "role": "held out",
+            "run_id": "r2",
+            "images": 3,
+            "units": 3,
+            "chosen": limited,
+            "neutral": {**neutral, "classes": [fuel]},
+        },
+    ]
+    point = {"threshold": 0.4, "cost": 1.25, "sets": []}
+    return ThresholdChoice.model_validate(
+        {
+            "model": model,
+            "scored_class": "fuel",
+            "costs": {"false_positive": 3, "false_negative": 1},
+            "threshold": 0.4,
+            "cost": 1.25,
+            "band": 0.05,
+            "band_low": 0.35,
+            "band_high": 0.45,
+            "neutral_threshold": 0.5,
+            "neutral_cost": 1.75,
+            "sets": sets,
+            "held_out_recall": {"low": 0.625, "high": 0.875},
+            "lockbox": {
+                "dataset": "box",
+                "tune_fraction": 0.5,
+                "seed": 1,
+                "tuning": ["u1"],
+                "held_out": ["u2"],
+            },
+            "grid": [point],
+        }
+    )
+
+
+def test_every_number_in_the_threshold_section_is_in_its_json() -> None:
+    c = choice()
+    lines = [line for line in threshold_section([c]).splitlines() if "numbers: ok" not in line]
+    reported = {n for line in lines for n in NUMBER.findall(line)}
+    assert "0.875" in reported
+    assert reported <= set(NUMBER.findall(c.model_dump_json()))
+
+
+def test_threshold_section_shows_every_set_and_class_at_both_thresholds() -> None:
+    text = threshold_section([choice()])
+    assert "| m | 0.4 | 0.35 to 0.45 | 1.25 | 1.75 | 0.625 to 0.875 |" in text
+    assert "| alpha test | tuning | 4 | 0.9 | 0.818 | 1 | 2 | 1.25 | 0.9 | 0.818 | 1.75 |" in text
+    assert (
+        "| alpha test (robot) | tuning | 4 | n/a | 0.25 | 1 | 2 | n/a | n/a | 0.25 | n/a |" in text
+    )
+    assert "On box held-out half, the prediction limit" in text
+    assert "![Mean cost against threshold](assets/threshold_cost.png)" in text
+
+
+def test_no_choice_says_so() -> None:
+    assert threshold_section([]) == "No threshold has been chosen yet."
+
+
+def test_load_choices_skips_models_without_one(tmp_path: Path) -> None:
+    (tmp_path / "m").mkdir()
+    (tmp_path / "m" / "threshold.json").write_text(choice().model_dump_json(), "utf-8")
+    assert [c.model for c in load_choices(tmp_path, ["m", "other"])] == ["m"]
+
+
+def test_write_report_fills_the_threshold_markers_once_a_choice_exists(tmp_path: Path) -> None:
+    runs = tmp_path / "runs"
+    write_run(runs, result("r1"), "2026-09-27T10:00:00+00:00")
+    readme, evaluation = tmp_path / "README.md", tmp_path / "EVALUATION.md"
+    readme.write_text("{}\n{}\n".format(*RESULTS_MARKERS), "utf-8")
+    start, end = EVALUATION_MARKERS
+    t_start, t_end = THRESHOLD_MARKERS
+    evaluation.write_text(f"{start}\n{end}\n{t_start}\nold\n{t_end}\n", "utf-8")
+    write_report(runs, readme, evaluation)
+    assert "\nold\n" in evaluation.read_text(encoding="utf-8")
+    assert write_report(runs, readme, evaluation, choices=[choice()]) == [evaluation]
+    assert "#### m at 0.4 and at 0.5" in evaluation.read_text(encoding="utf-8")

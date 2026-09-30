@@ -1,4 +1,4 @@
-"""Draw the diagnosis figures in docs/assets/ from a model's diagnosis.
+"""Draw the diagnosis and threshold figures in docs/assets/.
 
 Each figure shows numbers from the tables ``frc-report`` writes into
 docs/EVALUATION.md. Each dataset has one color from a colorblind-safe
@@ -17,6 +17,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from frc_xdata.diagnose import SIZE_BUCKETS, Diagnosis
+from frc_xdata.threshold import ThresholdChoice
 
 SURFACE = "#fcfcfb"
 TEXT = "#0b0b0b"
@@ -24,6 +25,9 @@ MUTED = "#52514e"
 GRID = "#e4e3df"
 # Categorical slots 1 to 6 in fixed order. Slots 3 to 5 fall below 3:1
 # against the surface, which is why every bar carries its value.
+# The cost axis stops here, so the flat stretch near each choice
+# stays readable next to a model whose cost is many times higher.
+COST_CEILING = 2.0
 SERIES = ("#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300")
 DPI = 100
 # The PNG's software tag names the matplotlib version, which would change
@@ -223,3 +227,52 @@ def write_figures(d: Diagnosis, assets_dir: Path) -> list[Path]:
     written += [] if found is None else [found]
     domain = domain_figure(d, assets_dir / f"{stem}_domain.png")
     return written + ([] if domain is None else [domain])
+
+
+def threshold_figure(choices: Sequence[ThresholdChoice], path: Path) -> Path:
+    """Draw each model's mean cost per image against threshold, marking the chosen one."""
+    fig, (ax,) = _figure(8, 3.8)
+    notes = []
+    for n, c in enumerate(choices):
+        xs = [p.threshold for p in c.grid]
+        ys = [p.cost for p in c.grid]
+        ax.plot(xs, ys, color=SERIES[n], linewidth=2, label=c.model)
+        ax.plot(
+            [c.threshold],
+            [c.cost],
+            marker="o",
+            markersize=8,
+            color=SERIES[n],
+            markeredgecolor=SURFACE,
+            markeredgewidth=2,
+        )
+        ax.text(
+            c.threshold,
+            c.cost - 0.08,
+            f"{c.model}\n{c.threshold}: {c.cost}",
+            ha="center",
+            va="top",
+            fontsize=8,
+            color=TEXT,
+        )
+        top = max(c.grid, key=lambda p: p.cost)
+        if top.cost > COST_CEILING:
+            notes.append(f"{c.model} reaches {top.cost} at {top.threshold}")
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, COST_CEILING)
+    ax.set_xlabel("Confidence threshold", color=MUTED, fontsize=9)
+    ax.set_ylabel("Mean cost per image", color=MUTED, fontsize=9)
+    title = "Fuel error cost against threshold (a false positive costs three misses)"
+    if notes:
+        title += f"\nAbove {COST_CEILING}, off the chart: " + ", ".join(notes)
+    ax.set_title(title, loc="left", fontsize=10, color=TEXT)
+    ax.legend(
+        frameon=False,
+        fontsize=9,
+        ncols=len(choices),
+        loc="upper left",
+        bbox_to_anchor=(0, -0.15),
+        labelcolor=TEXT,
+    )
+    fig.tight_layout()
+    return _save(fig, path)
