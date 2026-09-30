@@ -206,12 +206,13 @@ held-out half, was kept out of the choice to check it.
 The merged model's best threshold is 0.34. There its recall on the held-out
 half rises from 0.52 at 0.5 to 0.6, while its precision on C barely moves
 (0.842 against 0.844), since its remaining wrong boxes on C are confident
-ones. The baseline's best threshold is 0.78, and there it comes close to
-the merged model in mean cost over the tuning sets. It still draws 151 wrong boxes on C, and it finds
-0.839 of the held-out half's balls. The cost gap has no interval, so this
-does not rank the two models. So a well-chosen threshold undoes much of the
-baseline's failure at 0.5, and the merged model's trouble with balls held
-by a person is one no threshold fixes.
+ones. The baseline's best threshold is 0.78, which cuts its wrong boxes on
+C to 151. Over the sets used to choose, the merged model's errors cost a
+little less (0.476 per image against 0.502). On the held-out half, which
+neither choice saw, the baseline's cost 0.49 per image and the merged
+model's 1.303, so the baseline still does far better on balls held by a
+person, and no threshold changes that. Which model the robot should run is
+still open.
 
 ## What comes next
 
