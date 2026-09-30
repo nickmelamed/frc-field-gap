@@ -1,4 +1,5 @@
 import json
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -16,7 +17,6 @@ from frc_xdata.threshold import (
     flat_band,
     load_choice,
     pick_threshold,
-    tuning_units,
 )
 
 # The evaluate CLI fixtures build a harmonized split and a model to run.
@@ -29,8 +29,8 @@ SETTINGS: dict[str, Any] = {
     "scored_class": "fuel",
     "grid": {"start": 0.05, "stop": 0.95, "step": 0.05},
     "costs": {"false_positive": 3, "false_negative": 1},
-    "tuning": [],
-    "lockbox": {"dataset": "alpha", "tune_fraction": 0.5},
+    "tuning": ["alpha"],
+    "held_out": {"dataset": "beta", "out_of_scope": ["near"]},
     "band": 0.05,
 }
 
@@ -73,29 +73,14 @@ def test_a_band_can_reach_both_ends() -> None:
     assert flat_band([1.0, 1.0, 1.0], 1, 0.0) == (0, 2)
 
 
-UNITS = ["w1", "w1", "w2", "w3", "w4", "v1", "v2", "p1"]
-KINDS = ["web", "web", "web", "web", "web", "video", "video", "photo"]
+def test_a_held_out_dataset_cannot_also_tune() -> None:
+    with pytest.raises(ValidationError, match="both held out"):
+        ThresholdConfig.model_validate({**SETTINGS, "tuning": ["beta"]})
 
 
-def test_the_tuning_half_takes_a_share_of_every_kind() -> None:
-    picked = tuning_units(UNITS, KINDS, 0.5, 2026)
-    assert len(picked & {"w1", "w2", "w3", "w4"}) == 2
-    assert len(picked & {"v1", "v2"}) == 1
-    # Half of one unit rounds to none, so a kind that small stays held out.
-    assert "p1" not in picked
-
-
-def test_the_tuning_half_depends_only_on_the_units_and_the_seed() -> None:
-    order = [4, 0, 7, 2, 5, 1, 6, 3]
-    shuffled = tuning_units([UNITS[i] for i in order], [KINDS[i] for i in order], 0.5, 2026)
-    assert shuffled == tuning_units(UNITS, KINDS, 0.5, 2026)
-    many = [f"u{i}" for i in range(40)]
-    assert tuning_units(many, ["k"] * 40, 0.5, 1) != tuning_units(many, ["k"] * 40, 0.5, 2)
-
-
-def test_the_lockbox_cannot_also_tune() -> None:
-    with pytest.raises(ValidationError, match="both the lockbox"):
-        ThresholdConfig.model_validate({**SETTINGS, "tuning": ["alpha"]})
+def test_there_must_be_a_tuning_dataset() -> None:
+    with pytest.raises(ValidationError):
+        ThresholdConfig.model_validate({**SETTINGS, "tuning": []})
 
 
 def test_the_grid_cannot_start_below_the_cached_floor(tmp_path: Path) -> None:
@@ -107,15 +92,30 @@ def test_the_grid_cannot_start_below_the_cached_floor(tmp_path: Path) -> None:
         load_yaml(path, ProjectConfig)
 
 
-@pytest.fixture
-def swept(workspace: Path, fake: object, monkeypatch: pytest.MonkeyPatch) -> Path:
-    """The evaluate workspace after one live run, with alpha as a lockbox of one kind."""
-    assert evaluate.main(ARGS) == 0
+def _write_settings(workspace: Path, settings: dict[str, Any]) -> None:
     path = workspace / "configs" / "project.yaml"
     project = yaml.safe_load(path.read_text(encoding="utf-8"))
-    project["threshold"] = SETTINGS
-    project["diagnose"]["sources"] = {"alpha": [{"name": "all", "pattern": "."}]}
+    project["threshold"] = settings
+    # a.jpg and b.jpg hold the labeled fuel, and c.jpg only a false positive.
+    patterns = [{"name": "far", "pattern": "^[ab]"}, {"name": "near", "pattern": "^c"}]
+    project["diagnose"]["sources"] = {"beta": patterns}
     path.write_text(yaml.safe_dump(project), encoding="utf-8")
+
+
+@pytest.fixture
+def swept(workspace: Path, fake: object, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """The evaluate workspace with runs on alpha, which tunes, and a copy of it, beta, held out."""
+    harmonized = workspace / "data" / "harmonized"
+    shutil.copytree(harmonized / "alpha", harmonized / "beta")
+    reports = workspace / "reports"
+    shutil.copy(
+        reports / "data_manifests" / "alpha.sha256", reports / "data_manifests" / "beta.sha256"
+    )
+    coverage = {"alpha": {"labeled": ["fuel"]}, "beta": {"labeled": ["fuel"]}}
+    (reports / "class_coverage.json").write_text(json.dumps(coverage), encoding="utf-8")
+    assert evaluate.main(ARGS) == 0
+    assert evaluate.main(["m", "beta", *ARGS[2:]]) == 0
+    _write_settings(workspace, SETTINGS)
     for name in ("git_is_dirty", "git_commit", "git_tree"):
         monkeypatch.setattr(threshold, name, getattr(evaluate, name))
     return workspace
@@ -127,23 +127,42 @@ def test_main_chooses_the_highest_threshold_that_keeps_every_hit(swept: Path) ->
     choice = load_choice(out / "threshold.json")
     # Every labeled box is predicted at 0.9 and the one false positive at 0.2,
     # so every threshold above 0.2 up to 0.9 costs nothing.
-    assert (choice.threshold, choice.cost, choice.band_high) == (0.9, 0.0, 0.9)
-    tuning, held_out = choice.sets
-    assert (tuning.role, held_out.role) == ("tuning", "held out")
-    assert tuning.images + held_out.images == 3
-    assert set(choice.lockbox.tuning).isdisjoint(choice.lockbox.held_out)
-    assert len(choice.lockbox.tuning) + len(choice.lockbox.held_out) == 3
-    # alpha keeps its own splits, so each image is its own unit.
-    assert (tuning.images, held_out.images) == (
-        len(choice.lockbox.tuning),
-        len(choice.lockbox.held_out),
+    assert (choice.threshold, choice.cost, choice.band_low, choice.band_high) == (
+        0.9,
+        0.0,
+        0.25,
+        0.9,
     )
+    assert [(s.name, s.role, s.images) for s in choice.sets] == [
+        ("alpha test", "tuning", 3),
+        ("beta far", "held out", 2),
+        ("beta near", "out of scope", 1),
+    ]
     assert [p.threshold for p in choice.grid] == pytest.approx(
         [round(0.05 * i, 2) for i in range(1, 20)]
     )
+    # Only the tuning set is costed on the grid.
+    assert {c.name for p in choice.grid for c in p.sets} == {"alpha test"}
     meta = json.loads((out / "meta.json").read_text(encoding="utf-8"))
-    assert meta["runs"] == ["run1"]
+    assert meta["runs"] == ["run1", "run2"]
     assert meta["git"] == {"commit": "abc123", "tree": "def456", "dirty": False}
+
+
+def test_a_held_out_set_with_nothing_out_of_scope_is_scored_whole(swept: Path) -> None:
+    _write_settings(swept, {**SETTINGS, "held_out": {"dataset": "beta"}})
+    assert threshold.main(["--project-config", "configs/project.yaml"]) == 0
+    choice = load_choice(swept / "reports" / "thresholds" / "m" / "threshold.json")
+    assert [(s.name, s.role, s.images) for s in choice.sets] == [
+        ("alpha test", "tuning", 3),
+        ("beta test", "held out", 3),
+    ]
+
+
+def test_an_unknown_out_of_scope_kind_is_an_error(swept: Path) -> None:
+    held_out = {"dataset": "beta", "out_of_scope": ["closeup"]}
+    _write_settings(swept, {**SETTINGS, "held_out": held_out})
+    with pytest.raises(ConfigError, match="not kinds of image"):
+        threshold.main(["--project-config", "configs/project.yaml"])
 
 
 def test_main_refuses_a_dirty_tree(swept: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -152,7 +171,7 @@ def test_main_refuses_a_dirty_tree(swept: Path, monkeypatch: pytest.MonkeyPatch)
         threshold.main(["--project-config", "configs/project.yaml"])
 
 
-def test_a_model_without_a_lockbox_run_is_an_error(swept: Path) -> None:
+def test_a_model_without_a_published_run_is_an_error(swept: Path) -> None:
     with pytest.raises(ConfigError, match="no published run"):
         threshold.main(["--model", "m2", "--project-config", "configs/project.yaml"])
 
@@ -167,18 +186,30 @@ def test_each_recorded_deploy_threshold_matches_its_committed_choice() -> None:
         assert models[name].deploy_confidence == chosen.threshold
 
 
-def test_halves_that_lose_an_image_are_an_error(
+def test_parts_that_lose_an_image_are_an_error(
     swept: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    split = threshold.split_lockbox
+    split = threshold.split_held_out
 
     def lossy(*args: Any) -> Any:
-        tuning, held_out, halves = split(*args)
-        keep = [i > 0 for i in range(tuning.images)]
-        return tuning.subset(tuning.name, "tuning", keep), held_out, halves
+        in_scope, *rest = split(*args)
+        keep = [i > 0 for i in range(in_scope.images)]
+        return [in_scope.subset(in_scope.name, "held out", keep), *rest]
 
-    monkeypatch.setattr(threshold, "split_lockbox", lossy)
-    with pytest.raises(CountMismatchError, match="lockbox halves"):
+    monkeypatch.setattr(threshold, "split_held_out", lossy)
+    with pytest.raises(CountMismatchError, match="add up to"):
+        threshold.main(["--project-config", "configs/project.yaml"])
+
+
+def test_an_empty_part_is_an_error(swept: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    split = threshold.split_held_out
+
+    def emptied(*args: Any) -> Any:
+        in_scope, *rest = split(*args)
+        return [in_scope, *(r.subset(r.name, r.role, [False] * r.images) for r in rest)]
+
+    monkeypatch.setattr(threshold, "split_held_out", emptied)
+    with pytest.raises(CountMismatchError, match="has no images"):
         threshold.main(["--project-config", "configs/project.yaml"])
 
 
@@ -187,16 +218,4 @@ def test_units_that_disagree_with_the_run_are_an_error(
 ) -> None:
     monkeypatch.setattr(threshold, "image_units", lambda records, *a: ["one"] * len(records))
     with pytest.raises(ConfigError, match="rebuilt 1 units"):
-        threshold.main(["--project-config", "configs/project.yaml"])
-
-
-def test_an_empty_half_is_an_error(swept: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    split = threshold.split_lockbox
-
-    def emptied(*args: Any) -> Any:
-        tuning, held_out, halves = split(*args)
-        return tuning, held_out.subset(held_out.name, "held out", [False] * held_out.images), halves
-
-    monkeypatch.setattr(threshold, "split_lockbox", emptied)
-    with pytest.raises(CountMismatchError, match="has no images"):
         threshold.main(["--project-config", "configs/project.yaml"])

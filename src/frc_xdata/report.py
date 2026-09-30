@@ -504,8 +504,9 @@ def threshold_section(choices: Sequence[ThresholdChoice]) -> str:
         f"{first.costs.false_positive} and one miss at {first.costs.false_negative}, per image "
         f"of each set. The chosen threshold has the lowest mean cost over the tuning sets, "
         f"and the band is the run of thresholds around it whose mean cost is at most "
-        f"{first.band:.0%} above it. Only the held-out half of the lockbox played no part in "
-        "the choice. Precision and recall come from supervision's metrics, as in the runs, and "
+        f"{first.band:.0%} above it. Held-out and out-of-scope sets played no part in the "
+        "choice, and out-of-scope sets show cases the robot never acts on. Precision and "
+        "recall come from supervision's metrics, as in the runs, and "
         "can differ slightly from the counts beside them, which follow the confusion matrix."
         f"{NOT_A_RESULT}",
         "",

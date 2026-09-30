@@ -371,11 +371,16 @@ class ErrorCosts(_Frozen):
     false_negative: Annotated[float, Field(gt=0)]
 
 
-class LockboxHalves(_Frozen):
-    """How the lockbox is cut into a half for choosing and a half held out (D-032)."""
+class HeldOutCheck(_Frozen):
+    """The dataset scored only at the chosen threshold, and the kinds of image left out (D-032).
+
+    Kinds are the source names under ``diagnose.sources`` for the dataset.
+    Out-of-scope kinds show cases the robot never acts on, so they are
+    reported apart from the check.
+    """
 
     dataset: DatasetKey
-    tune_fraction: Probability
+    out_of_scope: list[str] = []
 
 
 class ThresholdConfig(_Frozen):
@@ -388,15 +393,15 @@ class ThresholdConfig(_Frozen):
     grid: ThresholdRange
     costs: ErrorCosts
     # Datasets whose test split is scored whole when choosing.
-    tuning: list[DatasetKey]
-    lockbox: LockboxHalves
+    tuning: Annotated[list[DatasetKey], Field(min_length=1)]
+    held_out: HeldOutCheck
     # Thresholds whose mean cost is within this share of the lowest.
     band: Probability
 
     @model_validator(mode="after")
-    def _lockbox_apart(self) -> "ThresholdConfig":
-        if self.lockbox.dataset in self.tuning:
-            raise ValueError(f"{self.lockbox.dataset} is both the lockbox and a tuning dataset")
+    def _held_out_apart(self) -> "ThresholdConfig":
+        if self.held_out.dataset in self.tuning:
+            raise ValueError(f"{self.held_out.dataset} is both held out and a tuning dataset")
         return self
 
 

@@ -318,9 +318,10 @@ threshold:
     false_positive: 3
     false_negative: 1
   tuning: [marswars, robotzftp2, scorekeeper]
-  # Half the lockbox's units help choose, and the other half is scored only
-  # at the chosen threshold (D-032).
-  lockbox:
+  # The lockbox is scored only at the chosen threshold. The robot never
+  # picks up a ball a person is holding, so the webcam frames are reported
+  # apart from the check (D-032).
+  held_out:
     dataset: pankratz
-    tune_fraction: 0.5
+    out_of_scope: [webcam frames]
   band: 0.05

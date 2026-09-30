@@ -4,13 +4,12 @@
 runs and makes no hosted calls. At every threshold on a grid it counts the
 scored class's hits, false positives, and misses the way a run does, prices
 them with the configured costs, and picks the threshold with the lowest mean
-cost per image. The lockbox is cut by unit into a half that helps choose and
-a half that is scored only at the chosen threshold, so one result is free of
-the choice (D-031, D-032).
+cost per image over the tuning datasets. A held-out dataset is scored only
+at the chosen threshold, with kinds of image the robot never acts on
+reported apart (D-031, D-032).
 """
 
 import argparse
-import hashlib
 import json
 import logging
 import sys
@@ -58,7 +57,7 @@ from frc_xdata.runs import load_runs, predictions_path, select_runs
 CHOICE_NAME = "threshold.json"
 TEST = "test"
 
-Role = Literal["tuning", "held out"]
+Role = Literal["tuning", "held out", "out of scope"]
 
 logger = logging.getLogger(__name__)
 
@@ -125,16 +124,6 @@ class SetResult(_Record):
     neutral: SetScore
 
 
-class LockboxSplit(_Record):
-    """Which lockbox units helped choose and which were held out."""
-
-    dataset: str
-    tune_fraction: float
-    seed: int
-    tuning: list[str]
-    held_out: list[str]
-
-
 class ThresholdChoice(_Record):
     """The chosen threshold for one model and what backs it."""
 
@@ -151,10 +140,9 @@ class ThresholdChoice(_Record):
     neutral_threshold: float
     neutral_cost: float
     sets: list[SetResult]
-    # Recall of the scored class on the held-out half at the chosen
-    # threshold, resampling whole units.
+    # Recall of the scored class on the in-scope held-out images at the
+    # chosen threshold, resampling whole units.
     held_out_recall: Interval | None
-    lockbox: LockboxSplit
     grid: list[GridPoint]
 
 
@@ -225,36 +213,6 @@ def flat_band(costs: Sequence[float], best: int, band: float) -> tuple[int, int]
     while high < len(costs) - 1 and costs[high + 1] <= limit:
         high += 1
     return low, high
-
-
-def tuning_units(
-    units: Sequence[str], kinds: Sequence[str], fraction: float, seed: int
-) -> frozenset[str]:
-    """Pick the lockbox units that help choose the threshold, a share of each kind.
-
-    Units of each kind of image are ordered by a hash of the seed and the
-    unit name, and the first ``fraction`` of them, rounded, are taken. Both
-    halves hold every kind with two or more units, and a kind with one unit
-    stays whole in the held-out half. A unit's kind is that of its first
-    image by position.
-
-    Args:
-        units: The unit of each image.
-        kinds: The kind of each image, such as webcam frames, in the same order.
-        fraction: Share of each kind's units to take.
-        seed: Seed for the ordering, so the halves are repeatable.
-    """
-    kind_of: dict[str, str] = {}
-    for unit, kind in zip(units, kinds, strict=True):
-        kind_of.setdefault(unit, kind)
-    picked: set[str] = set()
-    for kind in sorted(set(kind_of.values())):
-        members = sorted(
-            (u for u, k in kind_of.items() if k == kind),
-            key=lambda u: hashlib.sha256(f"{seed}:{u}".encode()).hexdigest(),
-        )
-        picked.update(members[: round(fraction * len(members))])
-    return frozenset(picked)
 
 
 def _counts(values: tuple[int, int, int]) -> Counts:
@@ -346,31 +304,41 @@ def load_set(project: ProjectConfig, result: RunResult, role: Role) -> ScoredSet
     )
 
 
-def split_lockbox(
-    project: ProjectConfig, whole: ScoredSet, cfg: ThresholdConfig
-) -> tuple[ScoredSet, ScoredSet, LockboxSplit]:
-    """Cut the lockbox into its tuning half and its held-out half.
+def split_held_out(
+    project: ProjectConfig, whole: ScoredSet, out_of_scope: Sequence[str]
+) -> list[ScoredSet]:
+    """Cut the held-out set into its in-scope images and one set per out-of-scope kind.
+
+    Kinds with no images are left out. With nothing out of scope, the set is
+    kept whole.
 
     Raises:
-        ConfigError: If the lockbox has no source patterns to stratify by.
+        ConfigError: If an out-of-scope kind is given for a dataset with no
+            source patterns, or is not one of them.
     """
-    sources = image_sources(project, whole.result.dataset, whole.records)
-    if sources is None:
-        raise ConfigError(f"diagnose.sources has no patterns for {whole.result.dataset}")
-    kinds, _ = sources
-    picked = tuning_units(whole.units, kinds, cfg.lockbox.tune_fraction, project.seed)
-    keep = [u in picked for u in whole.units]
     dataset = whole.result.dataset
-    tuning = whole.subset(f"{dataset} tuning half", "tuning", keep)
-    held_out = whole.subset(f"{dataset} held-out half", "held out", [not k for k in keep])
-    split = LockboxSplit(
-        dataset=dataset,
-        tune_fraction=cfg.lockbox.tune_fraction,
-        seed=project.seed,
-        tuning=sorted(picked),
-        held_out=sorted(set(whole.units) - picked),
-    )
-    return tuning, held_out, split
+    if not out_of_scope:
+        return [whole]
+    sources = image_sources(project, dataset, whole.records)
+    if sources is None:
+        raise ConfigError(f"diagnose.sources has no patterns for {dataset}")
+    kinds, order = sources
+    if unknown := sorted(set(out_of_scope) - set(order)):
+        raise ConfigError(f"{unknown} are not kinds of image in {dataset}")
+    in_scope = [k for k in order if k not in out_of_scope and k in kinds]
+    parts = [
+        whole.subset(
+            f"{dataset} {', '.join(in_scope)}",
+            "held out",
+            [k not in out_of_scope for k in kinds],
+        )
+    ]
+    parts += [
+        whole.subset(f"{dataset} {k}", "out of scope", [kind == k for kind in kinds])
+        for k in order
+        if k in out_of_scope and k in kinds
+    ]
+    return parts
 
 
 def _published(project: ProjectConfig, model: str, dataset: str) -> RunResult:
@@ -409,11 +377,11 @@ def choose_threshold(project: ProjectConfig, model: str) -> ThresholdChoice:
     if model not in load_yaml(ev.models_file, ModelsFile).models:
         raise ConfigError(f"{model} is not in {ev.models_file}")
 
-    whole_sets = [load_set(project, _published(project, model, d), "tuning") for d in cfg.tuning]
-    lockbox = load_set(project, _published(project, model, cfg.lockbox.dataset), "held out")
-    lock_tuning, held_out, split = split_lockbox(project, lockbox, cfg)
-    _check_halves(lockbox, [lock_tuning, held_out])
-    tuning = [*whole_sets, lock_tuning]
+    tuning = [load_set(project, _published(project, model, d), "tuning") for d in cfg.tuning]
+    whole = load_set(project, _published(project, model, cfg.held_out.dataset), "held out")
+    parts = split_held_out(project, whole, cfg.held_out.out_of_scope)
+    _check_parts(whole, parts)
+    held_out = parts[0]
     for s in tuning:
         if cfg.scored_class not in s.result.scored_classes:
             raise ConfigError(f"{s.result.run_id} does not score {cfg.scored_class}")
@@ -458,9 +426,8 @@ def choose_threshold(project: ProjectConfig, model: str) -> ThresholdChoice:
         band_high=thresholds[high],
         neutral_threshold=neutral,
         neutral_cost=round(neutral_mean, DECIMALS),
-        sets=[_result(s, chosen, neutral, cfg) for s in [*tuning, held_out]],
+        sets=[_result(s, chosen, neutral, cfg) for s in [*tuning, *parts]],
         held_out_recall=interval,
-        lockbox=split,
         grid=[
             GridPoint(
                 threshold=t,
@@ -472,25 +439,27 @@ def choose_threshold(project: ProjectConfig, model: str) -> ThresholdChoice:
     )
 
 
-def _check_halves(whole: ScoredSet, halves: Sequence[ScoredSet]) -> None:
-    """Fail unless each half has images and together they add up to the whole lockbox.
+def _check_parts(whole: ScoredSet, parts: Sequence[ScoredSet]) -> None:
+    """Fail unless each part has images and together they add up to the whole held-out set.
 
     Raises:
-        CountMismatchError: If a half is empty, or an image was lost or
+        CountMismatchError: If a part is empty, or an image was lost or
             counted twice.
     """
-    if any(h.images == 0 for h in halves):
-        raise CountMismatchError(f"a lockbox half of {whole.result.dataset} has no images")
+    if any(h.images == 0 for h in parts):
+        raise CountMismatchError(f"a part of {whole.result.dataset} has no images")
 
     def counted(s: ScoredSet) -> dict[int, tuple[int, int, int]]:
         m = s.result.metrics
         return error_counts(s.predictions, s.labels, scored_ids(s), m.confidence, m.iou)
 
-    parts = [counted(h) for h in halves]
-    summed = {c: tuple(sum(p[c][i] for p in parts) for i in range(3)) for c in parts[0]}
+    found = [counted(h) for h in parts]
+    summed = {c: tuple(sum(p[c][i] for p in found) for i in range(3)) for c in found[0]}
     want = counted(whole)
-    if summed != want or sum(h.images for h in halves) != whole.images:
-        raise CountMismatchError(f"lockbox halves add up to {summed}, not {want}")
+    if summed != want or sum(h.images for h in parts) != whole.images:
+        raise CountMismatchError(
+            f"the parts of {whole.result.dataset} add up to {summed}, not {want}"
+        )
 
 
 def threshold_meta(
