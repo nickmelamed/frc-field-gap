@@ -8,7 +8,7 @@ from pydantic import ValidationError
 from test_evaluate_cli import ARGS, fake, workspace
 
 from frc_xdata import evaluate, threshold
-from frc_xdata.config import ErrorCosts, ProjectConfig, ThresholdConfig, load_yaml
+from frc_xdata.config import ErrorCosts, ModelsFile, ProjectConfig, ThresholdConfig, load_yaml
 from frc_xdata.errors import ConfigError, DirtyTreeError
 from frc_xdata.threshold import (
     Counts,
@@ -150,3 +150,13 @@ def test_main_refuses_a_dirty_tree(swept: Path, monkeypatch: pytest.MonkeyPatch)
 def test_a_model_without_a_lockbox_run_is_an_error(swept: Path) -> None:
     with pytest.raises(ConfigError, match="no published run"):
         threshold.main(["--model", "m2", "--project-config", "configs/project.yaml"])
+
+
+def test_each_recorded_deploy_threshold_matches_its_committed_choice() -> None:
+    root = Path(__file__).resolve().parents[1]
+    models = load_yaml(root / "reports" / "models.yaml", ModelsFile).models
+    project = load_yaml(root / "configs" / "project.yaml", ProjectConfig)
+    assert project.threshold is not None
+    for name in project.threshold.models:
+        chosen = load_choice(root / project.threshold.output_dir / name / "threshold.json")
+        assert models[name].deploy_confidence == chosen.threshold
