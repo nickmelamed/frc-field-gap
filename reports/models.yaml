@@ -72,8 +72,8 @@ models:
     train_time_augmentation: none
     estimate: null
     credit_cap: 5
-    # Not reported yet. It stopped before the cap, so on early stopping.
-    epochs: null
+    # Stopped by early stopping at epoch 35, well under the credit cap.
+    epochs: 35
     early_stopping: true
     other_settings: {}
     trained: 2026-09-29
