@@ -180,7 +180,7 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
   - `frc-download` now skips an unpinned dataset such as `lava` with a
     warning instead of failing, so `make download harmonize` runs through
     (D-024).
-- [ ] Task 10: Merged-data fix (v0.2.0)
+- [x] Task 10: Merged-data fix (v0.2.0)
   - Split into two PRs, since training on the platform falls between
     them. PR 1 (`feat/merged-data`) prepares and checks the data. PR 2
     (`eval/merged`) scores the trained models and writes them up.
@@ -199,8 +199,22 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     check guards test and lockbox images, since D-013 allows train frames
     close to their own valid split. The lockbox grid leaves out its webcam
     frames, which show a face.
-  - For Nick. Look at `docs/assets/samples_pankratz.png`. Create
-    `frc-rebuilt-merged`, then follow "The merged model" in RETRAINING.md.
+  - PR 2 (`eval/merged`). `merged-noaug` (version 7) and `merged-aug`
+    (version 8) were trained and scored on A, B, C, and `pankratz` test,
+    next to baseline-a rescored under the edge rule. On C, fuel false
+    positives fall from 1083 to 69. On the lockbox, recall falls from 0.948
+    to 0.486, nearly all on webcam frames of a person holding balls. Both
+    merged models are diagnosed with slices, without a review or gallery
+    (D-030). `docs/EVALUATION.md` and `docs/WRITEUP.md` have the write-up.
+  - Differences from the plan and SPEC section 7. Roboflow refused to
+    train versions 3 and 4, so the trained versions are 7 and 8 (D-029).
+    `merged-aug` started from `merged-noaug`'s weights, so the two runs do
+    not isolate augmentation. The prediction cache cap is 500000 bytes
+    (D-025). The merged models' errors were not judged by eye.
+  - For Task 11 and later. The lockbox drop is the open problem: labeled
+    images of people holding fuel are the next data to add. A review and
+    face-checked gallery for the merged models can follow with
+    `/publish-diagnosis` and `/face-check`.
 - [ ] Task 11: Threshold choice (v0.2.0)
 - [ ] Task 12: Edge deployment (v0.3.0, before interviews)
 

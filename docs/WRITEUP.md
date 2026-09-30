@@ -1,8 +1,9 @@
 # Why a fuel detector sees fuel in the crowd
 
-Draft for v0.1.0. It covers the first three steps of the project: training
-a baseline, scoring it on other teams' data, and working out why it fails.
-The fix and the Raspberry Pi deployment come in later releases. Every
+Draft for v0.2.0. It covers the first four steps of the project: training
+a baseline, scoring it on other teams' data, working out why it fails, and
+fixing it with merged data. The Raspberry Pi deployment comes in a later
+release. Every
 number here comes from the tables that `make report` generates, and
 `docs/EVALUATION.md` has them in full.
 
@@ -157,18 +158,38 @@ Fifteen of the errors, with labels in green, wrong boxes in orange, and
 missed labels in light blue. The Milford broadcast is left out, because
 every frame of it shows spectators close to the camera.
 
+## The fix, and its cost
+
+The second model, `merged-noaug`, is the same small detector trained on
+four datasets at once, including many pit photos and match broadcasts
+full of people with no fuel label, and it learns robots too.
+Each dataset's test photos stayed out of training, so it is scored on the
+same test splits as the baseline. Balls cut off by the frame edge are now
+set aside in scoring, since labelers and models disagree on how much of
+one to box, and the baseline was rescored the same way.
+
+On the third team's photos, the wrong fuel boxes fall from 1083 to 69, and
+every labeled ball is still found. None of the 69 is on a pit photo or a
+broadcast. They all fall on close-up photos of fuel clusters, some of
+which have balls nobody labeled.
+
+A dataset held back from all training shows the cost. It comes from
+another team, mostly webcam frames of one person tossing and catching balls.
+The baseline finds nearly all of its balls (recall 0.948). The merged model finds
+about half (recall 0.486), and nearly all of its misses are on those webcam
+frames, where the balls are small and often in someone's hands. It almost
+never draws fuel on the person. It seems to have learned the opposite
+mistake: that fuel next to a person is background. A second run with
+augmentation, flips, crops, and brightness changes, did about the same.
+
+So the merged data fixed what the diagnosis found and exposed a case the
+first three datasets barely had. `docs/EVALUATION.md` has the numbers,
+their intervals, and the slices behind this.
+
 ## What comes next
 
-The largest error on other teams' data is fuel drawn on people and on
-other games' balls. The merged model in v0.2.0 will train on images of
-crowds, pits, and old game pieces with no fuel label, and the results
-for each source will show whether that worked. It also needs a rule for how much of
-an edge ball to label, applied to every dataset, and C's unlabeled clusters
-fixed or left out before C is used for training. A held-back dataset, picked
-after v0.1.0, kept out of all training, and scored only once, will check
-the fix (D-022).
-
-After that come a confidence threshold picked for the robot, where a
+The merged model needs labeled images of people holding or standing near
+fuel, so it can tell a ball in a hand from a hand. After that come a confidence threshold picked for the robot, where a
 missed ball and a wasted pickup cost different things, and a Raspberry Pi
 deployment with measured speed in v0.3.0.
 
