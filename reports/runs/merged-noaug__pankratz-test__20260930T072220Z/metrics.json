@@ -1,0 +1,2146 @@
+{
+  "run_id": "merged-noaug__pankratz-test__20260930T072220Z",
+  "model": "merged-noaug",
+  "dataset": "pankratz",
+  "split": "test",
+  "limit": null,
+  "predictions_from": "this run",
+  "scored_classes": [
+    "fuel"
+  ],
+  "unscored_classes": [],
+  "per_image_limit": {
+    "per_image": 25,
+    "images_at_limit": 62,
+    "images_above_threshold": 0
+  },
+  "edge_ignore": {
+    "classes": [
+      "fuel"
+    ],
+    "tolerance_px": 1.0,
+    "min_overlap": 0.5,
+    "iou": 0.5,
+    "labels": 60,
+    "predictions": 311
+  },
+  "metrics": {
+    "images": 363,
+    "confidence": 0.5,
+    "iou": 0.5,
+    "map50": 0.813,
+    "map50_95": 0.55,
+    "small_map50_95": 0.507,
+    "medium_map50_95": 0.858,
+    "large_map50_95": 0.991,
+    "classes": [
+      {
+        "name": "fuel",
+        "instances": 925,
+        "map50": 0.813,
+        "map50_95": 0.55,
+        "precision": 0.985,
+        "recall": 0.486,
+        "true_positives": 452,
+        "false_positives": 5,
+        "false_negatives": 473
+      }
+    ],
+    "confusion": {
+      "labels": [
+        "fuel",
+        "background"
+      ],
+      "matrix": [
+        [
+          452,
+          473
+        ],
+        [
+          5,
+          0
+        ]
+      ]
+    },
+    "pr_curve": {
+      "fuel": [
+        {
+          "threshold": 0.05,
+          "precision": 0.658,
+          "recall": 0.808
+        },
+        {
+          "threshold": 0.1,
+          "precision": 0.796,
+          "recall": 0.738
+        },
+        {
+          "threshold": 0.15,
+          "precision": 0.86,
+          "recall": 0.703
+        },
+        {
+          "threshold": 0.2,
+          "precision": 0.901,
+          "recall": 0.668
+        },
+        {
+          "threshold": 0.25,
+          "precision": 0.929,
+          "recall": 0.635
+        },
+        {
+          "threshold": 0.3,
+          "precision": 0.959,
+          "recall": 0.612
+        },
+        {
+          "threshold": 0.35,
+          "precision": 0.973,
+          "recall": 0.578
+        },
+        {
+          "threshold": 0.4,
+          "precision": 0.979,
+          "recall": 0.549
+        },
+        {
+          "threshold": 0.45,
+          "precision": 0.981,
+          "recall": 0.516
+        },
+        {
+          "threshold": 0.5,
+          "precision": 0.985,
+          "recall": 0.486
+        },
+        {
+          "threshold": 0.55,
+          "precision": 0.988,
+          "recall": 0.441
+        },
+        {
+          "threshold": 0.6,
+          "precision": 0.992,
+          "recall": 0.398
+        },
+        {
+          "threshold": 0.65,
+          "precision": 0.991,
+          "recall": 0.359
+        },
+        {
+          "threshold": 0.7,
+          "precision": 0.99,
+          "recall": 0.325
+        },
+        {
+          "threshold": 0.75,
+          "precision": 0.992,
+          "recall": 0.278
+        },
+        {
+          "threshold": 0.8,
+          "precision": 0.995,
+          "recall": 0.239
+        },
+        {
+          "threshold": 0.85,
+          "precision": 1.0,
+          "recall": 0.187
+        },
+        {
+          "threshold": 0.9,
+          "precision": 1.0,
+          "recall": 0.139
+        },
+        {
+          "threshold": 0.95,
+          "precision": 1.0,
+          "recall": 0.053
+        }
+      ]
+    }
+  },
+  "units": [
+    {
+      "unit": "IMG_7023_mov-0000_jpg.rf.e9605090038976ab2d577c84f89ad8a7.jpg",
+      "images": 22,
+      "boxes": {
+        "fuel": 107
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_08_50_Pro_jpg.rf.7f0013007e46fc5bbfd9a8c9b36502e1.jpg",
+      "images": 13,
+      "boxes": {
+        "fuel": 37
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_58_08_Pro_jpg.rf.d86dd5b49333552d30a775aed9ba7e43.jpg",
+      "images": 6,
+      "boxes": {
+        "fuel": 26
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_12_Pro_jpg.rf.2ef8b594d4c4b600bfa5e8d13770d9d7.jpg",
+      "images": 11,
+      "boxes": {
+        "fuel": 22
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_01_29_Pro_jpg.rf.b8e6f674119be34dc2ff3110eac452f9.jpg",
+      "images": 4,
+      "boxes": {
+        "fuel": 19
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_04_39_Pro_jpg.rf.fe13af87223df2a861eca3df186ff140.jpg",
+      "images": 3,
+      "boxes": {
+        "fuel": 12
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_57_25_Pro_jpg.rf.078351cfb85cc47ed75eba6b762ace55.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 9
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_03_45_Pro_jpg.rf.e4288cd428267dc32568c0de2eb2d2f8.jpg",
+      "images": 3,
+      "boxes": {
+        "fuel": 8
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_11_13_Pro_jpg.rf.1862f797f95ce9468fa5bef57f0627fe.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 8
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_59_17_Pro_jpg.rf.ac50e12174cbfe06067553e1e3ccd087.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 6
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_02_13_Pro_jpg.rf.b7f5bc2c90db58df243fa1a2c88f0bb2.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 6
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_02_20_Pro_jpg.rf.4584e79c977750a787518d947210bed8.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 6
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_04_32_Pro_jpg.rf.6f8009bd1224398df73306003467fb65.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 6
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_30_Pro_jpg.rf.885e7a6d024284bbc4979f3980f996c5.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 6
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_57_17_Pro_jpg.rf.a9b9c62e7140f21a8e87c51e90d6327b.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_57_18_Pro_jpg.rf.c97e1aedfc6711fd03497b35c342cb1a.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_57_21_Pro_jpg.rf.f21e3233a080d604b9a66a439654574a.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_57_32_Pro-2-_jpg.rf.b5bdc4d367c0fb3328e8b768267db12c.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_57_32_Pro_jpg.rf.6a2c36b5f336d4ef85228f56ca4866eb.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_57_35_Pro_jpg.rf.7947ef0f1bba847fed4cb8380da770c5.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_57_38_Pro_jpg.rf.c642ff6a86397ddba863ef21aba341cd.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_57_41_Pro_jpg.rf.a87eab80430f9da88e0878805310c785.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_01_23_Pro_jpg.rf.1de21a4de33d139bcaaf14619fa5bc44.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_01_35_Pro_jpg.rf.31bd6c2d856af9156de4cd88fac80786.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_01_37_Pro_jpg.rf.5c68fda33ecb474a772879452777ed11.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_04_26_Pro_jpg.rf.e8fb65075348bdf720569cd64ebe04de.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_04_37_Pro_jpg.rf.bbe5a65522722e539c2ac82b83a023f4.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_04_45_Pro_jpg.rf.3466992e66c1adc84b1be7b21bcf7153.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_41_Pro_jpg.rf.bbde66cb72a38f96f930552adb1ee8fc.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_08_15_Pro_jpg.rf.42cdcfd6bd4d8c2c2df819606c5f3082.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_09_00_Pro_jpg.rf.be6ecf9b7cf80a4ad427cf43cc6ecf64.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_09_03_Pro_jpg.rf.3b03e61ee8a25691b0dcdc2cbc334e07.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_11_30_Pro_jpg.rf.f5c238c3565401286c5dc5a8af621bc5.jpg",
+      "images": 5,
+      "boxes": {
+        "fuel": 5
+      }
+    },
+    {
+      "unit": "IMG_7018_jpg.rf.312bc56103daca8e2d822c3517020c73.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_55_50_Pro_jpg.rf.c96250e8faa01b13aecd3b4d63a1514b.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_56_20_Pro_jpg.rf.ff71c1e79b91846d564a606ad780c2c3.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_56_28_Pro_jpg.rf.a60aeebb958dba19c2ba3995d49c71d8.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_56_33_Pro_jpg.rf.f58f07049d69cbcc37db367c35b9a16b.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_56_36_Pro_jpg.rf.6d03dd7b4abd22049a6a0c5df3380e7f.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_56_39_Pro_jpg.rf.f3666629db59983520011c146dafa07d.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_56_41_Pro_jpg.rf.dc5567dde5038d66c60df7bb252dbc87.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_56_52_Pro_jpg.rf.386e30a2f1a517057377ad60aa309aaa.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_56_53_Pro_jpg.rf.60295e13866b620c26820a3490e76247.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_56_56_Pro_jpg.rf.8e0f25a0d647ca69a0a6e89723454907.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_56_57_Pro_jpg.rf.288f632c0487788d52dc25f70adea749.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_57_00_Pro_jpg.rf.e749711d3a66cc99c138cbb8ef68d525.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_57_03_Pro_jpg.rf.3dac5ae511582f4da97d36bcfc1c559c.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_57_07_Pro_jpg.rf.ea31f8b8c0b4386ad8e42e5a670102ec.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_57_08_Pro_jpg.rf.4c7323a9b26d4e641b604d99f886334b.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_57_28_Pro_jpg.rf.e62dffe2b74a588818b0551080c97d90.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_57_36_Pro_jpg.rf.e2eb82f9dae27746131e9a446cb0d286.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_57_48_Pro_jpg.rf.ee853c58d7a8541db7c4e5e7a885dd75.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_58_14_Pro_jpg.rf.9665f8b31d4795643c8b0bdada54b36f.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_58_27_Pro_jpg.rf.e107499274e55d371c649fb57fbfa63c.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_58_29_Pro_jpg.rf.9c0b6584c304305682ed7eeb6314cfe2.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_58_33_Pro_jpg.rf.15d521a68e8bc3b53dec946939204ded.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_58_36_Pro_jpg.rf.c8ed2d1933c5b57d6463dd671a749bee.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_58_39_Pro_jpg.rf.35d45cc168220943812b6d5d3dc39624.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_58_41_Pro_jpg.rf.f1720c7b8e8d7f06612440adf3cbfa7d.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_59_42_Pro_jpg.rf.a4cfc8b966fc99c59003a029b5cb5733.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_59_43_Pro_jpg.rf.69bb19fe6a1d66070ac8f84c00da5bec.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_59_49_Pro-2-_jpg.rf.8bb75ef96b3681791cb86a95f7ae08c7.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_59_49_Pro_jpg.rf.726dc98b1f033249ab3780d88140399e.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_38_Pro_jpg.rf.a326701d304eb1082f8f05ccf4414a82.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_01_40_Pro_jpg.rf.1cc795c395a5d89d8a74cc7fdeb95d62.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_01_42_Pro_jpg.rf.fbf90dc87c4823e7e8edf2da59a59c93.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_01_44_Pro_jpg.rf.d1b1d03cf586595aa3e0129850f77aea.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_01_48_Pro_jpg.rf.768d85bad08cc888b7d97d39fcf1e2d8.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_01_51_Pro_jpg.rf.6034a1c941966c06c18859d3a27ef5f8.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_01_54_Pro_jpg.rf.35587e49d173031499a1637841d75a93.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_02_24_Pro_jpg.rf.b9e2e13318a77a80f1d5dd6ac7f79f41.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_02_58_Pro_jpg.rf.68a54bf4e5c637b9fd4667ce03b14288.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_03_00_Pro_jpg.rf.0349cb934cbd20e69e9210c59307cb4b.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_04_29_Pro_jpg.rf.c9621afd122c1bbfa054a6f490145552.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_04_32_Pro-2-_jpg.rf.3e0ad4dd6c52f62ffccef259e1cdb128.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_04_34_Pro_jpg.rf.b4d1cddfbd1f5a8259617048ac20d803.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_15_Pro-2-_jpg.rf.541ebb402e3fa4ddce2a1835a18264e5.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_38_Pro-2-_jpg.rf.c53357f8e18991f100f5ffbc8e4811c2.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_43_Pro_jpg.rf.b3b0bc67f82293b3f4393a5f1a542a91.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_08_33_Pro_jpg.rf.eea636da64b1612e521587dd781cc99c.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_08_37_Pro_jpg.rf.1f8ad64db13dc368f897d116e1f92eba.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_08_43_Pro_jpg.rf.50daf461825c03de55eb49825244b500.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_09_10_Pro-2-_jpg.rf.6e289a5469b75efb771753bfb269fd88.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_09_10_Pro_jpg.rf.1f6a50c329ae6ca024573965df0689d1.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_09_11_Pro_jpg.rf.0b26719ad02776b566b935c02d879e44.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_10_41_Pro_jpg.rf.aa566df7e975767cb661a77ec4054645.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_11_47_Pro_jpg.rf.c4eff3c0fd3e0115563cdac479a426ab.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 4
+      }
+    },
+    {
+      "unit": "IMG_7019_jpg.rf.bde0d29ba24023dad14dfc0a3d63711c.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "IMG_7035_jpg.rf.7d5f75263b1124e1b1849ae840e4a271.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "IMG_7036_jpg.rf.85244461ebb7c57118f55a6279d569df.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_55_30_Pro_jpg.rf.a3e45bd77517a0faee807b155bb7bff5.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_56_08_Pro_jpg.rf.775eed0104fb0039175e07918d034ba6.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_56_10_Pro_jpg.rf.5ec139568355059c5b3dca7fb1285d35.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_56_12_Pro_jpg.rf.9486c3afd8095f6c6aa2e7e1f0d05288.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_56_17_Pro_jpg.rf.48006afd4034795a3be1d73e0de5ae5a.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_56_22_Pro_jpg.rf.b996f81fc6f9e922c9f2316e072fd547.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_57_12_Pro_jpg.rf.b2b448001583b372b9f6afe8a09b8101.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_57_29_Pro_jpg.rf.2b2ecbafede872dbc5d739728f1d1eac.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_58_34_Pro_jpg.rf.67832fc950d99cf28257bac4a825aa20.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_59_51_Pro_jpg.rf.597ecd0b44b65856f5859f917d022bda.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_59_55_Pro_jpg.rf.c31f5ccd95c582402604c36473388016.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_02_Pro_jpg.rf.13a4514a79fbdc860ad18a934b331db9.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_06_Pro_jpg.rf.5552b9a20af82fbaeb25cac82ad969da.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_08_Pro_jpg.rf.a4778f59e72ededd4bb074a34a78eb62.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_09_Pro_jpg.rf.a91e6ce77b6d3e6bbc06aef760ef903a.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_17_Pro_jpg.rf.ea21eafc0ea38f799705062a3cca25a4.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_19_Pro_jpg.rf.ccb93918425933daffcd4765581f49fe.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_21_Pro_jpg.rf.875b6a75f0159b40a7932a2e8fbfee2a.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_23_Pro_jpg.rf.10138f5b616b99f198f4471b8b6e3493.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_25_Pro_jpg.rf.f8733b5432fc1aba824dfb625ab723e2.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_36_Pro_jpg.rf.f2a9dba5c1f684a4aa9114ae87f8d298.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_40_Pro_jpg.rf.e945e9a17736cf31d44478b34654f6a0.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_45_Pro_jpg.rf.09bbd69e279c79fb803f08d283cb87cb.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_48_Pro_jpg.rf.e798a3f42d7f146db17d6acbd37a78a4.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_50_Pro_jpg.rf.7ca7af15215bf8fc67bb8bfc9cbe5689.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_52_Pro_jpg.rf.233041b510e2c3492a6b7b2ebe5e7d6a.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_55_Pro_jpg.rf.cbf507ba2af0d377ee4583fb26350c34.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_57_Pro_jpg.rf.82dbab20bc93787d449aa09b60308d32.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_59_Pro_jpg.rf.61d5bc14d11188803c5ac7de5ad59001.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_01_57_Pro_jpg.rf.580addfc64881fbe84f06f18b1ad849f.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_02_01_Pro_jpg.rf.070044b0e6ef132eb7fe31836a5efccb.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_02_03_Pro_jpg.rf.8dc9ea457d72df32d1b642e0fda55690.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_02_06_Pro_jpg.rf.4822dcc5a95481659fca2278ac3a68c9.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_02_09_Pro_jpg.rf.e93e51a32b0e026b820cc1aff88a8554.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_02_16_Pro_jpg.rf.fad6abb5020e75a15cd69d7fb7458440.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_04_47_Pro_jpg.rf.19d8e72a67af39ab8732ba0fcc3c973b.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_44_Pro_jpg.rf.0453b757078a2f51ebfb1e6d751d4318.jpg",
+      "images": 3,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_01_Pro_jpg.rf.b4e9b3e6cc85264a53715249f5667071.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_08_05_Pro_jpg.rf.6d74f72c09530be40e6296923e507c93.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_08_23_Pro_jpg.rf.f2a257f76d8fce5ed2a7b3ac4743280b.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_08_25_Pro_jpg.rf.51e2e2d4dac46e705e0b21172ec5f074.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_08_39_Pro_jpg.rf.65c5ca25a6c1300c8e560d0a663e943e.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_08_56_Pro_jpg.rf.f6d2ba0136e88ed89ce374e16c49ffd3.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_09_14_Pro_jpg.rf.fc13aa4d3019763bfc59e89d3ccbd7cf.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 3
+      }
+    },
+    {
+      "unit": "IMG_7027_jpg.rf.d299736d6f95fc13a8d5b74e9a5e3cf8.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "IMG_7028_jpg.rf.d72757b07a710982eb715dff0ca058c9.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "IMG_7029_jpg.rf.cd520297b9153672ed5e77a311e5bc8a.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "IMG_7031_jpg.rf.c3d40e67694d369f55cb39de90e96bb1.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "IMG_7032_jpg.rf.2333366ec49b11cb6252fd138cc9cb47.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "IMG_7033_jpg.rf.57d2374977263a382f80990e9ac73f43.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "P_20260112_112901_jpg.rf.0a75eaca2f2516dd6895ddb85e0d8f4d.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_55_21_Pro_jpg.rf.8f34c8592759ec8b0e12b686f3f26015.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_55_35_Pro_jpg.rf.f062a4169263b4a42ee35254f8414dea.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_55_38_Pro_jpg.rf.0fd6ed9a1397cd13ea7a30e0d084af80.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_55_39_Pro_jpg.rf.de46fcf0f1fe4033e25fd3ac494de95c.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_55_41_Pro_jpg.rf.56775dc97f0c0e1444a69f5197e84cf9.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_55_43_Pro_jpg.rf.1281c402c19b32bac911eff4d75620ce.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_55_49_Pro-2-_jpg.rf.49454901b80438462cf2b8c33ac8f9ab.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_55_49_Pro_jpg.rf.ca00af2175aef6f9ace573d5d495b840.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_56_48_Pro_jpg.rf.f47e8460fb3eb1c7a280a3d531fc078b.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_58_50_Pro_jpg.rf.6b090024d1c5f23f4a84c3a517c5e593.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_58_55_Pro_jpg.rf.7ccf1502f0059f1c613d0f8446f9fe47.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_59_05_Pro_jpg.rf.e277fcac0d5186a10eb13d66f9ced467.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_59_21_Pro_jpg.rf.9a8015a4075b865545791d34928f6475.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_42_Pro_jpg.rf.340f4e8dbc4b1e5c39c5bc76953f948c.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_02_23_Pro_jpg.rf.e455a417d4bd2c8f61210bfa4c0953c9.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_02_30_Pro_jpg.rf.aed11fa3818b99afda899ce6a1f40a24.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_02_36_Pro_jpg.rf.2fcb0baa9b2a5cae7764c402fceb3411.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_03_14_Pro_jpg.rf.a7f1ae66a86c28f68e3bb651110937b5.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_03_51_Pro_jpg.rf.1b4673256edf6ac3fdcd66ced5cca419.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_03_55_Pro_jpg.rf.c71e53aec183d6565e895cd770b7f994.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_04_01_Pro_jpg.rf.b6aaa44fbc64bfdee5b92441f87e6a37.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_04_50_Pro_jpg.rf.a603512039f8d7324ec3ef7c50eae7d3.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_12_Pro_jpg.rf.bf2fe18d0d0c455821c2e6fecae83617.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_27_Pro-2-_jpg.rf.81f6ef85400f9eae72aea64dc411b5f0.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_34_Pro_jpg.rf.f669488356a73f771d421bf0952d59e6.jpg",
+      "images": 3,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_42_Pro-2-_jpg.rf.dcf2cdc6432ccf69d483cce61c60baca.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_50_Pro-2-_jpg.rf.a32b03ea2dbc502c99285c63db0e2f1c.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_57_Pro-2-_jpg.rf.36793ef647ff7e9636ec9ba54652e722.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_59_Pro-2-_jpg.rf.d4dbd0b6e1acfb28cf7bac9fdda5435f.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_24_Pro_jpg.rf.6e21340ce88ba07a78156cdefe1d40c2.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_32_Pro-2-_jpg.rf.d2797dbed05371274c8e508abacb1e04.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_32_Pro_jpg.rf.bf26af0a5387f24781c76b13123e643d.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_34_Pro_jpg.rf.5043dc3fa359949e1a37bfbc8e2398c8.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_36_Pro_jpg.rf.752cf34bcc146f8f478a1110a395c5e2.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_40_Pro_jpg.rf.84ca275bc13d5d327177a094eda31fd9.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_42_Pro_jpg.rf.7a536cb27e670fd916ee94906719b237.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_45_Pro_jpg.rf.8d27a1f48579b5520900bb37db572367.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_46_Pro_jpg.rf.ec497d84a6635da56d019d9895bc9b2d.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_50_Pro_jpg.rf.298c97fe027e1af56e14bfd58c711387.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_08_54_Pro_jpg.rf.11af553f5ebff5565b8b6551309bf6e0.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_09_07_Pro-2-_jpg.rf.7b78c38597ba33b99caa863da36b3041.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_10_04_Pro_jpg.rf.a5693bba61fcf6d51a8b539a3022010a.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_10_14_Pro_jpg.rf.4f952aa3fa53b67ebebbbb7b4089327d.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_10_19_Pro_jpg.rf.1905b5ca55771ae827d54e47e2e16013.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_10_33_Pro_jpg.rf.6e7503b65c0b06be79e280f145958cf4.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_10_42_Pro_jpg.rf.f6838586e8207f36a2ecf277ce4c9473.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_10_54_Pro_jpg.rf.fc72e1fd736d1e54662f301013776d2f.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_11_57_Pro_jpg.rf.18c91408ae26097bb4f97f448f3c3b0b.jpg",
+      "images": 2,
+      "boxes": {
+        "fuel": 2
+      }
+    },
+    {
+      "unit": "IMG_7020_jpg.rf.eceb58ee29a011b7d7142fa08fa968ce.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "IMG_7021_jpg.rf.8d25cd97112b666365b8a0baf25eb675.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "IMG_7026_jpg.rf.88b12181fb5c4398587a8b4ae82e2e8c.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "IMG_7030_jpg.rf.25f5182496f44b87916c9d1a810a09e0.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "IMG_7034_jpg.rf.df34c7429510254fcccfc847d2f564ed.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "P_20260112_112752_jpg.rf.7a3106256d83ec304d70f6120fc2fe71.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "P_20260112_112815_jpg.rf.2262d0b472c7f0ecb4f63c936ee0ae83.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "P_20260112_112819_jpg.rf.3f1bf072d3506252a99892cd337d1fb8.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "P_20260112_112839_jpg.rf.93b82feb6f3b77aa8ad7700b0e534498.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "P_20260112_112847_jpg.rf.1b6df4935dd798bdab3d00b26210143b.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "P_20260112_112855_jpg.rf.92633d7e0debd645d66ef68d54b41951.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "P_20260112_112857_jpg.rf.21448ba9bfcb787f3b0c6c39b598b889.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "P_20260112_112922_jpg.rf.96f992d57f3c7ed30c24b0eac9062fa5.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "P_20260112_112925_jpg.rf.a78fa412016417fc704f75a057a89a74.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_55_27_Pro_jpg.rf.9f788fdf7343e313aa7f23b7c64461d1.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_55_28_Pro_jpg.rf.29a8588d00c327d5a05ca259be04bbf2.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_55_29_Pro_jpg.rf.632e2484392e8f63e1e2d74e887592dd.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_58_53_Pro_jpg.rf.ff5994c14c3e535f0fffd489979f513d.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_59_22_Pro_jpg.rf.e74bdbc2347c4d8ee886018d7cf6d92c.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_59_23_Pro_jpg.rf.478341c32d62883f1e1abc3532bf3582.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_59_28_Pro_jpg.rf.f8213ec82598e52accc0c59cef42a06d.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_18_59_56_Pro_jpg.rf.87fdaaaa3b0b2a69321ab59f6db05c48.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_44_Pro_jpg.rf.70aceb4d8bb00e544bbd9b719c5c66c1.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_03_26_Pro_jpg.rf.87dc6dd7aff310edbeb13f8ccef3d7ac.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_03_50_Pro_jpg.rf.08c8161ae3e136b8b53c698778681d5a.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_04_05_Pro_jpg.rf.68d13064361f082458c5650bd4c1b6d9.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_04_54_Pro_jpg.rf.c1e39325885cfc2c7e0f5130f3eab390.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_03_Pro_jpg.rf.aeaba6948edaac2ab97de04b1bec0db7.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_05_Pro_jpg.rf.57c74137acf5778ed77ccf494edcf526.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_07_Pro_jpg.rf.c44d45932fbb44571e256593cc8d27ef.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_09_Pro_jpg.rf.41aa54e7bab3464fbc40638ca1c0e8e4.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_11_Pro_jpg.rf.6a4d01558c9ebfc29d77afbf1362d2a5.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_15_Pro_jpg.rf.91c09e7a871fa03a0ef8daf60a3a1e1f.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_25_Pro_jpg.rf.57609d62dc1be42edb7000c7aa95a0b0.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_26_Pro_jpg.rf.ba22501c0575ac8ea33109dccb945b9b.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_29_Pro-2-_jpg.rf.01ccd4099fb75a7fdb07a2aae239a6be.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_31_Pro-2-_jpg.rf.b8efad563973d8c022c6bcb0d0d48ce8.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_31_Pro_jpg.rf.67904e913e9870c07be388733eb77f68.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_33_Pro-2-_jpg.rf.d29f51c37bb70e6aa8718ed5248750b1.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_37_Pro_jpg.rf.b00233d5995cfd35e51f2a1b795dae71.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_38_Pro_jpg.rf.29b2a8cd2e8a76092308a48a93ee8828.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_39_Pro_jpg.rf.b96f77e379a0d47eb9c14f9d900d4326.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_40_Pro_jpg.rf.4296536d92da5f29b8dd0a268482f4dc.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_43_Pro-2-_jpg.rf.e8a5c09de4415a8609f27a5c9a5f3ddc.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_46_Pro_jpg.rf.00c22787cafdf95d66b70eacb1a0d828.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_47_Pro_jpg.rf.f0fe03d3d1f0ed94f772a95932763456.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_48_Pro-2-_jpg.rf.328b22836ff0a60f0ee40e32d8c7ebaa.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_48_Pro_jpg.rf.29607dac132d0b3b1edd617bfdac0f50.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_49_Pro_jpg.rf.9d9c540eb41bfec774e8a43c695714c6.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_51_Pro-2-_jpg.rf.c4d702965406cc9045523e4927233775.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_53_Pro_jpg.rf.f030471f7f1941d5458dd3baa4da55ec.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_55_Pro-2-_jpg.rf.ef36487c70dfa942842acd96f7ed7f8c.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_55_Pro_jpg.rf.ebd97a6c8ea6496486d79ec456952d8e.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_01_Pro-2-_jpg.rf.dcddd8d1531a2488e8a704ab3daff1d5.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_02_Pro_jpg.rf.fddfcf88e47dd6a1d2a8cec7ed8c1107.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_03_Pro-2-_jpg.rf.efe82d3bea2a5a0970bcdded87eec7af.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_03_Pro_jpg.rf.b03e1163b9a25d6ac2045b4451ee9c3c.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_04_Pro_jpg.rf.ed745e42b2e4b3fad68b0bd278e027f8.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_05_Pro_jpg.rf.057649194a4f9adde22b4a288175d138.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_35_Pro_jpg.rf.6674a8dde0872c0e480f91ad7ea5bf18.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_06_48_Pro_jpg.rf.cfc4613f196d4f491dc94466ef0cda3e.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_07_12_Pro_jpg.rf.974954e2064282ad4af6f3ae8ec9d37b.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_07_15_Pro_jpg.rf.492697f394424546dd1ba4faed79c531.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_07_19_Pro_jpg.rf.6c710833cce65583c55942147d8eb748.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_09_07_Pro_jpg.rf.bb53627870fa1d206a3398a39d2db18e.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_10_17_Pro_jpg.rf.d6f65df3e01c99f829e75a354d285480.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_10_23_Pro_jpg.rf.d2648a3277825c9af45c7a724da14ce4.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_10_30_Pro_jpg.rf.a8bf6f2f1b19fd9340881fccdc20adf3.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_10_35_Pro_jpg.rf.49d69d314d056efc827fe6018c21b167.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_10_38_Pro_jpg.rf.57754d8efe279fc22439dfc8d95d4c57.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_10_47_Pro_jpg.rf.c44b031842be54c679d16df89b70547a.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_10_50_Pro_jpg.rf.326ee477dc9ad9fbf70e0634cd79061a.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_10_51_Pro_jpg.rf.7c2d4eaa57e316cae6f4f673e8044ccc.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_11_02_Pro_jpg.rf.991cb5a7c5d83081d273a8fe02605db3.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_11_06_Pro_jpg.rf.d88b648f96166133d360939c2721da7d.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_11_09_Pro_jpg.rf.ebcb142292389eb81bfbdb68965d931f.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_11_16_Pro_jpg.rf.42a4f0902de13f055a3ea387cf8cfae2.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_11_19_Pro_jpg.rf.9897c68b32fdeca86d7e6949c11b092f.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_11_25_Pro_jpg.rf.394b285d02d4ca4a902f4ff492796ce6.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_11_44_Pro_jpg.rf.fb9009a139be28c3fe9ce6562af820aa.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_11_46_Pro_jpg.rf.fbb827ac93f8f71b51a11a2f016459ac.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_11_50_Pro_jpg.rf.08f3e93b9c7549633276d64b097bba99.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_11_51_Pro_jpg.rf.a1a017818f3d715fdd25cfb027e4440f.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_11_54_Pro_jpg.rf.c518186fc0e91a20ef41571962431574.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_12_01_Pro_jpg.rf.ef1e4b4ca6cd8ca987c6c596e23d8403.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 1
+      }
+    },
+    {
+      "unit": "IMG_7022_jpg.rf.b50a668843c13e46ed85fe292f5a5310.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0
+      }
+    },
+    {
+      "unit": "IMG_7025_jpg.rf.fdb65ff16d55a2341e23b1594d8023ba.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_00_02_Pro-2-_jpg.rf.9f06b3304009766d3e11b33920588910.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_43_Pro_jpg.rf.f7cfd0b098774367d7785adfab7a52e3.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_05_51_Pro_jpg.rf.6bb96a5b84b3ad94a824a292e06707e7.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0
+      }
+    },
+    {
+      "unit": "WIN_20260120_19_07_11_Pro_jpg.rf.cbbdb9c9713cc5ce5eeef13d73fe5327.jpg",
+      "images": 1,
+      "boxes": {
+        "fuel": 0
+      }
+    }
+  ],
+  "bootstrap": {
+    "units": 280,
+    "resamples": 1000,
+    "level": 0.95,
+    "seed": 2026,
+    "classes": [
+      {
+        "name": "fuel",
+        "map50": {
+          "low": 0.747,
+          "high": 0.875
+        },
+        "recall": {
+          "low": 0.375,
+          "high": 0.615
+        }
+      }
+    ]
+  }
+}
