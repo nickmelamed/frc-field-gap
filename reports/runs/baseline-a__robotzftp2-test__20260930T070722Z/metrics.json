@@ -1,0 +1,235 @@
+{
+  "run_id": "baseline-a__robotzftp2-test__20260930T070722Z",
+  "model": "baseline-a",
+  "dataset": "robotzftp2",
+  "split": "test",
+  "limit": null,
+  "predictions_from": "baseline-a__robotzftp2-test__20260927T214029Z",
+  "scored_classes": [
+    "fuel"
+  ],
+  "unscored_classes": [],
+  "per_image_limit": {
+    "per_image": 25,
+    "images_at_limit": 122,
+    "images_above_threshold": 0
+  },
+  "edge_ignore": {
+    "classes": [
+      "fuel"
+    ],
+    "tolerance_px": 1.0,
+    "min_overlap": 0.5,
+    "iou": 0.5,
+    "labels": 95,
+    "predictions": 903
+  },
+  "metrics": {
+    "images": 286,
+    "confidence": 0.5,
+    "iou": 0.5,
+    "map50": 1.0,
+    "map50_95": 0.883,
+    "small_map50_95": null,
+    "medium_map50_95": 0.848,
+    "large_map50_95": 0.898,
+    "classes": [
+      {
+        "name": "fuel",
+        "instances": 281,
+        "map50": 1.0,
+        "map50_95": 0.883,
+        "precision": 0.959,
+        "recall": 1.0,
+        "true_positives": 281,
+        "false_positives": 12,
+        "false_negatives": 0
+      }
+    ],
+    "confusion": {
+      "labels": [
+        "fuel",
+        "background"
+      ],
+      "matrix": [
+        [
+          281,
+          0
+        ],
+        [
+          12,
+          0
+        ]
+      ]
+    },
+    "pr_curve": {
+      "fuel": [
+        {
+          "threshold": 0.05,
+          "precision": 0.196,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.1,
+          "precision": 0.387,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.15,
+          "precision": 0.535,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.2,
+          "precision": 0.63,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.25,
+          "precision": 0.732,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.3,
+          "precision": 0.803,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.35,
+          "precision": 0.839,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.4,
+          "precision": 0.886,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.45,
+          "precision": 0.915,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.5,
+          "precision": 0.959,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.55,
+          "precision": 0.969,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.6,
+          "precision": 0.979,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.65,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.7,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.75,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.8,
+          "precision": 1.0,
+          "recall": 1.0
+        },
+        {
+          "threshold": 0.85,
+          "precision": 1.0,
+          "recall": 0.996
+        },
+        {
+          "threshold": 0.9,
+          "precision": 1.0,
+          "recall": 0.605
+        },
+        {
+          "threshold": 0.95,
+          "precision": 1.0,
+          "recall": 0.039
+        }
+      ]
+    }
+  },
+  "units": [
+    {
+      "unit": "IMG_5835_MOV",
+      "images": 65,
+      "boxes": {
+        "fuel": 99
+      }
+    },
+    {
+      "unit": "IMG_5833_MOV",
+      "images": 79,
+      "boxes": {
+        "fuel": 98
+      }
+    },
+    {
+      "unit": "IMG_5839_MOV",
+      "images": 44,
+      "boxes": {
+        "fuel": 32
+      }
+    },
+    {
+      "unit": "IMG_5838_MOV",
+      "images": 29,
+      "boxes": {
+        "fuel": 15
+      }
+    },
+    {
+      "unit": "IMG_5836_MOV",
+      "images": 35,
+      "boxes": {
+        "fuel": 13
+      }
+    },
+    {
+      "unit": "IMG_5834_MOV",
+      "images": 14,
+      "boxes": {
+        "fuel": 12
+      }
+    },
+    {
+      "unit": "IMG_5837_MOV",
+      "images": 20,
+      "boxes": {
+        "fuel": 12
+      }
+    }
+  ],
+  "bootstrap": {
+    "units": 7,
+    "resamples": 1000,
+    "level": 0.95,
+    "seed": 2026,
+    "classes": [
+      {
+        "name": "fuel",
+        "map50": {
+          "low": 1.0,
+          "high": 1.0
+        },
+        "recall": {
+          "low": 1.0,
+          "high": 1.0
+        }
+      }
+    ]
+  }
+}
