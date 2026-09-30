@@ -1,0 +1,53 @@
+{
+  "key": "merged",
+  "project": "frc-rebuilt-merged-onokh",
+  "version": 1,
+  "augmented": false,
+  "checked": "2026-09-30T04:46:55+00:00",
+  "git_commit": "4a7926c267aa8585b78c164aab397069f22d5ee0",
+  "dirty": false,
+  "roboflow": "1.5.1",
+  "ok": false,
+  "expected": {
+    "train": 6629,
+    "valid": 652,
+    "test": 771
+  },
+  "exported": {
+    "train": 6629,
+    "valid": 652,
+    "test": 771
+  },
+  "roboflow_splits": {
+    "valid": 652,
+    "test": 771,
+    "train": 6629
+  },
+  "preprocessing": {
+    "auto-orient": true,
+    "resize": {
+      "format": "Stretch to",
+      "width": "384",
+      "height": "384"
+    }
+  },
+  "augmentation": {},
+  "missing": {
+    "count": 0,
+    "examples": []
+  },
+  "extra": {
+    "count": 0,
+    "examples": []
+  },
+  "moved": {
+    "count": 0,
+    "examples": []
+  },
+  "boxes_changed": {
+    "count": 1,
+    "examples": [
+      "scorekeeper__youtube-16_jpg_rf_03c351a731f5daa26d6a94c42c502e5a.jpg"
+    ]
+  }
+}
