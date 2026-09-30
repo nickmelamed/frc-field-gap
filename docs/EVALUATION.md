@@ -81,50 +81,56 @@ into real fuel and mistakes. The field test set has not been scored.
 
 ## Choosing the robot's threshold
 
-`merged-noaug` should run on the robot at a confidence threshold of 0.34.
-Over the tuning sets its errors cost 0.476 per image at 0.34 and 0.519 at
-0.5, the lowest of the three models. Every other table in this document
-uses 0.5. On the half of the lockbox
-that took no part in the choice, recall rises from 0.52 at 0.5 to 0.6 at
-0.34, and 13 boxes match no label (precision 0.962). The interval on that
-recall is wide, 0.429 to 0.765, because the half is 198 images from one
-workshop, so the gain is likely but its size is not pinned down.
+Each model gets its own threshold: 0.34 for `merged-noaug`, 0.48 for
+`merged-aug`, and 0.78 for baseline-a. The thresholds are chosen on the
+tuning sets and checked on the held-out half of the lockbox, and the two
+disagree about which model suits the robot better. Over the tuning sets
+`merged-noaug` at 0.34 has the lowest mean cost, 0.476 per image, against
+0.502 for baseline-a at 0.78. On the held-out half, which played no part in
+either choice, baseline-a's errors cost 0.49 per image and `merged-noaug`'s
+1.303. The tuning-set gap is small, has no interval, and comes from the
+sets each threshold was fitted to, so the held-out half is the fairer
+comparison, though it is 198 images from one workshop. This section sets
+each model's threshold and leaves the choice of model open (D-031). Every
+other table in this document uses 0.5.
 
-Lowering the threshold costs almost nothing on C. `merged-noaug`'s fuel precision on C is 0.842 at 0.34 and 0.844 at
-0.5, with 70 false positives at both, because its false positives on C are
-confident enough to survive any threshold in the flat stretch. Every threshold from 0.29 to 0.47
-costs about the same, and for `merged-aug` the flat stretch runs from 0.25
-to 0.61, so the exact value matters less than staying off the steep ends of
-the curve.
+Lowering `merged-noaug`'s threshold costs almost nothing on C. Its fuel
+precision there is 0.842 at 0.34 and 0.844 at 0.5, with 70 false positives
+against 69, because its false positives on C are confident enough to
+survive any threshold in the flat stretch. On the held-out half its recall
+rises from 0.52 at 0.5 to 0.6 at 0.34, with an interval of 0.429 to 0.765,
+and 13 boxes match no label (precision 0.962). Every threshold from 0.29 to
+0.47 costs about the same over the tuning sets, and for `merged-aug` the
+flat stretch runs from 0.25 to 0.61, so the exact value matters less than
+staying off the steep ends of the curve.
 
-At its own threshold of 0.78, baseline-a comes close. Its mean cost is 0.502, against 2.845 at 0.5,
-since the high threshold removes most of its false positives on C and keeps
-most of the lockbox's balls. The two models fail in different places. At
-its threshold baseline-a draws 151 false positives on C (precision 0.711)
-and finds 0.839 of the held-out lockbox's balls. `merged-noaug` draws 70 on
-C and finds 0.6. The gap in mean cost comes from the tuning sets and has no
-interval, so it cannot rank the two models for the robot. A threshold
-chosen for the robot fixes much of what baseline-a got wrong at 0.5, and no
-threshold fixes the merged model's weakness on the lockbox.
+For baseline-a the threshold matters far more, because of C. At 0.78 it
+draws 151 false positives on C (precision 0.711), down from at least 1083
+at 0.5, and its mean cost over the tuning sets falls from 2.845 to 0.502.
+C was a tuning set, so that is a best case. On the held-out half the higher
+threshold does not help. Its cost there is 0.49 at 0.78 against 0.48 at
+0.5, as recall falls from 0.953 to 0.839. No threshold closes the merged
+models' gap on the lockbox.
 
-The choice prices a false positive at three misses (D-031). REBUILT puts a
-lot of fuel on the field, and a ball missed in one frame is usually found a
-few frames later, while a confident box on a person or an old game's ball
-comes back every frame and sends the robot after nothing. The four tuning
-sets count equally, so C's size does not swamp the lockbox. The tuning
-sets are A, B, and C test and half of the lockbox, cut by
-recording or photo group within each kind of image (D-032). A, B, and C
-test helped choose, so their numbers at the chosen threshold are slightly
-optimistic. No model was scored on video, so the claim that a missed ball turns
-up a few frames later is an assumption.
+The costs price a false positive at three misses (D-031). REBUILT puts a
+lot of fuel on the field, and a ball missed in one frame is usually found
+a few frames later, while a confident box on a person or an old game's
+ball comes back every frame and sends the robot after nothing. The four
+tuning sets count equally, so C's size does not swamp the lockbox. They
+are A, B, and C test and half of the lockbox's recordings and photo
+groups, cut within each kind of image (D-032). A, B, and C test helped
+choose, so their numbers at the chosen threshold are slightly optimistic.
+No model was scored on video, so the claim that a missed ball turns up a
+few frames later is an assumption.
 
 Robot boxes share the threshold unless the robot filters by class. At 0.34
-`merged-noaug` draws 140 robot boxes on C that match no label (precision
-0.863, against 0.9 at 0.5). The robot steers around other robots, and no cost
-was set for those errors, so the edge pipeline in Task 12 can keep robot boxes at 0.5.
+`merged-noaug` draws 140 robot false positives on C, some of them robot
+boxes on fuel labels (precision 0.863, against 0.9 at 0.5). The robot
+steers around other robots, and no cost was set for those errors, so the
+edge pipeline in Task 12 can keep robot boxes at 0.5.
 
 <!-- THRESHOLD:START -->
-Costs price one fuel false positive at 3.0 and one miss at 1.0, per image of each set. The chosen threshold has the lowest mean cost over the tuning sets, and the band is the run of thresholds around it whose mean cost is at most 5% above it. Only the held-out half of the lockbox played no part in the choice. <!-- numbers: ok -->
+Costs price one fuel false positive at 3.0 and one miss at 1.0, per image of each set. The chosen threshold has the lowest mean cost over the tuning sets, and the band is the run of thresholds around it whose mean cost is at most 5% above it. Only the held-out half of the lockbox played no part in the choice. Precision and recall come from supervision's metrics, as in the runs, and can differ slightly from the counts beside them, which follow the confusion matrix. <!-- numbers: ok -->
 
 | Model | Chosen threshold | Band | Mean cost | Mean cost at 0.5 | Held-out recall interval |
 |---|---|---|---|---|---|
@@ -143,6 +149,8 @@ Costs price one fuel false positive at 3.0 and one miss at 1.0, per image of eac
 | scorekeeper test | tuning | 314 | 0.711 | 0.995 | 151 | 2 | 1.449 | 0.257 | 1.0 | 10.347 |
 | pankratz tuning half | tuning | 165 | 1.0 | 0.833 | 0 | 63 | 0.382 | 0.92 | 0.942 | 0.721 |
 | pankratz held-out half | held out | 198 | 0.994 | 0.839 | 3 | 88 | 0.49 | 0.958 | 0.953 | 0.48 |
+
+On scorekeeper test, the prediction limit may have dropped boxes at or above 0.5, so false positives and cost there at 0.5 are lower bounds.
 
 #### merged-noaug at 0.34 and at 0.5
 

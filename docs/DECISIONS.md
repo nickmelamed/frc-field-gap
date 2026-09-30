@@ -924,6 +924,10 @@ threshold section in `docs/EVALUATION.md` gives each model's scores at its
 own threshold. The cost ratio is a judgment, and no model was scored on
 video, so the frame-to-frame argument is untested. Robot boxes are not
 costed. They share the threshold unless the edge pipeline filters by class.
+The choice sets each model's threshold but does not pick the model. The
+tuning sets favor `merged-noaug` narrowly (0.476 against 0.502 per image),
+while the held-out lockbox half favors baseline-a (0.49 against 1.303), so
+which model runs on the robot is left to Nick.
 
 ## D-032: Split the lockbox into a tuning half and a held-out half (2026-09-30)
 
@@ -943,7 +947,9 @@ in each `threshold.json`. A, B, and C test are also tuning sets.
 
 Why. Cutting by unit keeps frames of one recording on one side, as the
 splits do (D-013). Cutting within each kind keeps webcam frames on both
-sides, since they hold nearly all the misses.
+sides, since they hold nearly all the misses. The plan asked for every
+kind in both halves, but the phone video is a single unit, and half of one
+rounds to none, so it went whole to the held-out half.
 
 Consequences. Only the held-out half is scored free of the choice, and it
 is 198 images from one workshop, so its recall interval is wide. Scores at

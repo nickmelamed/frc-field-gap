@@ -226,16 +226,17 @@ docs/DECISIONS.md. Task scope and "done when" criteria are in SPEC section 7.
     `docs/EVALUATION.md`.
   - Result. `merged-noaug` runs best at 0.34, where its held-out lockbox
     recall rises from 0.52 to 0.6 and its C precision barely moves, since
-    its false positives on C are confident. baseline-a at its own 0.78
-    comes close in mean cost and fails on C, where the merged model does well, so the
-    comparison between them at 0.5 overstates the merged data's gain.
+    its false positives on C are confident. baseline-a runs best at 0.78.
+    The tuning sets favor `merged-noaug` narrowly, but on the held-out
+    half baseline-a's errors cost far less (0.49 against 1.303 per image),
+    so the choice of model is left to Nick.
   - Differences from SPEC section 7. Runs were not
     rescored at the new threshold, since that would replace the 0.5 runs
     the Task 10 write-up cites (D-031). A, B, and C test helped choose, so
     only the held-out lockbox half is free of the choice. Robot boxes were
     not costed.
-  - For Task 12. Run `merged-noaug` at `deploy_confidence` for fuel, and
-    consider keeping robot boxes at 0.5 by filtering per class. The next
+  - For Task 12. Run the chosen model at its `deploy_confidence` for fuel,
+    and consider keeping robot boxes at 0.5 by filtering per class. The next
     data to add is still labeled images of people holding fuel.
 - [ ] Task 12: Edge deployment (v0.3.0, before interviews)
 
