@@ -28,6 +28,8 @@ GRID = "#e4e3df"
 # The cost axis stops here, so the flat stretch near each choice
 # stays readable next to a model whose cost is many times higher.
 COST_CEILING = 2.0
+# Chosen thresholds closer than this get their labels pushed apart.
+LABEL_GAP = 0.15
 SERIES = ("#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300")
 DPI = 100
 # The PNG's software tag names the matplotlib version, which would change
@@ -246,11 +248,16 @@ def threshold_figure(choices: Sequence[ThresholdChoice], path: Path) -> Path:
             markeredgecolor=SURFACE,
             markeredgewidth=2,
         )
+        # A label turns away from a neighbor's so the two do not overlap.
+        near = [o.threshold - c.threshold for o in choices if o is not c]
+        right = any(0 < d < LABEL_GAP for d in near)
+        left = any(-LABEL_GAP < d < 0 for d in near)
+        ha = "center" if right == left else ("right" if right else "left")
         ax.text(
             c.threshold,
             c.cost - 0.08,
             f"{c.model}\n{c.threshold}: {c.cost}",
-            ha="center",
+            ha=ha,
             va="top",
             fontsize=8,
             color=TEXT,
