@@ -840,3 +840,13 @@ brightness ranges were chosen from the diagnosis, not tuned, and
 Roboflow's random augmentation is not reproducible bit for bit. The edge
 rule of D-027 leaves labels at the frame edge out of scoring, so gains from
 the crop on cut-off balls will not show in the scores.
+
+Getting a trainable version took several tries, recorded here because the
+version numbers skip. Version 1 failed its check on one image (D-028), and
+the image was deleted in the web app. Versions 3 (no augmentation) and 4
+(augmented) then passed their checks, but Roboflow refused to train either,
+reporting no annotations, because they were generated while the project's
+class counts read 0 and then -5. Opening the project's analytics page reset
+the counts to 10906 fuel and 9549 robot boxes, which match the upload.
+Version 7, with version 3's settings, passed its check and trained as
+`merged-noaug`. The failed attempts cost about 9 credits in all.
