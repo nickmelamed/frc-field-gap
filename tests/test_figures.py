@@ -1,10 +1,13 @@
 from pathlib import Path
 
+import pytest
+from matplotlib.figure import Figure
 from PIL import Image
 from test_report import diagnosis
 
+from frc_xdata import figures
 from frc_xdata.diagnose import Slicing
-from frc_xdata.figures import domain_figure, source_figure, write_figures
+from frc_xdata.figures import domain_figure, size_figure, source_figure, write_figures
 
 # The large-file hook rejects anything over 500 KB.
 MAX_BYTES = 500_000
@@ -41,3 +44,20 @@ def test_no_source_figure_without_a_source_slicing(tmp_path: Path) -> None:
 def test_the_domain_figure_needs_three_quantiles(tmp_path: Path) -> None:
     d = diagnosis().model_copy(update={"quantiles": [0.5]})
     assert domain_figure(d, tmp_path / "d.png") is None
+
+
+def test_a_dataset_with_no_small_boxes_is_still_in_the_size_legend(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    d = diagnosis()
+    split = d.splits[0]
+    fuel = split.classes[0]
+    # Its only boxes are medium, as in a split with no small boxes.
+    medium = [s.model_copy(update={"bucket": "medium"}) for s in fuel.sizes]
+    fuel = fuel.model_copy(update={"sizes": medium})
+    d = d.model_copy(update={"splits": [split.model_copy(update={"classes": [fuel]})]})
+    drawn: list[Figure] = []
+    monkeypatch.setattr(figures, "_save", lambda fig, path: drawn.append(fig) or path)
+    size_figure(d, tmp_path / "s.png")
+    legend = drawn[0].axes[0].get_legend()
+    assert [t.get_text() for t in legend.get_texts()] == [split.dataset]
