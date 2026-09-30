@@ -1,4 +1,4 @@
-.PHONY: help setup setup-infer lint typecheck test check requirements agent-check download inspect harmonize merge upload verify-upload eval diagnose report
+.PHONY: help setup setup-infer lint typecheck test check requirements agent-check download inspect harmonize merge upload verify-upload eval diagnose threshold report
 
 help:  ## List targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -53,6 +53,9 @@ eval:  ## Score MODEL on DATASET's SPLIT (default test) into reports/runs/ (ARGS
 
 diagnose:  ## Slice MODEL's errors from its published runs into reports/diagnosis/
 	uv run frc-diagnose $(MODEL) $(ARGS)
+
+threshold:  ## Choose each model's deploy threshold from its cached test runs (ARGS=--model M)
+	uv run frc-threshold $(ARGS)
 
 report:  ## Rebuild the README results table and docs/EVALUATION.md from reports/runs/
 	uv run frc-report $(ARGS)
