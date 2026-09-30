@@ -35,6 +35,7 @@ from frc_xdata.diagnose import (
     count_names,
     crop_box,
     draw_errors,
+    error_counts,
     false_positive_kind,
     gallery_picks,
     image_errors,
@@ -155,6 +156,16 @@ def test_totals_agree_with_the_supervision_confusion_matrix() -> None:
     assert len(m.confusions) == int(matrix[:2, :2].sum() - np.trace(matrix[:2, :2]))
     assert len(m.false_positives) == int(matrix[2, :2].sum())
     assert len(m.misses) == int(matrix[:2, 2].sum())
+
+
+def test_error_counts_charge_a_confusion_to_both_classes() -> None:
+    labels = [dets([(0, 0, 10, 10), (50, 50, 60, 60)], [FUEL, FUEL])]
+    preds = [dets([(0, 0, 10, 10), (80, 80, 90, 90)], [ROBOT, FUEL], [0.9, 0.3])]
+    assert error_counts(preds, labels, [FUEL, ROBOT], 0.5, 0.5) == {
+        FUEL: (0, 0, 2),
+        ROBOT: (0, 1, 0),
+    }
+    assert error_counts(preds, labels, [FUEL, ROBOT], 0.2, 0.5)[FUEL] == (0, 1, 2)
 
 
 def test_a_second_box_on_a_taken_label_is_a_duplicate() -> None:

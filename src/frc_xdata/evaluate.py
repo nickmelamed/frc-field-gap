@@ -368,9 +368,14 @@ def _count_class(detections: list[sv.Detections], class_id: int) -> int:
     return sum(int((d.class_id == class_id).sum()) for d in detections if d.class_id is not None)
 
 
-def _precision_recall(
+def precision_recall(
     predictions: list[sv.Detections], targets: list[sv.Detections], class_ids: Sequence[int]
 ) -> tuple[list[float | None], list[float]]:
+    """Return precision and recall at IoU 0.5 per class, unrounded.
+
+    ``predictions`` must already be cut at the confidence threshold.
+    Precision is None for a class the model never predicts.
+    """
     precision = Precision().update(predictions, targets).compute()
     recall = Recall().update(predictions, targets).compute()
     # Column 0 is IoU 0.5. supervision reports 0 precision for a class with
@@ -406,7 +411,7 @@ def pr_curve(
     curve: dict[str, list[PRPoint]] = {classes[c]: [] for c in class_ids}
     for t in thresholds:
         kept = [above(p, t) for p in predictions]
-        precision, recall = _precision_recall(kept, targets, class_ids)
+        precision, recall = precision_recall(kept, targets, class_ids)
         for c, p, r in zip(class_ids, precision, recall, strict=True):
             curve[classes[c]].append(
                 PRPoint(threshold=_round(t), precision=_maybe_round(p), recall=_round(r))
@@ -453,7 +458,7 @@ def compute_metrics(
     ap50 = _per_class(mean_ap.ap_per_class[:, 0], mean_ap.matched_classes, class_ids)
     ap50_95 = _per_class(mean_ap.ap_per_class.mean(axis=1), mean_ap.matched_classes, class_ids)
     kept = [above(p, confidence) for p in preds]
-    precision, recall = _precision_recall(kept, labels, class_ids)
+    precision, recall = precision_recall(kept, labels, class_ids)
 
     # The confusion matrix matches boxes by IoU regardless of class and needs
     # IoU strictly above the threshold, so with several classes its counts can
@@ -816,7 +821,7 @@ def bootstrap(
         present = np.array([_count_class(sample_labels, c) > 0 for c in class_ids])
         mean_ap = MeanAveragePrecision().update(sample_preds, sample_labels).compute()
         ap = _per_class(mean_ap.ap_per_class[:, 0], mean_ap.matched_classes, class_ids)
-        _, rec = _precision_recall(
+        _, rec = precision_recall(
             [above(p, confidence) for p in sample_preds], sample_labels, class_ids
         )
         ap50[n, present] = np.array(ap)[present]
