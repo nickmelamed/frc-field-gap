@@ -853,3 +853,11 @@ class counts read 0 and then -5. Opening the project's analytics page reset
 the counts to 10906 fuel and 9549 robot boxes, which match the upload.
 Version 7, with version 3's settings, passed its check and trained as
 `merged-noaug`. The failed attempts cost about 9 credits in all.
+
+`merged-aug` trained on version 8, with version 4's settings, which passed
+its check. The training page started it from `merged-noaug`'s weights
+rather than from COCO, and it stopped early at epoch 31 after 5.36
+credits. So `merged-aug` saw the merged data for 35 epochs without
+augmentation and then 31 with it, while `merged-noaug` had only the first
+35. A difference between the two measures the augmentation together with
+the extra training, not the augmentation alone.
