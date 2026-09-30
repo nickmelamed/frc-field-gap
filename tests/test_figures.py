@@ -3,11 +3,17 @@ from pathlib import Path
 import pytest
 from matplotlib.figure import Figure
 from PIL import Image
-from test_report import diagnosis
+from test_report import choice, diagnosis
 
 from frc_xdata import figures
 from frc_xdata.diagnose import Slicing
-from frc_xdata.figures import domain_figure, size_figure, source_figure, write_figures
+from frc_xdata.figures import (
+    domain_figure,
+    size_figure,
+    source_figure,
+    threshold_figure,
+    write_figures,
+)
 
 # The large-file hook rejects anything over 500 KB.
 MAX_BYTES = 500_000
@@ -61,3 +67,12 @@ def test_a_dataset_with_no_small_boxes_is_still_in_the_size_legend(
     size_figure(d, tmp_path / "s.png")
     legend = drawn[0].axes[0].get_legend()
     assert [t.get_text() for t in legend.get_texts()] == [split.dataset]
+
+
+def test_threshold_figure_draws_one_repeatable_png(tmp_path: Path) -> None:
+    choices = [choice("m"), choice("n")]
+    first = threshold_figure(choices, tmp_path / "a.png")
+    assert 0 < first.stat().st_size < MAX_BYTES
+    with Image.open(first) as image:
+        assert image.format == "PNG"
+    assert threshold_figure(choices, tmp_path / "b.png").read_bytes() == first.read_bytes()

@@ -1,7 +1,8 @@
 """Build the README results table and the tables in docs/EVALUATION.md.
 
-``frc-report`` reads every run under ``reports/runs/`` and every diagnosis
-under ``reports/diagnosis/``, and rewrites only the text between each
+``frc-report`` reads every run under ``reports/runs/``, every diagnosis
+under ``reports/diagnosis/``, and every threshold choice under
+``reports/thresholds/``, and rewrites only the text between each
 document's start and end markers. Runs are chosen by
 :func:`frc_xdata.runs.select_runs`. Values are printed exactly as the run or diagnosis
 stored them, so every number in the docs can be found under ``reports/``.
@@ -17,15 +18,18 @@ from frc_xdata.diagnose import DIAGNOSIS_NAME, FALSE_POSITIVE_KINDS, Diagnosis, 
 from frc_xdata.download import PROJECT_CONFIG
 from frc_xdata.errors import ConfigError
 from frc_xdata.evaluate import ClassMetrics, RunResult
-from frc_xdata.figures import write_figures
+from frc_xdata.figures import threshold_figure, write_figures
 from frc_xdata.logging_utils import add_log_level_argument, setup_logging
 from frc_xdata.runs import PublishedRun, load_runs, select_runs
+from frc_xdata.threshold import CHOICE_NAME, ThresholdChoice, load_choice
 
 README = Path("README.md")
 EVALUATION = Path("docs/EVALUATION.md")
 RESULTS_MARKERS = ("<!-- RESULTS:START -->", "<!-- RESULTS:END -->")
 EVALUATION_MARKERS = ("<!-- EVALUATION:START -->", "<!-- EVALUATION:END -->")
 DIAGNOSIS_MARKERS = ("<!-- DIAGNOSIS:START -->", "<!-- DIAGNOSIS:END -->")
+THRESHOLD_MARKERS = ("<!-- THRESHOLD:START -->", "<!-- THRESHOLD:END -->")
+THRESHOLD_FIGURE = "threshold_cost.png"
 ERROR_PLURALS = {"false positive": "false positives", "miss": "misses"}
 FALSE_POSITIVE_KIND_NAMES = {
     "duplicate": "Duplicate",
@@ -458,6 +462,109 @@ def diagnosis_sections(diagnoses: Sequence[Diagnosis]) -> str:
     return "\n\n".join(diagnosis_section(d) for d in diagnoses)
 
 
+def load_choices(threshold_dir: Path, models: Sequence[str]) -> list[ThresholdChoice]:
+    """Read the threshold choice of each model that has one, in ``models`` order."""
+    paths = [threshold_dir / m / CHOICE_NAME for m in models]
+    return [load_choice(p) for p in paths if p.is_file()]
+
+
+def _choice_rows(c: ThresholdChoice) -> list[str]:
+    rows = []
+    for s in c.sets:
+        neutral = {k.name: k for k in s.neutral.classes}
+        for k in s.chosen.classes:
+            n = neutral[k.name]
+            rows.append(
+                _row(
+                    [
+                        s.name if k.name == c.scored_class else f"{s.name} ({k.name})",
+                        s.role,
+                        s.images,
+                        _value(k.precision),
+                        k.recall,
+                        k.counts.false_positives,
+                        k.counts.false_negatives,
+                        s.chosen.cost if k.name == c.scored_class else MISSING,
+                        _value(n.precision),
+                        n.recall,
+                        s.neutral.cost if k.name == c.scored_class else MISSING,
+                    ]
+                )
+            )
+    return rows
+
+
+def threshold_section(choices: Sequence[ThresholdChoice]) -> str:
+    """Return the generated threshold part of EVALUATION.md."""
+    if not choices:
+        return "No threshold has been chosen yet."
+    first = choices[0]
+    lines = [
+        f"Costs price one {first.scored_class} false positive at "
+        f"{first.costs.false_positive} and one miss at {first.costs.false_negative}, per image "
+        f"of each set. The chosen threshold has the lowest mean cost over the tuning sets, "
+        f"and the band is the run of thresholds around it within {first.band} of that cost "
+        f"as a share. Only the held-out half of the lockbox played no part in the choice."
+        f"{NOT_A_RESULT}",
+        "",
+        *_header(
+            [
+                "Model",
+                "Chosen threshold",
+                "Band",
+                "Mean cost",
+                f"Mean cost at {first.neutral_threshold}",
+                "Held-out recall interval",
+            ]
+        ),
+    ]
+    for c in choices:
+        interval = c.held_out_recall
+        lines.append(
+            _row(
+                [
+                    c.model,
+                    c.threshold,
+                    f"{c.band_low} to {c.band_high}",
+                    c.cost,
+                    c.neutral_cost,
+                    MISSING if interval is None else f"{interval.low} to {interval.high}",
+                ]
+            )
+        )
+    lines += ["", f"![Mean cost against threshold](assets/{THRESHOLD_FIGURE})"]
+    for c in choices:
+        lines += [
+            "",
+            f"#### {c.model} at {c.threshold} and at {c.neutral_threshold}",
+            "",
+            *_header(
+                [
+                    "Set",
+                    "Role",
+                    "Images",
+                    "Precision",
+                    "Recall",
+                    "False positives",
+                    "Misses",
+                    "Cost",
+                    f"Precision at {c.neutral_threshold}",
+                    f"Recall at {c.neutral_threshold}",
+                    f"Cost at {c.neutral_threshold}",
+                ]
+            ),
+            *_choice_rows(c),
+        ]
+        limited = [s.name for s in c.sets if s.chosen.images_above_limit]
+        if limited:
+            lines += [
+                "",
+                f"On {', '.join(limited)}, the prediction limit may have dropped boxes at the "
+                "chosen threshold, so false positives there are a lower bound.",
+            ]
+    return "\n".join(lines)
+
+
 def replace_between(text: str, markers: tuple[str, str], body: str) -> str:
     """Return ``text`` with everything between the two markers replaced by ``body``.
 
@@ -477,12 +584,16 @@ def replace_between(text: str, markers: tuple[str, str], body: str) -> str:
 
 
 def write_report(
-    runs_dir: Path, readme: Path, evaluation: Path, diagnosis_dir: Path | None = None
+    runs_dir: Path,
+    readme: Path,
+    evaluation: Path,
+    diagnosis_dir: Path | None = None,
+    choices: Sequence[ThresholdChoice] = (),
 ) -> list[Path]:
     """Rewrite the generated parts of both documents and return the ones that changed.
 
     The diagnosis part is written only once a diagnosis exists under
-    ``diagnosis_dir``.
+    ``diagnosis_dir``, and the threshold part only once a choice exists.
     """
     runs = select_runs(load_runs(runs_dir))
     diagnoses = [] if diagnosis_dir is None else load_diagnoses(diagnosis_dir)
@@ -492,6 +603,8 @@ def write_report(
     ]
     if diagnoses:
         parts.append((evaluation, DIAGNOSIS_MARKERS, diagnosis_sections(diagnoses)))
+    if choices:
+        parts.append((evaluation, THRESHOLD_MARKERS, threshold_section(choices)))
     changed: list[Path] = []
     for path, markers, body in parts:
         old = path.read_text(encoding="utf-8")
@@ -512,8 +625,15 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     setup_logging(args.log_level)
     project = load_yaml(args.project_config, ProjectConfig)
-    write_report(project.evaluate.runs_dir, README, EVALUATION, project.diagnose.output_dir)
+    t = project.threshold
+    choices = [] if t is None else load_choices(t.output_dir, t.models)
+    write_report(
+        project.evaluate.runs_dir, README, EVALUATION, project.diagnose.output_dir, choices
+    )
     for d in load_diagnoses(project.diagnose.output_dir):
         for path in write_figures(d, project.paths.assets_dir):
             logger.info("wrote %s", path)
+    if choices:
+        path = threshold_figure(choices, project.paths.assets_dir / THRESHOLD_FIGURE)
+        logger.info("wrote %s", path)
     return 0
