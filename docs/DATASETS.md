@@ -332,7 +332,7 @@ dropped when it matches a valid, test, or lockbox image by source name, by
 recording, or by perceptual hash under any flip or 90 degree rotation. Every
 merged image is checked against the field test set by file hash and by
 perceptual hash, and a match stops the run. The merged train split has
-6629 images, valid 652, and test 771. `reports/merge.json` counts what each
+6628 images, valid 652, and test 771. `reports/merge.json` counts what each
 source brought and what was dropped, and why. File names in the merged
 dataset start with the source key, such as `marswars__`, and keep
 Roboflow's hash as `_rf_<hash>`, since Roboflow drops `.rf.<hash>` on upload

@@ -270,6 +270,16 @@ def test_a_byte_copy_in_train_is_dropped_once(project: ProjectConfig) -> None:
     assert report()["datasets"]["merged"]["dropped"]["beta"]["exact_duplicate"] == 1
 
 
+def test_listed_files_are_left_out_of_train(project: ProjectConfig) -> None:
+    sources = {**MERGE["sources"], "alpha": {"role": "keep_splits", "exclude_files": ["a1.png"]}}
+    cfg = project.model_copy(
+        update={"merge": MergeConfig.model_validate({**MERGE, "sources": sources})}
+    )
+    run_merge(cfg, CLASS_MAP)
+    assert "alpha__a1.png" not in merged_names("train")
+    assert report()["datasets"]["merged"]["dropped"]["alpha"] == {"excluded": 1}
+
+
 def test_merge_settings_keep_sources_and_protected_datasets_apart() -> None:
     with pytest.raises(ValidationError, match="both merged and protected"):
         MergeConfig.model_validate({**MERGE, "protected": ["alpha"]})
