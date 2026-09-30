@@ -223,6 +223,14 @@ diagnose:
         pattern: '^frc_train_'
       - name: YouTube frames
         pattern: '^(?:[A-Za-z0-9_-]{11}_\d+|youtube-\d+)\.'
+    pankratz:
+      # Webcam frames of one person holding and tossing balls.
+      - name: webcam frames
+        pattern: '^WIN_'
+      - name: phone video
+        pattern: '_mov-\d+\.'
+      - name: phone photos
+        pattern: '^(?:IMG|P)_'
   # Failure gallery at docs/assets/failures.png. Picks alternate between
   # false positives and misses, spread over sources. Excluded files show a
   # face, and the next pick takes their place.
@@ -273,7 +281,7 @@ diagnose:
     per_kind: 40
     context: 4
     min_crop_px: 96
-    file: reports/diagnosis/review.csv
+    file: reports/diagnosis/{model}/review.csv
     verdicts:
       # False positives
       - unlabeled fuel

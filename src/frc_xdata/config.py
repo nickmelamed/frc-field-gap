@@ -284,8 +284,13 @@ class ReviewConfig(TileLayout):
     # Crops show this many box widths of context around the box.
     context: Annotated[float, Field(ge=1)]
     min_crop_px: PositiveInt
+    # May hold ``{model}``, since each model's errors get their own verdicts.
     file: RelativePath
     verdicts: list[str]
+
+    def path_for(self, model: str) -> Path:
+        """Return the review file for ``model``."""
+        return Path(str(self.file).format(model=model))
 
 
 class DiagnoseConfig(_Frozen):
