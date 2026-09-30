@@ -1,16 +1,16 @@
 {
-  "created": "2026-09-30T17:48:18+00:00",
+  "created": "2026-09-30T18:50:24+00:00",
   "command": [
     "frc-threshold"
   ],
   "git": {
-    "commit": "ff92eb63b93e10c305999c801575175e2f3ee2ef",
-    "tree": "def712fa04ab8b6a06c4ef82fa52b372b3432366",
+    "commit": "05447b1d13fee212acbcb42b9db33d9ad5899fca",
+    "tree": "7afc95c5b4cd275567737a216aed08ac2ac2701a",
     "dirty": false
   },
   "configs": {
     "configs/project.yaml": "6306f24211a92018f2a7793a867bba457256a511350145dd6e6cfffd29433a12",
-    "reports/models.yaml": "e473873832ae0ed78261aa83b32500b72d31e11f5ea6655e3616cfb3cf577b21",
+    "reports/models.yaml": "332a7a7b3dff7b564d4125c937e57c52da8ed017caafc6e81ccef1eb680c0fa8",
     "reports/splits.json": "c5418ad05830e66753c962d0e7b650f651b7c568ea6c20dfa1cfa7adb816727e"
   },
   "runs": [
