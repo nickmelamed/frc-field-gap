@@ -364,6 +364,42 @@ class MergeConfig(_Frozen):
         return self
 
 
+class ErrorCosts(_Frozen):
+    """What one false positive and one miss cost the robot, in the same unit."""
+
+    false_positive: Annotated[float, Field(gt=0)]
+    false_negative: Annotated[float, Field(gt=0)]
+
+
+class LockboxHalves(_Frozen):
+    """How the lockbox is cut into a half for choosing and a half held out (D-032)."""
+
+    dataset: DatasetKey
+    tune_fraction: Probability
+
+
+class ThresholdConfig(_Frozen):
+    """Settings for choosing a deploy threshold from cached predictions (D-031)."""
+
+    output_dir: RelativePath
+    models: list[str]
+    # The class the robot acts on. Its errors are the only ones costed.
+    scored_class: str
+    grid: ThresholdRange
+    costs: ErrorCosts
+    # Datasets whose test split is scored whole when choosing.
+    tuning: list[DatasetKey]
+    lockbox: LockboxHalves
+    # Thresholds whose mean cost is within this share of the lowest.
+    band: Probability
+
+    @model_validator(mode="after")
+    def _lockbox_apart(self) -> "ThresholdConfig":
+        if self.lockbox.dataset in self.tuning:
+            raise ValueError(f"{self.lockbox.dataset} is both the lockbox and a tuning dataset")
+        return self
+
+
 class ProjectConfig(_Frozen):
     """Settings shared by every stage, from ``configs/project.yaml``."""
 
@@ -375,6 +411,14 @@ class ProjectConfig(_Frozen):
     evaluate: EvaluateConfig
     diagnose: DiagnoseConfig
     merge: MergeConfig | None = None
+    threshold: ThresholdConfig | None = None
+
+    @model_validator(mode="after")
+    def _grid_above_floor(self) -> "ProjectConfig":
+        t = self.threshold
+        if t is not None and t.grid.start < self.evaluate.confidence_floor:
+            raise ValueError("threshold.grid must not start below evaluate.confidence_floor")
+        return self
 
 
 class ModelEntry(BaseModel):

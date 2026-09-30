@@ -300,3 +300,27 @@ diagnose:
       - barely visible fuel
       - clear fuel
       - other
+
+# Choosing the confidence threshold the robot runs at, from the published
+# runs' cached predictions (D-031). No model is called.
+threshold:
+  output_dir: reports/thresholds
+  models: [baseline-a, merged-noaug, merged-aug]
+  scored_class: fuel
+  grid:
+    start: 0.05
+    stop: 0.95
+    step: 0.01
+  # Fuel is plentiful and a ball missed in one frame is usually found a few
+  # frames later, while a confident false positive repeats every frame and
+  # sends the robot after nothing.
+  costs:
+    false_positive: 3
+    false_negative: 1
+  tuning: [marswars, robotzftp2, scorekeeper]
+  # Half the lockbox's units help choose, and the other half is scored only
+  # at the chosen threshold (D-032).
+  lockbox:
+    dataset: pankratz
+    tune_fraction: 0.5
+  band: 0.05

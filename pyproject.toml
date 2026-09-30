@@ -29,6 +29,7 @@ frc-verify-upload = "frc_xdata.upload:verify_main"
 frc-evaluate = "frc_xdata.evaluate:main"
 frc-report = "frc_xdata.report:main"
 frc-diagnose = "frc_xdata.diagnose:main"
+frc-threshold = "frc_xdata.threshold:main"
 
 [project.optional-dependencies]
 infer = ["inference>=1.7,<1.8"]
